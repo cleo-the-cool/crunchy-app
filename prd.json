@@ -245,7 +245,7 @@
         "App compiles without errors"
       ],
       "priority": 13,
-      "passes": false,
+      "passes": true,
       "notes": "Make this screen convert. Show the value, not just the price. Use social proof ('Join 10,000+ crunchy girls'). No pressure, but make premium feel worth it."
     },
     {

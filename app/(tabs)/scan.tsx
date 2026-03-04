@@ -15,6 +15,7 @@ import {
   BarcodeScanningResult,
 } from "expo-camera";
 import * as Haptics from "expo-haptics";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 
 type ScanMode = "barcode" | "label" | "product";
 
@@ -53,6 +54,7 @@ const MOCK_RECENT_SCANS = [
 
 export default function ScanScreen() {
   const router = useRouter();
+  const { canScan, recordScan, dailyScansUsed, dailyScanLimit, tier } = useSubscription();
   const [permission, requestPermission] = useCameraPermissions();
   const [scanMode, setScanMode] = useState<ScanMode>("barcode");
   const [isScanning, setIsScanning] = useState(false);
@@ -61,8 +63,17 @@ export default function ScanScreen() {
 
   const handleBarCodeScanned = (result: BarcodeScanningResult) => {
     if (scanned) return;
+
+    if (!canScan) {
+      setScanned(true);
+      router.push({ pathname: "/paywall", params: { reason: "scan_limit" } });
+      setTimeout(() => setScanned(false), 1000);
+      return;
+    }
+
     setScanned(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    recordScan();
 
     // Navigate to result screen with barcode data
     router.push({
@@ -75,6 +86,10 @@ export default function ScanScreen() {
   };
 
   const handleStartScanning = async () => {
+    if (!canScan) {
+      router.push({ pathname: "/paywall", params: { reason: "scan_limit" } });
+      return;
+    }
     if (!permission?.granted) {
       const result = await requestPermission();
       if (!result.granted) {
@@ -150,6 +165,10 @@ export default function ScanScreen() {
           <TouchableOpacity
             key={mode.key}
             onPress={() => {
+              if (mode.key === "product" && tier !== "premium") {
+                router.push({ pathname: "/paywall", params: { reason: "premium_feature" } });
+                return;
+              }
               setScanMode(mode.key);
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             }}
@@ -172,6 +191,24 @@ export default function ScanScreen() {
           </TouchableOpacity>
         ))}
       </View>
+
+      {/* Scan Limit Indicator (free tier) */}
+      {tier === "free" && (
+        <View className="flex-row items-center justify-center mx-5 mb-3">
+          <Ionicons name="information-circle-outline" size={14} color="#999" />
+          <Text className="text-xs text-dark/40 ml-1">
+            {dailyScansUsed}/{dailyScanLimit} daily scans used
+          </Text>
+          <TouchableOpacity
+            onPress={() => router.push("/paywall")}
+            hitSlop={8}
+          >
+            <Text className="text-xs text-sage font-semibold ml-2">
+              Upgrade
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {isScanning && scanMode === "barcode" ? (
         /* Camera Viewfinder */

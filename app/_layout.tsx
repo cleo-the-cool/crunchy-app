@@ -3,6 +3,7 @@ import { Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { View, ActivityIndicator } from "react-native";
 
 function RootNavigator() {
@@ -46,7 +47,9 @@ function RootNavigator() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <RootNavigator />
+      <SubscriptionProvider>
+        <RootNavigator />
+      </SubscriptionProvider>
     </AuthProvider>
   );
 }

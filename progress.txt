@@ -34,6 +34,8 @@
 - Create post screen at `app/create-post.tsx`, navigate via `router.push("/create-post")`
 - Settings screen at `app/settings.tsx`, navigate via `router.push("/settings")`
 - Profile tabs use state toggle (`activeTab`) with conditional rendering, no nested navigators
+- Subscription context in `contexts/SubscriptionContext.tsx`, provides `useSubscription()` hook with `canScan`, `recordScan()`, `tier`, `isPremiumFeature()`
+- Navigate to paywall via `router.push({ pathname: "/paywall", params: { reason: "scan_limit" | "premium_feature" } })`
 
 ## 2026-03-04 - US-001
 - Project setup with Expo, TypeScript, NativeWind, and Expo Router (previously committed)
@@ -240,4 +242,23 @@
   - Profile tab sections use simple state toggle (`activeTab`) with conditional rendering, no nested navigators
   - `signOut()` from AuthContext + `router.replace("/welcome")` for logout flow
   - `Alert.alert()` with destructive style for logout confirmation
+---
+
+## 2026-03-04 - US-013
+- Subscription paywall screen with 3 tiers: Free ($0), Starter ($9.99/mo), Premium ($19.99/mo)
+- Created `contexts/SubscriptionContext.tsx` with tier management, daily scan counting, and premium feature gating
+- Paywall screen (`app/paywall.tsx`): selectable tier cards with radio indicators, RECOMMENDED badge on Starter, feature comparison list per tier, social proof ("Join 10,000+ crunchy girls"), value highlights section, subscribe CTA, restore purchases link, close/dismiss button
+- Integrated scan limit checking in scan screen: free users see scan counter (X/5 daily scans used), paywall triggered when limit reached or when tapping Product scan mode (premium feature)
+- Mock subscription stored in AsyncStorage, daily scan count resets each day
+- SubscriptionProvider wraps app in `app/_layout.tsx`
+- Files: contexts/SubscriptionContext.tsx, app/paywall.tsx, app/_layout.tsx, app/(tabs)/scan.tsx, prd.json
+- **Learnings for future iterations:**
+  - Subscription context at `contexts/SubscriptionContext.tsx`, provides `useSubscription()` hook
+  - `SubscriptionProvider` wraps app inside `AuthProvider` in `app/_layout.tsx`
+  - Navigate to paywall via `router.push({ pathname: "/paywall", params: { reason: "scan_limit" } })` or `reason: "premium_feature"`
+  - Daily scan count stored in AsyncStorage with date check for daily reset
+  - Free tier: 5 scans/day, Starter: 50/day, Premium: unlimited
+  - `canScan` boolean from context determines if user can perform a scan
+  - `recordScan()` must be called after each successful scan to increment counter
+  - Premium features gated via `isPremiumFeature()` helper
 ---
