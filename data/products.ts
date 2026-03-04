@@ -472,11 +472,204 @@ export const PRODUCTS: Product[] = [
     ],
     alternatives: [],
   },
+  {
+    id: "p23",
+    barcode: "0011113222334",
+    name: "Fast Fashion T-Shirt",
+    brand: "Shein",
+    category: "Clothing",
+    image: "👕",
+    rating: "avoid",
+    ingredients: [
+      { name: "Polyester (100%)", risk: "toxic", explanation: "Petroleum-derived synthetic fabric. Sheds microplastics with every wash that pollute waterways." },
+      { name: "Azo Dyes", risk: "toxic", explanation: "Cheap textile dyes that can break down into carcinogenic aromatic amines. Banned in the EU for direct skin contact." },
+      { name: "Formaldehyde Resin", risk: "toxic", explanation: "Used for wrinkle resistance. Known carcinogen and skin sensitizer. Off-gasses from new clothes." },
+      { name: "PFAS (Water-repellent finish)", risk: "toxic", explanation: "Forever chemicals used for stain resistance. Accumulate in the body and environment indefinitely." },
+    ],
+    alternatives: [
+      { id: "a32", name: "Organic Cotton Tee", brand: "Pact", price: "$25.00", rating: "clean", category: "Clothing", image: "🌿" },
+      { id: "a33", name: "Hemp Blend Tee", brand: "Patagonia", price: "$45.00", rating: "clean", category: "Clothing", image: "🌱" },
+    ],
+  },
+  {
+    id: "p24",
+    barcode: "0011113333445",
+    name: "Organic Cotton Hoodie",
+    brand: "Patagonia",
+    category: "Clothing",
+    image: "🧥",
+    rating: "clean",
+    ingredients: [
+      { name: "Organic Cotton (100%)", risk: "safe", explanation: "GOTS-certified organic cotton. No pesticides or synthetic fertilizers used in farming." },
+      { name: "Natural Dyes", risk: "safe", explanation: "Plant-based or low-impact dyes free from heavy metals and azo compounds." },
+      { name: "Fair Trade Certified", risk: "safe", explanation: "Ethically manufactured with fair wages and safe working conditions." },
+    ],
+    alternatives: [],
+  },
+  {
+    id: "p25",
+    barcode: "0011113444556",
+    name: "Athleisure Leggings",
+    brand: "Lululemon",
+    category: "Clothing",
+    image: "👖",
+    rating: "caution",
+    ingredients: [
+      { name: "Nylon (71%)", risk: "concern", explanation: "Synthetic fiber derived from petroleum. Sheds microplastics but more durable than polyester." },
+      { name: "Lycra/Elastane (29%)", risk: "concern", explanation: "Synthetic stretch fiber. Not biodegradable but necessary for athletic performance." },
+      { name: "Antimicrobial Treatment", risk: "concern", explanation: "Silver nanoparticles or synthetic antimicrobials. Environmental impact of nanoparticles is poorly understood." },
+    ],
+    alternatives: [
+      { id: "a34", name: "Organic Cotton Leggings", brand: "Girlfriend Collective", price: "$68.00", rating: "clean", category: "Clothing", image: "♻️" },
+    ],
+  },
+  {
+    id: "p26",
+    barcode: "0011113555667",
+    name: "Bamboo Sheet Set",
+    brand: "Cariloha",
+    category: "Home",
+    image: "🛏️",
+    rating: "clean",
+    ingredients: [
+      { name: "Bamboo Viscose (100%)", risk: "safe", explanation: "Sustainably grown bamboo processed into soft fabric. Naturally antimicrobial." },
+      { name: "OEKO-TEX Certified", risk: "safe", explanation: "Tested and certified free from harmful substances." },
+    ],
+    alternatives: [],
+  },
+  {
+    id: "p27",
+    barcode: "0011113666778",
+    name: "Non-Stick Frying Pan",
+    brand: "Tefal",
+    category: "Home",
+    image: "🍳",
+    rating: "avoid",
+    ingredients: [
+      { name: "PTFE (Teflon) Coating", risk: "toxic", explanation: "Releases toxic fumes when overheated above 500F. PFAS-related compound that persists in the environment." },
+      { name: "PFOA (manufacturing residue)", risk: "toxic", explanation: "A forever chemical used in manufacturing. Linked to cancer, thyroid disease, and reproductive issues." },
+    ],
+    alternatives: [
+      { id: "a35", name: "Cast Iron Skillet", brand: "Lodge", price: "$29.99", rating: "clean", category: "Home", image: "🫕" },
+      { id: "a36", name: "Ceramic Non-Stick Pan", brand: "GreenPan", price: "$49.99", rating: "clean", category: "Home", image: "🥘" },
+    ],
+  },
+  {
+    id: "p28",
+    barcode: "0011113777889",
+    name: "Organic Almond Butter",
+    brand: "Justin's",
+    category: "Food",
+    image: "🥜",
+    rating: "clean",
+    ingredients: [
+      { name: "Dry Roasted Almonds", risk: "safe", explanation: "Organic almonds. Rich in healthy fats, protein, and vitamin E." },
+      { name: "Palm Oil (Organic)", risk: "concern", explanation: "Used for texture. While organic, palm oil farming contributes to deforestation." },
+    ],
+    alternatives: [],
+  },
+  {
+    id: "p29",
+    barcode: "0011113888990",
+    name: "Energy Drink",
+    brand: "Red Bull",
+    category: "Food",
+    image: "⚡",
+    rating: "avoid",
+    ingredients: [
+      { name: "Sucrose & Glucose", risk: "concern", explanation: "27g of sugar per can. Contributes to blood sugar spikes and crashes." },
+      { name: "Taurine", risk: "safe", explanation: "Amino acid naturally found in the body. Generally safe at these levels." },
+      { name: "Caffeine (80mg)", risk: "safe", explanation: "About the same as a cup of coffee. Safe in moderation." },
+      { name: "Artificial Colors", risk: "toxic", explanation: "Synthetic dyes linked to hyperactivity in children and potential carcinogenic properties." },
+      { name: "Sodium Benzoate", risk: "concern", explanation: "Preservative that can form benzene (a carcinogen) when combined with vitamin C." },
+      { name: "Niacinamide (B3)", risk: "safe", explanation: "B vitamin. Safe at supplemental levels." },
+    ],
+    alternatives: [
+      { id: "a37", name: "Organic Matcha Latte", brand: "Matchabar", price: "$3.99", rating: "clean", category: "Food", image: "🍵" },
+    ],
+  },
+  {
+    id: "p30",
+    barcode: "0011114000112",
+    name: "Stain Remover Spray",
+    brand: "OxiClean",
+    category: "Cleaning",
+    image: "✨",
+    rating: "caution",
+    ingredients: [
+      { name: "Sodium Percarbonate", risk: "safe", explanation: "Oxygen-based bleach. Breaks down into soda ash and hydrogen peroxide. Eco-friendly." },
+      { name: "Sodium Carbonate", risk: "safe", explanation: "Washing soda. Natural mineral compound." },
+      { name: "Ethoxylated Alcohol", risk: "concern", explanation: "Surfactant that may contain 1,4-dioxane residues from ethoxylation process." },
+      { name: "Fragrance", risk: "toxic", explanation: "Undisclosed chemical blend added to cleaning product." },
+    ],
+    alternatives: [
+      { id: "a38", name: "Oxygen Brightener", brand: "Biokleen", price: "$11.99", rating: "clean", category: "Cleaning", image: "🌿" },
+    ],
+  },
+  {
+    id: "p31",
+    barcode: "0011114111223",
+    name: "Yoga Mat",
+    brand: "Gaiam",
+    category: "Home",
+    image: "🧘",
+    rating: "caution",
+    ingredients: [
+      { name: "PVC (Polyvinyl Chloride)", risk: "toxic", explanation: "Contains chlorine and may release dioxins. Often contains phthalate plasticizers." },
+      { name: "Phthalate Plasticizers", risk: "toxic", explanation: "Used to make PVC flexible. Known endocrine disruptors linked to reproductive issues." },
+      { name: "Latex-free", risk: "safe", explanation: "No natural rubber latex, reducing allergy concerns." },
+    ],
+    alternatives: [
+      { id: "a39", name: "Natural Rubber Yoga Mat", brand: "Manduka", price: "$90.00", rating: "clean", category: "Home", image: "🌿" },
+      { id: "a40", name: "Cork Yoga Mat", brand: "Yoloha", price: "$109.00", rating: "clean", category: "Home", image: "🪵" },
+    ],
+  },
+  {
+    id: "p32",
+    barcode: "0011114222334",
+    name: "Face Serum",
+    brand: "The Ordinary",
+    category: "Skincare",
+    image: "💧",
+    rating: "clean",
+    ingredients: [
+      { name: "Hyaluronic Acid", risk: "safe", explanation: "Naturally occurring molecule. Excellent hydrator that holds 1000x its weight in water." },
+      { name: "Niacinamide", risk: "safe", explanation: "Vitamin B3. Reduces pores, brightens skin, and strengthens skin barrier." },
+      { name: "Pentylene Glycol", risk: "safe", explanation: "Plant-derived moisturizer and solvent. Well-tolerated by most skin types." },
+      { name: "Sodium Hyaluronate", risk: "safe", explanation: "Smaller form of hyaluronic acid that penetrates deeper into skin." },
+    ],
+    alternatives: [],
+  },
 ];
 
 // Helper to find a product by barcode
 export function findProductByBarcode(barcode: string): Product | undefined {
   return PRODUCTS.find((p) => p.barcode === barcode);
+}
+
+export type ProductCategory = "Food" | "Skincare" | "Cleaning" | "Personal Care" | "Clothing" | "Home";
+
+export const CATEGORIES: { name: ProductCategory; icon: string }[] = [
+  { name: "Food", icon: "🥑" },
+  { name: "Skincare", icon: "🧴" },
+  { name: "Cleaning", icon: "🧹" },
+  { name: "Personal Care", icon: "🪥" },
+  { name: "Clothing", icon: "👕" },
+  { name: "Home", icon: "🏠" },
+];
+
+export function getProductsByCategory(category: string): Product[] {
+  return PRODUCTS.filter((p) => p.category === category);
+}
+
+export function searchProducts(query: string): Product[] {
+  const q = query.toLowerCase();
+  return PRODUCTS.filter(
+    (p) =>
+      p.name.toLowerCase().includes(q) ||
+      p.brand.toLowerCase().includes(q) ||
+      p.category.toLowerCase().includes(q)
+  );
 }
 
 // Helper to get a default product (used when barcode isn't in our database)
