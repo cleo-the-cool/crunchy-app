@@ -5,6 +5,7 @@ type BadgeRating = "clean" | "caution" | "avoid";
 interface BadgeProps {
   rating: BadgeRating;
   size?: "sm" | "md" | "lg";
+  label?: string;
   className?: string;
 }
 
@@ -23,14 +24,14 @@ const sizeStyles: Record<string, { container: string; text: string }> = {
   lg: { container: "px-4 py-2 rounded-2xl", text: "text-base font-semibold" },
 };
 
-export function Badge({ rating, size = "md", className = "" }: BadgeProps) {
+export function Badge({ rating, size = "md", label, className = "" }: BadgeProps) {
   const config = ratingConfig[rating];
   const sizes = sizeStyles[size];
 
   return (
     <View className={`${config.bg} ${sizes.container} ${className}`}>
       <Text className={`${config.text} ${sizes.text} font-medium`}>
-        {config.label}
+        {label ?? config.label}
       </Text>
     </View>
   );
