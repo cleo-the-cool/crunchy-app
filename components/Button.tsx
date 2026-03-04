@@ -1,4 +1,9 @@
-import { Text, TouchableOpacity, ActivityIndicator } from "react-native";
+import { Text, ActivityIndicator, Pressable } from "react-native";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from "react-native-reanimated";
 
 type ButtonVariant = "primary" | "secondary" | "outline";
 
@@ -23,6 +28,8 @@ const textStyles: Record<ButtonVariant, string> = {
   outline: "text-sage",
 };
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 export function Button({
   title,
   onPress,
@@ -31,11 +38,27 @@ export function Button({
   loading = false,
   className = "",
 }: ButtonProps) {
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = () => {
+    scale.value = withSpring(0.95, { damping: 15, stiffness: 300 });
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(1, { damping: 15, stiffness: 300 });
+  };
+
   return (
-    <TouchableOpacity
+    <AnimatedPressable
       onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
       disabled={disabled || loading}
-      activeOpacity={0.8}
+      style={animatedStyle}
       className={`rounded-2xl px-6 py-4 items-center justify-center ${variantStyles[variant]} ${disabled ? "opacity-50" : ""} ${className}`}
     >
       {loading ? (
@@ -49,6 +72,6 @@ export function Button({
           {title}
         </Text>
       )}
-    </TouchableOpacity>
+    </AnimatedPressable>
   );
 }

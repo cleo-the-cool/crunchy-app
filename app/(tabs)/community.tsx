@@ -15,12 +15,19 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withSequence,
+} from "react-native-reanimated";
 import {
   COMMUNITY_POSTS,
   TRENDING_HASHTAGS,
   type CommunityPost,
   type Comment,
 } from "@/data/community";
+import { CardSkeleton } from "@/components";
 
 function formatTimeAgo(timestamp: string): string {
   const now = new Date();
@@ -41,11 +48,17 @@ export default function CommunityScreen() {
   const [posts, setPosts] = useState(COMMUNITY_POSTS);
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
   const [refreshing, setRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [commentSheetPostId, setCommentSheetPostId] = useState<string | null>(
     null
   );
   const [newComment, setNewComment] = useState("");
   const [selectedHashtag, setSelectedHashtag] = useState<string | null>(null);
+
+  // Simulate initial load
+  useState(() => {
+    setTimeout(() => setIsLoading(false), 800);
+  });
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -177,15 +190,27 @@ export default function CommunityScreen() {
           />
         }
       >
-        {filteredPosts.length === 0 ? (
+        {isLoading ? (
+          <View style={{ gap: 16 }}>
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+          </View>
+        ) : filteredPosts.length === 0 ? (
           <View className="items-center mt-16">
             <Text className="text-5xl mb-4">💬</Text>
             <Text className="text-lg font-bold text-dark text-center">
               No posts yet
             </Text>
-            <Text className="text-sm text-dark/50 text-center mt-2">
+            <Text className="text-sm text-dark/50 text-center mt-2 px-8">
               Be the first to share something with the community!
             </Text>
+            <TouchableOpacity
+              onPress={() => router.push("/create-post")}
+              className="mt-4 bg-sage px-6 py-3 rounded-2xl"
+            >
+              <Text className="text-white font-semibold">Create Post</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <View style={{ gap: 16 }}>
@@ -309,6 +334,43 @@ export default function CommunityScreen() {
   );
 }
 
+function AnimatedHeart({ isLiked, onLike, likeCount }: { isLiked: boolean; onLike: () => void; likeCount: number }) {
+  const heartScale = useSharedValue(1);
+
+  const animatedHeartStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: heartScale.value }],
+  }));
+
+  const handleLikePress = () => {
+    if (!isLiked) {
+      heartScale.value = withSequence(
+        withSpring(1.4, { damping: 4, stiffness: 400 }),
+        withSpring(1, { damping: 8, stiffness: 300 })
+      );
+    }
+    onLike();
+  };
+
+  return (
+    <TouchableOpacity
+      onPress={handleLikePress}
+      className="flex-row items-center mr-5"
+      hitSlop={8}
+    >
+      <Animated.View style={animatedHeartStyle}>
+        <Ionicons
+          name={isLiked ? "heart" : "heart-outline"}
+          size={20}
+          color={isLiked ? "#F44336" : "#999"}
+        />
+      </Animated.View>
+      <Text className="text-sm text-dark/50 ml-1.5">
+        {likeCount}
+      </Text>
+    </TouchableOpacity>
+  );
+}
+
 function PostCard({
   post,
   isLiked,
@@ -371,20 +433,7 @@ function PostCard({
 
       {/* Actions */}
       <View className="flex-row items-center mt-3 pt-3 border-t border-dark/5">
-        <TouchableOpacity
-          onPress={onLike}
-          className="flex-row items-center mr-5"
-          hitSlop={8}
-        >
-          <Ionicons
-            name={isLiked ? "heart" : "heart-outline"}
-            size={20}
-            color={isLiked ? "#F44336" : "#999"}
-          />
-          <Text className="text-sm text-dark/50 ml-1.5">
-            {post.likes}
-          </Text>
-        </TouchableOpacity>
+        <AnimatedHeart isLiked={isLiked} onLike={onLike} likeCount={post.likes} />
         <TouchableOpacity
           onPress={onComment}
           className="flex-row items-center"

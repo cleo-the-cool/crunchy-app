@@ -9,6 +9,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import * as Haptics from "expo-haptics";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, Badge } from "@/components";
 
@@ -173,7 +174,10 @@ export default function ProfileScreen() {
             ).map((tab) => (
               <TouchableOpacity
                 key={tab.key}
-                onPress={() => setActiveTab(tab.key)}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  setActiveTab(tab.key);
+                }}
                 className={`flex-1 py-2.5 items-center border-b-2 ${
                   activeTab === tab.key
                     ? "border-sage"
@@ -229,7 +233,33 @@ function StatCard({
   );
 }
 
+function EmptyState({ icon, title, message, ctaLabel, onCta }: { icon: string; title: string; message: string; ctaLabel?: string; onCta?: () => void }) {
+  return (
+    <View className="items-center py-12">
+      <Text className="text-5xl mb-4">{icon}</Text>
+      <Text className="text-lg font-bold text-dark text-center">{title}</Text>
+      <Text className="text-sm text-dark/50 text-center mt-2 px-4">{message}</Text>
+      {ctaLabel && onCta && (
+        <TouchableOpacity onPress={onCta} className="mt-4 bg-sage px-6 py-3 rounded-2xl">
+          <Text className="text-white font-semibold">{ctaLabel}</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
+
 function ScanHistoryTab({ router }: { router: ReturnType<typeof useRouter> }) {
+  if (MOCK_SCAN_HISTORY.length === 0) {
+    return (
+      <EmptyState
+        icon="📷"
+        title="No scans yet"
+        message="Start your clean living journey by scanning your first product!"
+        ctaLabel="Scan a Product"
+        onCta={() => router.push("/(tabs)/scan")}
+      />
+    );
+  }
   return (
     <View>
       {MOCK_SCAN_HISTORY.map((scan) => (
@@ -290,6 +320,17 @@ function ScanHistoryTab({ router }: { router: ReturnType<typeof useRouter> }) {
 }
 
 function SavedItemsTab({ router }: { router: ReturnType<typeof useRouter> }) {
+  if (MOCK_SAVED_ITEMS.length === 0) {
+    return (
+      <EmptyState
+        icon="🔖"
+        title="No saved items"
+        message="Save products and recipes you love to find them easily later!"
+        ctaLabel="Explore Products"
+        onCta={() => router.push("/(tabs)/explore")}
+      />
+    );
+  }
   return (
     <View className="flex-row flex-wrap" style={{ gap: 12 }}>
       {MOCK_SAVED_ITEMS.map((item) => (
@@ -341,6 +382,18 @@ function SavedItemsTab({ router }: { router: ReturnType<typeof useRouter> }) {
 }
 
 function MyPostsTab() {
+  const router = useRouter();
+  if (MOCK_USER_POSTS.length === 0) {
+    return (
+      <EmptyState
+        icon="✍️"
+        title="No posts yet"
+        message="Share your clean living tips and connect with the community!"
+        ctaLabel="Create Post"
+        onCta={() => router.push("/create-post")}
+      />
+    );
+  }
   return (
     <View>
       {MOCK_USER_POSTS.map((post) => (

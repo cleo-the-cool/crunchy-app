@@ -1,10 +1,11 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useCallback } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   ScrollView,
   Alert,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -60,6 +61,12 @@ export default function ScanScreen() {
   const [isScanning, setIsScanning] = useState(false);
   const [flashOn, setFlashOn] = useState(false);
   const [scanned, setScanned] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => setRefreshing(false), 1500);
+  }, []);
 
   const handleBarCodeScanned = (result: BarcodeScanningResult) => {
     if (scanned) return;
@@ -300,6 +307,13 @@ export default function ScanScreen() {
           className="flex-1"
           contentContainerStyle={{ paddingBottom: 32 }}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#8B9E7C"
+            />
+          }
         >
           {/* Start Scanning CTA */}
           <View className="mx-5 mb-5">

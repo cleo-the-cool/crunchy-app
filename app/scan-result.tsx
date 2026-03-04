@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -13,6 +13,15 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
 import ViewShot from "react-native-view-shot";
 import * as Sharing from "expo-sharing";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withSequence,
+  withTiming,
+  withDelay,
+  FadeIn,
+} from "react-native-reanimated";
 import {
   findProductByBarcode,
   getDefaultProduct,
@@ -54,6 +63,50 @@ const RISK_CONFIG: Record<IngredientRisk, { color: string; icon: keyof typeof Io
   toxic: { color: "#F44336", icon: "warning", label: "Toxic" },
 };
 
+function ScanSuccessAnimation({ color }: { color: string }) {
+  const scale = useSharedValue(0);
+  const opacity = useSharedValue(1);
+  const ringScale = useSharedValue(0);
+  const ringOpacity = useSharedValue(1);
+
+  useEffect(() => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    scale.value = withSequence(
+      withSpring(1.2, { damping: 4, stiffness: 300 }),
+      withSpring(1, { damping: 8, stiffness: 200 })
+    );
+    ringScale.value = withTiming(2.5, { duration: 600 });
+    ringOpacity.value = withDelay(200, withTiming(0, { duration: 400 }));
+    opacity.value = withDelay(1500, withTiming(0, { duration: 300 }));
+  }, []);
+
+  const checkStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    opacity: opacity.value,
+  }));
+
+  const ringStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: ringScale.value }],
+    opacity: ringOpacity.value,
+  }));
+
+  return (
+    <Animated.View
+      style={[checkStyle, { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, justifyContent: "center", alignItems: "center", zIndex: 100 }]}
+      pointerEvents="none"
+    >
+      <Animated.View
+        style={[ringStyle, { position: "absolute", width: 80, height: 80, borderRadius: 40, borderWidth: 3, borderColor: color }]}
+      />
+      <View
+        style={{ width: 70, height: 70, borderRadius: 35, backgroundColor: color, justifyContent: "center", alignItems: "center" }}
+      >
+        <Ionicons name="checkmark" size={40} color="white" />
+      </View>
+    </Animated.View>
+  );
+}
+
 export default function ScanResultScreen() {
   const router = useRouter();
   const { barcode, type } = useLocalSearchParams<{
@@ -63,7 +116,13 @@ export default function ScanResultScreen() {
 
   const [expandedIngredient, setExpandedIngredient] = useState<string | null>(null);
   const [isSaved, setIsSaved] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(true);
   const shareCardRef = useRef<ViewShot>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowSuccess(false), 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const product: Product = barcode
     ? findProductByBarcode(barcode) ?? getDefaultProduct(barcode)
@@ -128,6 +187,7 @@ export default function ScanResultScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-cream">
+      {showSuccess && <ScanSuccessAnimation color={ratingInfo.color} />}
       {/* Header */}
       <View className="flex-row items-center justify-between px-5 pt-3 pb-2">
         <View className="flex-row items-center">
@@ -188,7 +248,7 @@ export default function ScanResultScreen() {
         {/* Shareable Card - captured by ViewShot */}
         <ViewShot ref={shareCardRef} options={{ format: "png", quality: 1 }}>
           {/* Product Header */}
-          <View className="mx-5 mt-2 bg-white rounded-3xl p-5" style={{
+          <Animated.View entering={FadeIn.delay(200).duration(400)} className="mx-5 mt-2 bg-white rounded-3xl p-5" style={{
             shadowColor: "#000",
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.08,
@@ -237,7 +297,7 @@ export default function ScanResultScreen() {
                 </Text>
               </View>
             </View>
-          </View>
+          </Animated.View>
         </ViewShot>
 
         {/* Ingredient Summary */}

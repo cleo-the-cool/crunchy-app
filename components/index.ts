@@ -3,3 +3,4 @@ export { Card } from "./Card";
 export { Header } from "./Header";
 export { SafeAreaWrapper } from "./SafeAreaWrapper";
 export { Badge } from "./Badge";
+export { SkeletonLoader, CardSkeleton, ProductCardSkeleton } from "./SkeletonLoader";

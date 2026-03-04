@@ -11,7 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
-import { Badge } from "@/components";
+import { Badge, ProductCardSkeleton } from "@/components";
 import {
   PRODUCTS,
   CATEGORIES,
@@ -36,7 +36,13 @@ export default function ExploreScreen() {
     useState<ProductCategory | null>(null);
   const [filterRating, setFilterRating] = useState<FilterRating>("all");
   const [refreshing, setRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [savedItems, setSavedItems] = useState<Set<string>>(new Set());
+
+  // Simulate initial load
+  useState(() => {
+    setTimeout(() => setIsLoading(false), 600);
+  });
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -245,7 +251,14 @@ export default function ExploreScreen() {
         </View>
 
         {/* Product List */}
-        {filteredProducts.length === 0 ? (
+        {isLoading ? (
+          <View className="px-5" style={{ gap: 12 }}>
+            <ProductCardSkeleton />
+            <ProductCardSkeleton />
+            <ProductCardSkeleton />
+            <ProductCardSkeleton />
+          </View>
+        ) : filteredProducts.length === 0 ? (
           <View className="items-center px-5 mt-12">
             <Text className="text-5xl mb-4">🔍</Text>
             <Text className="text-lg font-bold text-dark text-center">
