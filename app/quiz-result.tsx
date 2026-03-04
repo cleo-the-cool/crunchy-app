@@ -270,7 +270,7 @@ export default function QuizResultScreen() {
           <Button
             title="Create Account"
             variant="secondary"
-            onPress={() => router.push("/(tabs)")}
+            onPress={() => router.push("/signup")}
           />
 
           <TouchableOpacity
