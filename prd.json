@@ -263,7 +263,7 @@
         "Migration files are numbered and ordered correctly"
       ],
       "priority": 14,
-      "passes": false,
+      "passes": true,
       "notes": "Use UUIDs for all primary keys. Include created_at and updated_at on all tables. Products table should support all categories: food, skincare, cleaning, personal care, clothing, home."
     },
     {

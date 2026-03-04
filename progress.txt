@@ -36,6 +36,8 @@
 - Profile tabs use state toggle (`activeTab`) with conditional rendering, no nested navigators
 - Subscription context in `contexts/SubscriptionContext.tsx`, provides `useSubscription()` hook with `canScan`, `recordScan()`, `tier`, `isPremiumFeature()`
 - Navigate to paywall via `router.push({ pathname: "/paywall", params: { reason: "scan_limit" | "premium_feature" } })`
+- Supabase migrations in `supabase/migrations/` with numbered filenames; seed data in `supabase/seed.sql`
+- Stable seed UUIDs: recipes=`a0000000-...`, products=`b0000000-...`, users=`c0000000-...`, posts=`d0000000-...`, comments=`e0000000-...`
 
 ## 2026-03-04 - US-001
 - Project setup with Expo, TypeScript, NativeWind, and Expo Router (previously committed)
@@ -261,4 +263,24 @@
   - `canScan` boolean from context determines if user can perform a scan
   - `recordScan()` must be called after each successful scan to increment counter
   - Premium features gated via `isPremiumFeature()` helper
+---
+
+## 2026-03-04 - US-014
+- Complete Supabase database schema with SQL migrations and seed data
+- Migration 00001: Schema with 16 tables (users, products, ingredients, alternatives, scans, recipes, recipe_ingredients, recipe_steps, posts, comments, post_likes, comment_likes, follows, saved_items, quiz_results, recipe_made_it)
+- Migration 00002: Row Level Security policies on all tables (public read for products/recipes/posts, user-scoped CRUD for personal data)
+- Seed data: 31 recipes with ingredients/steps, 32 products with ingredients/alternatives, 10 sample users, 15 community posts with comments
+- Custom ENUM types: product_rating, ingredient_risk, product_category, recipe_category, recipe_difficulty, subscription_tier, saved_item_type
+- Proper indexes on frequently queried columns (barcode, category, rating, user_id, created_at)
+- Foreign keys with appropriate ON DELETE behavior (CASCADE for owned data, SET NULL for optional refs)
+- Auto-updating updated_at triggers on mutable tables
+- Files: supabase/migrations/00001_create_schema.sql, supabase/migrations/00002_row_level_security.sql, supabase/seed.sql
+- **Learnings for future iterations:**
+  - Supabase migrations live in `supabase/migrations/` with numbered filenames (00001_, 00002_, etc.)
+  - Seed data in `supabase/seed.sql` - references stable UUIDs (a0000000-... for recipes, b0000000-... for products, etc.)
+  - Products table uses `diy_recipe_id` FK to recipes table (added after recipes table via ALTER TABLE)
+  - RLS pattern: public content (products, recipes, posts) uses `FOR SELECT USING (true)`, private data (scans, saved_items) uses `auth.uid() = user_id`
+  - Like/follow junction tables use UNIQUE constraints to prevent duplicates
+  - `saved_items` uses CHECK constraint to enforce item_type matches the non-null FK column
+  - Sample users use `c0000000-...` UUIDs - in production these would be created via Supabase Auth
 ---
