@@ -7,6 +7,13 @@
 - Expo Router uses file-based routing in `app/` directory
 - Tab navigation configured in `app/(tabs)/_layout.tsx`
 - Tailwind config includes `./components/**/*.{js,jsx,ts,tsx}` in content paths
+- Shared components exported from `@/components` barrel file (index.ts)
+- Use inline `style` prop for shadows on Card (RN doesn't support CSS box-shadow)
+- Rating colors: clean (#4CAF50), caution (#FFC107), avoid (#F44336)
+- Import `SharedValue` type directly from `react-native-reanimated` (not `Animated.SharedValue`)
+- Screens outside tabs go directly in `app/` directory (e.g., `app/welcome.tsx`, `app/onboarding.tsx`)
+- Use `react-native-view-shot` + `expo-sharing` for shareable card images
+- ScrollView with `scrollEnabled={false}` + programmatic `scrollTo` for controlled carousels
 
 ## 2026-03-04 - US-001
 - Project setup with Expo, TypeScript, NativeWind, and Expo Router (previously committed)
@@ -18,4 +25,51 @@
   - Expo SDK 55 with expo-router v55 is installed
   - NativeWind v4 with Tailwind v3 is the styling setup
   - Tab active color is sage (#8B9E7C), bg is cream (#FAF8F5)
+---
+
+## 2026-03-04 - US-002
+- Design system and shared components
+- Extended tailwind.config.js with sage/peach shades, rating colors, border radius, shadows
+- Created 5 shared components: Button, Card, Header, SafeAreaWrapper, Badge
+- Barrel export from components/index.ts
+- Files: tailwind.config.js, components/Button.tsx, components/Card.tsx, components/Header.tsx, components/SafeAreaWrapper.tsx, components/Badge.tsx, components/index.ts
+- **Learnings for future iterations:**
+  - Button variants: primary (sage bg), secondary (peach bg), outline (sage border)
+  - Card uses inline style for shadow (RN limitation)
+  - Badge supports clean/caution/avoid ratings with sm/md/lg sizes
+  - Header supports back button and right icon
+  - SafeAreaWrapper wraps SafeAreaView with cream bg
+---
+
+## 2026-03-04 - US-003
+- Welcome screen with logo, tagline "The operating system for conscious living", and Get Started CTA
+- 3-screen onboarding carousel: Scan Anything, Discover Clean Swaps, Join the Community
+- Animated dot indicators using react-native-reanimated (width, opacity, color interpolation)
+- Skip button, swipeable pages, final CTA to take the Crunchy Quiz
+- Files: app/welcome.tsx, app/onboarding.tsx
+- **Learnings for future iterations:**
+  - `SharedValue` type must be imported directly from `react-native-reanimated`, not via `Animated.SharedValue`
+  - `Animated.ScrollView` from reanimated works for paginated carousels with `onScroll` handler
+  - `Dimensions.get("window").width` used for page-width slides
+  - `interpolate` and `interpolateColor` with `"clamp"` extrapolation for smooth indicator animations
+  - Non-tab screens (welcome, onboarding) are just files in `app/` directory, routed via `router.push("/welcome")`
+---
+
+## 2026-03-04 - US-004
+- 10-question Crunchy Score Quiz with categories: Skincare, Mindset, Cleaning, Food, Clothing, Personal Care, Home
+- Swipeable question cards with animated progress bar, auto-advance on selection
+- Each question has 4 answer options with emojis and score values (1-4)
+- Score normalized to 1-100 scale with 5 labels: Seedling/Sprout/Blooming/Thriving/Fully Rooted
+- Animated result screen: score counter animation, card scale-in, staggered reveals
+- Shareable result card using react-native-view-shot with app branding
+- Share button using expo-sharing (image) with fallback to RN Share (text)
+- CTA to create account + skip option after results
+- Updated onboarding CTA to route to /quiz
+- Files: app/quiz.tsx, app/quiz-result.tsx, app/onboarding.tsx, package.json
+- **Learnings for future iterations:**
+  - `react-native-view-shot` captures a View as PNG via ref.capture()
+  - `expo-sharing` handles native share sheet for images; check `isAvailableAsync()` first
+  - Score normalization: map raw range (10-40) to display range (1-100) with `((raw - min) / (max - min)) * 99 + 1`
+  - Use `setInterval` with manual easing for score counter animation (reanimated shared values can't directly drive React state text)
+  - ScrollView with `scrollEnabled={false}` + `scrollTo` makes a controlled carousel
 ---

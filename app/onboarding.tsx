@@ -164,7 +164,7 @@ export default function OnboardingScreen() {
       <View className="px-8 pb-8">
         <Button
           title="Take the Crunchy Quiz"
-          onPress={() => router.push("/(tabs)")}
+          onPress={() => router.push("/quiz")}
         />
       </View>
     </SafeAreaWrapper>

@@ -35,7 +35,7 @@
         "App compiles without errors"
       ],
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "notes": "Think modern, clean, Gen Z aesthetic. Soft greens and warm neutrals. No harsh colors. The app should feel like a breath of fresh air."
     },
     {
@@ -52,7 +52,7 @@
         "App compiles without errors"
       ],
       "priority": 3,
-      "passes": false,
+      "passes": true,
       "notes": "Use react-native-reanimated for smooth carousel animations. Keep copy short and punchy. No em-dashes."
     },
     {
@@ -72,7 +72,7 @@
         "App compiles without errors"
       ],
       "priority": 4,
-      "passes": false,
+      "passes": true,
       "notes": "This is the viral loop. The result card MUST look stunning when shared. Use react-native-view-shot to capture the result card as an image. Questions should be fun and relatable, not clinical."
     },
     {
