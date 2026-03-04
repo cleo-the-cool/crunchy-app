@@ -38,6 +38,8 @@
 - Navigate to paywall via `router.push({ pathname: "/paywall", params: { reason: "scan_limit" | "premium_feature" } })`
 - Supabase migrations in `supabase/migrations/` with numbered filenames; seed data in `supabase/seed.sql`
 - Stable seed UUIDs: recipes=`a0000000-...`, products=`b0000000-...`, users=`c0000000-...`, posts=`d0000000-...`, comments=`e0000000-...`
+- Label scan screen at `app/label-scan.tsx`, navigate via `router.push("/label-scan")` from scan.tsx label mode
+- Use `{"text with apostrophe"}` JSX expression for text containing apostrophes to satisfy `react/no-unescaped-entities` lint rule
 
 ## 2026-03-04 - US-001
 - Project setup with Expo, TypeScript, NativeWind, and Expo Router (previously committed)
@@ -283,4 +285,25 @@
   - Like/follow junction tables use UNIQUE constraints to prevent duplicates
   - `saved_items` uses CHECK constraint to enforce item_type matches the non-null FK column
   - Sample users use `c0000000-...` UUIDs - in production these would be created via Supabase Auth
+---
+
+## 2026-03-04 - US-015
+- Label OCR scanning mode with full UI flow: camera with frame guide, photo capture, processing state, error/retry, and navigation to scan-result
+- Created `app/label-scan.tsx` with dedicated label scanning screen
+- Camera view with frame guide overlay (corner brackets, horizontal scan lines, positioning instructions)
+- "Tips for best results" helper overlay toggled via help button
+- Processing state with "Reading ingredients..." loading animation and "Powered by Crunchy AI" badge
+- Error state with friendly message and retry option (15% random failure rate for realistic UX)
+- Mock OCR: randomly selects a product with 4+ ingredients from existing product data
+- On success, navigates to scan-result screen with the mock product's barcode (reuses existing result screen)
+- Updated `app/(tabs)/scan.tsx` to route to `/label-scan` when Label mode is selected
+- Flashlight toggle in camera view
+- Scan limit checking integrated via SubscriptionContext
+- Files: app/label-scan.tsx, app/(tabs)/scan.tsx, prd.json
+- **Learnings for future iterations:**
+  - Label scan mode uses a dedicated screen (`app/label-scan.tsx`) rather than inline camera in scan.tsx for cleaner separation
+  - `CameraView` ref can be used for `takePictureAsync()` when real OCR is implemented
+  - Mock OCR filters products with `ingredients.length >= 4` for realistic label results
+  - `router.replace()` used after OCR success to prevent going back to processing screen
+  - Use `{"\u2022"}` for bullet point characters to avoid JSX entity issues
 ---

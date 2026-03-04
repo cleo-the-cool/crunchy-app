@@ -90,6 +90,13 @@ export default function ScanScreen() {
       router.push({ pathname: "/paywall", params: { reason: "scan_limit" } });
       return;
     }
+
+    // Label mode opens a dedicated scanning screen
+    if (scanMode === "label") {
+      router.push("/label-scan");
+      return;
+    }
+
     if (!permission?.granted) {
       const result = await requestPermission();
       if (!result.granted) {

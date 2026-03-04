@@ -281,7 +281,7 @@
         "App compiles without errors"
       ],
       "priority": 15,
-      "passes": false,
+      "passes": true,
       "notes": "The frame guide should help users position the label correctly. Think of how document scanners work. Include a 'tips for best results' helper."
     },
     {
