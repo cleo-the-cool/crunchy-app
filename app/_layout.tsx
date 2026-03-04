@@ -4,6 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
+import { InterestsProvider } from "@/contexts/InterestsContext";
 import { View, ActivityIndicator } from "react-native";
 
 function RootNavigator() {
@@ -20,7 +21,8 @@ function RootNavigator() {
       segments[0] === "welcome" ||
       segments[0] === "onboarding" ||
       segments[0] === "quiz" ||
-      segments[0] === "quiz-result";
+      segments[0] === "quiz-result" ||
+      segments[0] === "interests";
     const inTabs = segments[0] === "(tabs)";
 
     if (!user && inTabs) {
@@ -54,7 +56,9 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <SubscriptionProvider>
-        <RootNavigator />
+        <InterestsProvider>
+          <RootNavigator />
+        </InterestsProvider>
       </SubscriptionProvider>
     </AuthProvider>
   );

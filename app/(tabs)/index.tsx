@@ -12,26 +12,86 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { useAuth } from "@/contexts/AuthContext";
+import { useInterests, InterestCategory } from "@/contexts/InterestsContext";
 import { Card, Badge } from "@/components";
 
-const MOCK_SWAP = {
-  name: "Tide Original Detergent",
-  brand: "Tide",
-  reason: "Contains synthetic fragrances, optical brighteners, and 1,4-dioxane",
-  alternative: {
-    name: "Branch Basics Concentrate",
-    brand: "Branch Basics",
-    rating: "clean" as const,
-  },
+type SwapData = {
+  name: string;
+  brand: string;
+  reason: string;
+  category: InterestCategory;
+  alternative: { name: string; brand: string; rating: "clean" | "caution" | "avoid" };
 };
 
-const MOCK_TRENDING = [
+const SWAPS_BY_CATEGORY: SwapData[] = [
+  {
+    name: "Tide Original Detergent",
+    brand: "Tide",
+    reason: "Contains synthetic fragrances, optical brighteners, and 1,4-dioxane",
+    category: "cleaning",
+    alternative: { name: "Branch Basics Concentrate", brand: "Branch Basics", rating: "clean" },
+  },
+  {
+    name: "Neutrogena Ultra Sheer Sunscreen",
+    brand: "Neutrogena",
+    reason: "Contains oxybenzone, octinoxate, and synthetic fragrance",
+    category: "skincare",
+    alternative: { name: "Cocokind Daily SPF", brand: "Cocokind", rating: "clean" },
+  },
+  {
+    name: "Doritos Nacho Cheese",
+    brand: "Frito-Lay",
+    reason: "Contains artificial colors (Red 40, Yellow 6) and MSG",
+    category: "food",
+    alternative: { name: "Late July Tortilla Chips", brand: "Late July", rating: "clean" },
+  },
+  {
+    name: "Secret Antiperspirant",
+    brand: "Secret",
+    reason: "Contains aluminum compounds, synthetic fragrance, and parabens",
+    category: "personal_care",
+    alternative: { name: "Native Deodorant", brand: "Native", rating: "clean" },
+  },
+  {
+    name: "Shein Basic Tee",
+    brand: "Shein",
+    reason: "Fast fashion with polyester blends, toxic dyes, and poor labor practices",
+    category: "clothing",
+    alternative: { name: "Pact Organic Tee", brand: "Pact", rating: "clean" },
+  },
+  {
+    name: "Glade PlugIns Air Freshener",
+    brand: "Glade",
+    reason: "Contains phthalates, formaldehyde, and synthetic musks",
+    category: "home",
+    alternative: { name: "Vitruvi Essential Oil Diffuser", brand: "Vitruvi", rating: "clean" },
+  },
+  {
+    name: "Pampers Baby Wipes",
+    brand: "Pampers",
+    reason: "Contains phenoxyethanol, fragrance, and polyester fibers",
+    category: "baby",
+    alternative: { name: "WaterWipes", brand: "WaterWipes", rating: "clean" },
+  },
+];
+
+type TrendingPost = {
+  id: string;
+  username: string;
+  text: string;
+  likes: number;
+  comments: number;
+  categories: InterestCategory[];
+};
+
+const ALL_TRENDING: TrendingPost[] = [
   {
     id: "1",
     username: "cleanlivingmama",
     text: "Just switched to bar shampoo and my hair has never been better! #zerowaste #crunchyhair",
     likes: 142,
     comments: 23,
+    categories: ["personal_care"],
   },
   {
     id: "2",
@@ -39,6 +99,7 @@ const MOCK_TRENDING = [
     text: "Made my own all-purpose cleaner with vinegar and essential oils. So easy! #DIYclean #toxinfree",
     likes: 98,
     comments: 15,
+    categories: ["cleaning", "home"],
   },
   {
     id: "3",
@@ -46,6 +107,31 @@ const MOCK_TRENDING = [
     text: "Found out my favorite moisturizer has parabens 😭 Any clean alternatives for dry skin?",
     likes: 76,
     comments: 31,
+    categories: ["skincare"],
+  },
+  {
+    id: "4",
+    username: "organicfoodie",
+    text: "Swapped all our snacks for organic and the kids didn't even notice! Small wins 🙌 #cleanfood",
+    likes: 112,
+    comments: 19,
+    categories: ["food"],
+  },
+  {
+    id: "5",
+    username: "slowfashionista",
+    text: "My capsule wardrobe with only sustainable brands has been a game changer. Less choices, more confidence! #slowfashion",
+    likes: 89,
+    comments: 27,
+    categories: ["clothing"],
+  },
+  {
+    id: "6",
+    username: "babysafeliving",
+    text: "Switched to cloth diapers last month. Way easier than I expected and so much less waste! #crunchymom",
+    likes: 134,
+    comments: 42,
+    categories: ["baby"],
   },
 ];
 
@@ -55,8 +141,32 @@ const MOCK_STATS = {
   savedItems: 8,
 };
 
+function getPersonalizedSwap(interests: InterestCategory[]): SwapData {
+  if (interests.length > 0) {
+    const matched = SWAPS_BY_CATEGORY.filter((s) => interests.includes(s.category));
+    if (matched.length > 0) {
+      // Rotate based on day of year
+      const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+      return matched[dayOfYear % matched.length];
+    }
+  }
+  // Default
+  return SWAPS_BY_CATEGORY[0];
+}
+
+function getPersonalizedTrending(interests: InterestCategory[]): TrendingPost[] {
+  if (interests.length > 0) {
+    const matched = ALL_TRENDING.filter((p) =>
+      p.categories.some((c) => interests.includes(c))
+    );
+    if (matched.length >= 2) return matched.slice(0, 3);
+  }
+  return ALL_TRENDING.slice(0, 3);
+}
+
 export default function HomeScreen() {
   const { user } = useAuth();
+  const { interests } = useInterests();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -72,6 +182,8 @@ export default function HomeScreen() {
 
   const firstName = user?.name?.split(" ")[0] ?? "Friend";
   const scoreLabel = getScoreLabel(MOCK_STATS.crunchyScore);
+  const swap = getPersonalizedSwap(interests);
+  const trending = getPersonalizedTrending(interests);
 
   return (
     <SafeAreaView className="flex-1 bg-cream">
@@ -158,11 +270,11 @@ export default function HomeScreen() {
               </View>
               <View className="flex-1">
                 <Text className="text-base font-bold text-dark">
-                  {MOCK_SWAP.name}
+                  {swap.name}
                 </Text>
-                <Text className="text-xs text-dark/50">{MOCK_SWAP.brand}</Text>
+                <Text className="text-xs text-dark/50">{swap.brand}</Text>
                 <Text className="text-sm text-dark/70 mt-1">
-                  {MOCK_SWAP.reason}
+                  {swap.reason}
                 </Text>
               </View>
             </View>
@@ -176,14 +288,14 @@ export default function HomeScreen() {
               <View className="flex-1">
                 <Text className="text-sm text-dark/50">Try instead:</Text>
                 <Text className="text-base font-bold text-dark">
-                  {MOCK_SWAP.alternative.name}
+                  {swap.alternative.name}
                 </Text>
                 <Text className="text-xs text-dark/50">
-                  {MOCK_SWAP.alternative.brand}
+                  {swap.alternative.brand}
                 </Text>
               </View>
               <Badge
-                rating={MOCK_SWAP.alternative.rating}
+                rating={swap.alternative.rating}
                 size="sm"
                 label="Clean"
               />
@@ -196,7 +308,7 @@ export default function HomeScreen() {
           <Text className="text-lg font-bold text-dark mb-3">
             Trending in Community
           </Text>
-          {MOCK_TRENDING.map((post) => (
+          {trending.map((post) => (
             <Card key={post.id} className="mb-3">
               <View className="flex-row items-center mb-2">
                 <View className="bg-sage-light rounded-full w-8 h-8 items-center justify-center mr-2">

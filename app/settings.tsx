@@ -71,6 +71,14 @@ export default function SettingsScreen() {
           />
         </View>
 
+        {/* Personalization Section */}
+        <SectionHeader title="Personalization" />
+        <View className="mx-5 bg-white rounded-2xl overflow-hidden" style={cardShadow}>
+          <TouchableOpacity onPress={() => router.push({ pathname: "/interests", params: { from: "settings" } })}>
+            <SettingsRow icon="heart-outline" label="My Interests" value="Edit" chevron />
+          </TouchableOpacity>
+        </View>
+
         {/* Notifications Section */}
         <SectionHeader title="Notifications" />
         <View className="mx-5 bg-white rounded-2xl overflow-hidden" style={cardShadow}>

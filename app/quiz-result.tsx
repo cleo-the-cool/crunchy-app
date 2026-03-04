@@ -274,7 +274,7 @@ export default function QuizResultScreen() {
           />
 
           <TouchableOpacity
-            onPress={() => router.push("/(tabs)")}
+            onPress={() => router.push("/interests")}
             className="items-center py-3"
           >
             <Text className="text-sage font-medium">Skip for now</Text>

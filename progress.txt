@@ -45,6 +45,9 @@
 - Use `Animated.createAnimatedComponent(Pressable)` with `withSpring` scale for press animations on buttons
 - `SkeletonLoader`, `CardSkeleton`, `ProductCardSkeleton` exported from `@/components` for loading states
 - Screen transitions configured in root `Stack` via `animation: "slide_from_right"` in `app/_layout.tsx`
+- Interests context in `contexts/InterestsContext.tsx`, provides `useInterests()` hook with `interests`, `hasSelectedInterests`, `setInterests()`
+- Navigate to interests via `router.push("/interests")` or `{ pathname: "/interests", params: { from: "settings" } }` for edit mode
+- `INTEREST_OPTIONS` and `InterestCategory` type exported from `contexts/InterestsContext.tsx`
 
 ## 2026-03-04 - US-001
 - Project setup with Expo, TypeScript, NativeWind, and Expo Router (previously committed)
@@ -358,4 +361,28 @@
   - `pointerEvents="none"` on overlay animations prevents blocking touch events underneath
   - SkeletonLoader uses `withRepeat(withTiming(...), -1, true)` for infinite pulse between opacity 0.3-0.7
   - Simulate initial loading with `useState(() => { setTimeout(...) })` pattern for mock data screens
+---
+
+## 2026-03-04 - US-018
+- Interest selection screen with 7 toggle chips (Food & Beverages, Skincare & Beauty, Cleaning Products, Personal Care, Clothing & Textiles, Home & Living, Baby Products)
+- Each chip has emoji icon, label, description, and animated press/selection feedback
+- Minimum 2 selections enforced (button disabled, shows "Select X more")
+- Created `contexts/InterestsContext.tsx` with AsyncStorage persistence and `useInterests()` hook
+- InterestsProvider wraps app inside SubscriptionProvider in `app/_layout.tsx`
+- Interests screen shown after signup (replaced direct `/(tabs)` route) and accessible from quiz result "Skip for now"
+- Home screen personalized: Swap of the Day card and Trending posts filtered by user interests
+- Added 7 category-specific swap entries and 6 categorized trending posts to home screen
+- Settings screen: added "Personalization" section with "My Interests" row that navigates to interests screen in edit mode
+- Edit mode: shows back button, "Edit Your Interests" title, pre-selects saved interests, "Save Interests" button calls `router.back()`
+- Skip option available on initial selection (routes to tabs without saving)
+- `interests` added to auth flow allowlist in root layout
+- Files: contexts/InterestsContext.tsx, app/interests.tsx, app/_layout.tsx, app/signup.tsx, app/quiz-result.tsx, app/(tabs)/index.tsx, app/settings.tsx
+- **Learnings for future iterations:**
+  - Interests context at `contexts/InterestsContext.tsx`, provides `useInterests()` hook with `interests`, `hasSelectedInterests`, `setInterests()`
+  - `INTEREST_OPTIONS` constant exported from InterestsContext for reuse
+  - Navigate to interests via `router.push("/interests")` or with `{ from: "settings" }` param for edit mode
+  - `InterestCategory` type: "food" | "skincare" | "cleaning" | "personal_care" | "clothing" | "home" | "baby"
+  - AsyncStorage key: `@crunchy_interests`
+  - Day-based rotation for personalized content: `Math.floor(dayOfYear) % items.length`
+  - `Animated.createAnimatedComponent(TouchableOpacity)` for animated chip press effects
 ---
