@@ -40,6 +40,8 @@
 - Stable seed UUIDs: recipes=`a0000000-...`, products=`b0000000-...`, users=`c0000000-...`, posts=`d0000000-...`, comments=`e0000000-...`
 - Label scan screen at `app/label-scan.tsx`, navigate via `router.push("/label-scan")` from scan.tsx label mode
 - Use `{"text with apostrophe"}` JSX expression for text containing apostrophes to satisfy `react/no-unescaped-entities` lint rule
+- Product scan screen at `app/product-scan.tsx`, navigate via `router.push("/product-scan")` from scan.tsx product mode
+- For scan modes: barcode is inline in scan.tsx, label and product each have dedicated screens (`label-scan.tsx`, `product-scan.tsx`)
 
 ## 2026-03-04 - US-001
 - Project setup with Expo, TypeScript, NativeWind, and Expo Router (previously committed)
@@ -306,4 +308,29 @@
   - Mock OCR filters products with `ingredients.length >= 4` for realistic label results
   - `router.replace()` used after OCR success to prevent going back to processing screen
   - Use `{"\u2022"}` for bullet point characters to avoid JSX entity issues
+---
+
+## 2026-03-04 - US-016
+- AI product recognition scanning mode with full UI flow: camera with circle guide, photo capture, AI processing state, product confirmation, manual search fallback, and error/retry
+- Created `app/product-scan.tsx` with dedicated AI product recognition screen
+- Camera view with dashed circle guide overlay and "Point at the product" instructions
+- Processing state with "Identifying Product..." loading animation and "Powered by Crunchy AI" badge
+- Confirmation screen: "Is this [Product Name]?" with product image, name, brand, category, and Yes/No buttons
+- If user says No, transitions to manual search screen with search bar and product results
+- Error state with "Couldn't Identify Product" message, retry option, and manual search link
+- Mock AI: randomly selects a product from existing product data (90% success rate)
+- Premium badge shown in header and confirmation screen
+- Flashlight toggle and manual search shortcut button in camera view
+- Works for any product type (bottles, clothing, packaging) per instructions text
+- Updated `app/(tabs)/scan.tsx` to route to `/product-scan` when Product mode is selected (for premium users)
+- Scan limit checking integrated via SubscriptionContext
+- Files: app/product-scan.tsx, app/(tabs)/scan.tsx, prd.json
+- **Learnings for future iterations:**
+  - Product scan screen at `app/product-scan.tsx`, navigate via `router.push("/product-scan")` from scan.tsx product mode
+  - AI recognition uses 5 states: camera, processing, confirm, error, manual-search
+  - Confirmation step is critical UX: always show "Is this [Product Name]?" before proceeding to results
+  - Manual search fallback uses `searchProducts()` from `data/products.ts` (already available)
+  - Premium badge uses `<Ionicons name="diamond" />` with peach color scheme
+  - Dashed circle border guide uses inline `style={{ borderStyle: "dashed" }}` since NativeWind doesn't support dashed borders
+  - `router.replace()` used after confirmed recognition to prevent going back to confirmation screen
 ---

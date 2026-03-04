@@ -300,7 +300,7 @@
         "App compiles without errors"
       ],
       "priority": 16,
-      "passes": false,
+      "passes": true,
       "notes": "This is the premium-tier feature. Show a subtle 'Premium' badge on this scan mode. The confirmation step is critical to avoid wrong product matches."
     },
     {

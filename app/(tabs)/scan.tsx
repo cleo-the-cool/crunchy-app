@@ -97,6 +97,12 @@ export default function ScanScreen() {
       return;
     }
 
+    // Product mode opens the AI product recognition screen
+    if (scanMode === "product") {
+      router.push("/product-scan");
+      return;
+    }
+
     if (!permission?.granted) {
       const result = await requestPermission();
       if (!result.granted) {
