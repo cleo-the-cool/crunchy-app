@@ -30,6 +30,8 @@
 - Recipe data in `data/recipes.ts`: `getRecipeById()`, `getRecipesByCategory()`, `searchRecipes()`, `filterRecipes()`
 - Navigate to recipe detail via `router.push(/recipe-detail?id=${recipe.id})`, recipe list via `router.push("/recipes")`
 - Products link to recipes via `diyRecipeId` field matching recipe `id` values (e.g., "recipe-001")
+- Community post data in `data/community.ts`: `COMMUNITY_POSTS`, `TRENDING_HASHTAGS`, `getPostById()`, `getPostsByHashtag()`
+- Create post screen at `app/create-post.tsx`, navigate via `router.push("/create-post")`
 
 ## 2026-03-04 - US-001
 - Project setup with Expo, TypeScript, NativeWind, and Expo Router (previously committed)
@@ -197,4 +199,26 @@
   - DifficultyStars component renders 1-3 stars with peach color (#F4A574) based on Easy/Medium/Hard
   - Products link to recipes via `diyRecipeId` field matching recipe `id` values
   - Recipe cards use a hero image area with sage/15 background and large emoji as placeholder
+---
+
+## 2026-03-04 - US-011
+- Community feed screen with chronological post cards, like/comment actions, trending hashtags filter bar
+- Created `data/community.ts` with 15 realistic seed posts across 10 users, with comments, hashtags, and images
+- Post card: avatar, username, timestamp (relative), text content, optional image placeholder, tappable hashtags (sage colored), like button (heart with count), comment button with count
+- Like button toggles with haptic feedback, updates post like count in state
+- Comment sheet as modal: shows existing comments, allows adding new comment with send button
+- Trending hashtags bar at top: horizontal scroll, tap to filter feed by hashtag, tap again to deselect
+- Create post FAB (floating action button) in bottom-right corner with sage green background
+- Create post screen (`app/create-post.tsx`): text input with placeholder, mock image picker (random emoji), hashtag suggestion chips (toggleable), post button, character count, close button
+- Empty state when no posts match selected hashtag
+- Pull-to-refresh on feed
+- Files: data/community.ts, app/(tabs)/community.tsx, app/create-post.tsx, prd.json
+- **Learnings for future iterations:**
+  - Community post data in `data/community.ts` with types `CommunityPost`, `Comment` and helpers `getPostById()`, `getPostsByHashtag()`
+  - `TRENDING_HASHTAGS` constant exported from `data/community.ts` for reuse
+  - Modal with `presentationStyle="pageSheet"` for comment sheets
+  - `FlatList` inside Modal for scrollable comment lists with `ListEmptyComponent`
+  - FAB positioned with `absolute bottom-24 right-5` to sit above tab bar
+  - Navigate to create-post via `router.push("/create-post")` (non-tab screen in app/ directory)
+  - `formatTimeAgo()` helper converts ISO timestamps to relative time strings (just now, Xm, Xh, Xd)
 ---
