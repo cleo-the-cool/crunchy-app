@@ -1,0 +1,21 @@
+## Codebase Patterns
+- Use `npm install --legacy-peer-deps` for dependency installation (peer dep conflicts)
+- Run tsc via `node_modules/typescript/bin/tsc --noEmit` (symlink may break)
+- NativeWind uses `className` prop on RN components for Tailwind styling
+- Custom colors: sage (#8B9E7C), peach (#F4A574), cream (#FAF8F5), dark (#2D2D2D)
+- Path alias `@/` maps to project root in tsconfig
+- Expo Router uses file-based routing in `app/` directory
+- Tab navigation configured in `app/(tabs)/_layout.tsx`
+- Tailwind config includes `./components/**/*.{js,jsx,ts,tsx}` in content paths
+
+## 2026-03-04 - US-001
+- Project setup with Expo, TypeScript, NativeWind, and Expo Router (previously committed)
+- 5 bottom tabs: Home, Scan, Explore, Community, Profile with placeholder screens
+- Files: app/_layout.tsx, app/(tabs)/_layout.tsx, app/(tabs)/*.tsx, tailwind.config.js, babel.config.js, metro.config.js, global.css
+- **Learnings for future iterations:**
+  - npm install needs `--legacy-peer-deps` flag due to peer dep conflicts
+  - The `.bin/tsc` symlink can break; use `node_modules/typescript/bin/tsc` directly
+  - Expo SDK 55 with expo-router v55 is installed
+  - NativeWind v4 with Tailwind v3 is the styling setup
+  - Tab active color is sage (#8B9E7C), bg is cream (#FAF8F5)
+---

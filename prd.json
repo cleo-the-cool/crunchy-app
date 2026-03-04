@@ -1,0 +1,344 @@
+{
+  "project": "Crunchy",
+  "branchName": "ralph/mvp",
+  "description": "Crunchy - All-in-one clean living app for Gen Z women. React Native (Expo) + Supabase + TypeScript + NativeWind.",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Project setup with Expo, TypeScript, NativeWind, and Expo Router",
+      "description": "As a developer, I need the base project scaffolded so all future stories have a foundation to build on.",
+      "acceptanceCriteria": [
+        "Create Expo project with TypeScript template using create-expo-app",
+        "Install and configure expo-router for file-based navigation",
+        "Install and configure NativeWind (Tailwind CSS for React Native)",
+        "Set up bottom tab navigation with 5 tabs: Home, Scan, Explore, Community, Profile",
+        "Each tab shows a placeholder screen with the tab name",
+        "App compiles and runs without errors (npx expo start works)",
+        "Tailwind classes render correctly on at least one screen"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": "Use Expo SDK 52+. Use expo-router v4. Design system colors: sage green #8B9E7C, peach #F4A574, off-white #FAF8F5, dark text #2D2D2D. Rounded-2xl cards, soft shadows."
+    },
+    {
+      "id": "US-002",
+      "title": "Design system and shared components",
+      "description": "As a developer, I need reusable UI components so all screens look consistent and beautiful.",
+      "acceptanceCriteria": [
+        "Create tailwind.config.js with custom colors (sage, peach, cream, dark), border radius, shadows",
+        "Create shared Button component (primary, secondary, outline variants)",
+        "Create shared Card component with rounded-2xl, shadow, padding",
+        "Create shared Header component",
+        "Create shared SafeAreaWrapper component",
+        "Create shared Badge component (green/yellow/red for Clean/Caution/Avoid ratings)",
+        "All components use NativeWind classes",
+        "App compiles without errors"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "Think modern, clean, Gen Z aesthetic. Soft greens and warm neutrals. No harsh colors. The app should feel like a breath of fresh air."
+    },
+    {
+      "id": "US-003",
+      "title": "Welcome and onboarding screens",
+      "description": "As a new user, I want a beautiful welcome experience so I understand what the app does and feel excited to use it.",
+      "acceptanceCriteria": [
+        "Welcome screen with app logo/name, tagline 'The operating system for conscious living', and CTA button",
+        "3-screen onboarding carousel showing key features (Scan, Discover, Connect)",
+        "Each carousel screen has illustration placeholder, title, and subtitle",
+        "Skip button and dot indicators on carousel",
+        "Final screen leads to quiz or sign up",
+        "Smooth swipe animations between screens",
+        "App compiles without errors"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": "Use react-native-reanimated for smooth carousel animations. Keep copy short and punchy. No em-dashes."
+    },
+    {
+      "id": "US-004",
+      "title": "Crunchy Score Quiz",
+      "description": "As a new user, I want to take a fun quiz to find out how 'crunchy' I am so I get personalized recommendations and a shareable result.",
+      "acceptanceCriteria": [
+        "10 multiple-choice questions about lifestyle habits (food, skincare, cleaning, clothing, mindset)",
+        "Swipeable question cards with progress bar at top",
+        "Each question has 3-4 answer options with icons/emojis",
+        "Animated score calculation on completion",
+        "Result screen showing score 1-100 with label (Seedling/Sprout/Blooming/Thriving/Fully Rooted)",
+        "Beautiful shareable result card designed for social media stories",
+        "Share button that opens native share sheet",
+        "CTA to create account after results",
+        "Quiz can be taken without an account",
+        "App compiles without errors"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": "This is the viral loop. The result card MUST look stunning when shared. Use react-native-view-shot to capture the result card as an image. Questions should be fun and relatable, not clinical."
+    },
+    {
+      "id": "US-005",
+      "title": "Authentication screens",
+      "description": "As a user, I want to sign up and log in so my data persists across sessions.",
+      "acceptanceCriteria": [
+        "Sign up screen with email/password fields",
+        "Login screen with email/password fields",
+        "Google OAuth button (UI ready, can be mocked)",
+        "Apple Sign-In button (UI ready, can be mocked)",
+        "Form validation with clear error messages",
+        "Loading states on buttons",
+        "Link between sign up and login screens",
+        "Auth state management (context or zustand)",
+        "Protected routes: redirect to auth if not logged in",
+        "For now, use mock auth (store in AsyncStorage) since Supabase isn't connected yet",
+        "App compiles without errors"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": "Keep the auth screens on-brand (sage green, warm). No generic-looking auth forms."
+    },
+    {
+      "id": "US-006",
+      "title": "Home screen",
+      "description": "As a logged-in user, I want a home screen that gives me quick access to scanning and shows personalized content.",
+      "acceptanceCriteria": [
+        "Greeting with user's name and crunchy score badge",
+        "Large prominent Scan button (center of attention)",
+        "Clean Swap of the Day card with product image, name, why to swap, and alternative",
+        "Quick stats row: total scans, crunchy score, saved items count",
+        "Trending in Community section showing 2-3 preview cards",
+        "Pull-to-refresh functionality",
+        "All data can be mock/seed data for now",
+        "App compiles without errors"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": "The scan button should be unmissable. Think of it as the primary CTA of the entire app. Use haptic feedback on tap."
+    },
+    {
+      "id": "US-007",
+      "title": "Product scanner with barcode scanning",
+      "description": "As a user, I want to scan a product barcode so I can instantly see if it contains harmful ingredients.",
+      "acceptanceCriteria": [
+        "Camera viewfinder screen using expo-camera",
+        "Request camera permissions with friendly explanation",
+        "Barcode detection using expo-camera barcode scanner",
+        "Scan mode toggle UI (Barcode / Label / Product) even if only barcode works initially",
+        "On barcode detection: vibrate/haptic + navigate to result screen",
+        "Recent scans list below camera when not actively scanning",
+        "Flashlight toggle button",
+        "App compiles without errors"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": "Use expo-camera and expo-barcode-scanner. Add expo-haptics for feedback on scan."
+    },
+    {
+      "id": "US-008",
+      "title": "Scan result screen",
+      "description": "As a user, after scanning a product I want to see a clear toxin rating with ingredient breakdown and alternatives.",
+      "acceptanceCriteria": [
+        "Product header: name, brand, image, category",
+        "Overall rating badge: Clean (green), Caution (yellow), Avoid (red) with large icon",
+        "Ingredient list with each ingredient color-coded (safe=green, concern=yellow, toxic=red)",
+        "Tappable ingredients that expand to show plain-English explanation of why it's flagged",
+        "Alternatives section: horizontal scrollable cards showing clean alternative products",
+        "Each alternative card: product image, name, price, rating, buy button",
+        "DIY Instead button (links to recipe if available)",
+        "Share button that generates a shareable result card image",
+        "Save to favorites button",
+        "Uses mock data for now (create realistic seed data for 20+ products)",
+        "App compiles without errors"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": "This screen needs to be information-dense but not overwhelming. Progressive disclosure: show rating first, details on tap. The alternatives carousel should feel like shopping."
+    },
+    {
+      "id": "US-009",
+      "title": "Explore and alternatives browse screen",
+      "description": "As a user, I want to browse clean product alternatives by category so I can discover new products.",
+      "acceptanceCriteria": [
+        "Search bar at top of screen",
+        "Category grid: Food, Skincare, Cleaning, Personal Care, Clothing, Home (with icons)",
+        "Tapping a category shows filtered product list",
+        "Product cards with: image, name, brand, rating badge, price",
+        "Filter bar: price range, certifications, rating",
+        "Tapping a product opens its detail/scan result screen",
+        "Save/favorite button on each card",
+        "Seed data: at least 30 products across categories",
+        "App compiles without errors"
+      ],
+      "priority": 9,
+      "passes": false,
+      "notes": "Make the category icons fun and on-brand. Think emoji-style or minimal illustrations."
+    },
+    {
+      "id": "US-010",
+      "title": "DIY recipe library",
+      "description": "As a user, I want to browse DIY recipes for clean alternatives so I can make my own products.",
+      "acceptanceCriteria": [
+        "Recipe list screen with cards: photo, title, difficulty stars, time, cost estimate",
+        "Category tabs: Cleaning, Skincare, Haircare, Home, Personal Care",
+        "Filter by: difficulty (Easy/Medium/Hard), time, category",
+        "Full recipe detail screen: hero image, ingredients list with quantities, numbered steps, tips section, cost vs store-bought comparison",
+        "Save recipe to favorites",
+        "Mark as 'Made It' button with counter showing how many users made it",
+        "Seed data: at least 30 recipes across categories with realistic content",
+        "App compiles without errors"
+      ],
+      "priority": 10,
+      "passes": false,
+      "notes": "Recipes should feel like a clean, modern recipe blog. Big hero images, clear steps. Include real-sounding recipe content (e.g., 'All-Purpose Citrus Cleaner', 'Honey Oat Face Mask')."
+    },
+    {
+      "id": "US-011",
+      "title": "Community feed",
+      "description": "As a user, I want a social feed where I can see what other crunchy girls are sharing and post my own content.",
+      "acceptanceCriteria": [
+        "Feed screen showing posts in chronological order",
+        "Post card: avatar, username, timestamp, text content, optional image, like count, comment count",
+        "Like button with animation",
+        "Comment button opens comment sheet",
+        "Hashtag rendering (tappable, colored)",
+        "Trending hashtags bar at top",
+        "Create post FAB (floating action button)",
+        "Create post screen: text input, image picker, hashtag suggestions",
+        "Seed data: at least 15 realistic community posts",
+        "App compiles without errors"
+      ],
+      "priority": 11,
+      "passes": false,
+      "notes": "Keep it Reddit-lite meets Instagram. Clean cards, not cluttered. The community should feel warm and supportive."
+    },
+    {
+      "id": "US-012",
+      "title": "Profile screen",
+      "description": "As a user, I want to see my profile with my crunchy score, scan history, and saved items.",
+      "acceptanceCriteria": [
+        "Profile header: avatar, username, crunchy score badge with label",
+        "Stats row: total scans, recipes made, days active",
+        "Tab sections: Scan History, Saved Items, My Posts",
+        "Scan History: list of past scans with product name, date, rating",
+        "Saved Items: grid of saved products and recipes",
+        "My Posts: list of community posts by this user",
+        "Settings gear icon in header",
+        "Settings screen: account info, notification toggles, subscription status, about, logout",
+        "App compiles without errors"
+      ],
+      "priority": 12,
+      "passes": false,
+      "notes": "The crunchy score badge should be prominent and feel like an achievement. Think gamification."
+    },
+    {
+      "id": "US-013",
+      "title": "Subscription paywall screen",
+      "description": "As a user, I want to see subscription options so I can upgrade for premium features.",
+      "acceptanceCriteria": [
+        "Paywall screen showing 3 tiers: Free, Starter ($9.99/mo), Premium ($19.99/mo)",
+        "Feature comparison list for each tier",
+        "Highlight recommended tier (Starter)",
+        "Subscribe buttons (mocked for now, no real payment)",
+        "Paywall triggered when free user hits scan limit (5/day) or tries premium feature",
+        "Close/dismiss button",
+        "Restore purchases link",
+        "Beautiful design that sells the value, not just lists features",
+        "App compiles without errors"
+      ],
+      "priority": 13,
+      "passes": false,
+      "notes": "Make this screen convert. Show the value, not just the price. Use social proof ('Join 10,000+ crunchy girls'). No pressure, but make premium feel worth it."
+    },
+    {
+      "id": "US-014",
+      "title": "Supabase database schema and migrations",
+      "description": "As a developer, I need the complete database schema ready so we can connect the app to a real backend.",
+      "acceptanceCriteria": [
+        "Create supabase/migrations/ directory with SQL migration files",
+        "Tables: users (extends auth.users), products, alternatives, scans, recipes, recipe_ingredients, recipe_steps, posts, comments, follows, saved_items, quiz_results",
+        "Row Level Security policies on all tables",
+        "Proper indexes on frequently queried columns",
+        "Foreign key relationships correctly defined",
+        "Seed data SQL file with realistic products, recipes, and sample posts",
+        "Schema matches all the data models used in the app",
+        "Migration files are numbered and ordered correctly"
+      ],
+      "priority": 14,
+      "passes": false,
+      "notes": "Use UUIDs for all primary keys. Include created_at and updated_at on all tables. Products table should support all categories: food, skincare, cleaning, personal care, clothing, home."
+    },
+    {
+      "id": "US-015",
+      "title": "Label OCR scanning mode",
+      "description": "As a user, I want to photograph a product's ingredient label so the app can read and analyze the ingredients even without a barcode.",
+      "acceptanceCriteria": [
+        "Label scan mode in scanner: user takes a photo of ingredient list",
+        "Photo capture UI with frame guide overlay showing where to position the label",
+        "Loading state while processing ('Reading ingredients...')",
+        "OCR result screen showing detected ingredients with toxin analysis",
+        "If OCR fails or is unclear, show friendly error with retry option",
+        "For MVP: mock the OCR processing but build the full UI flow",
+        "Result feeds into the same scan result screen as barcode scanning",
+        "App compiles without errors"
+      ],
+      "priority": 15,
+      "passes": false,
+      "notes": "The frame guide should help users position the label correctly. Think of how document scanners work. Include a 'tips for best results' helper."
+    },
+    {
+      "id": "US-016",
+      "title": "AI product recognition scanning mode",
+      "description": "As a user, I want to point my camera at any product (no barcode or label needed) and have the app identify it and find its ingredients.",
+      "acceptanceCriteria": [
+        "Product scan mode in scanner: user takes a photo of the product itself",
+        "Photo capture with 'Point at the product' overlay text",
+        "Loading state while AI processes ('Identifying product...')",
+        "Confirmation screen: 'Is this [Product Name]?' with Yes/No",
+        "If confirmed, show full scan result with ingredients and rating",
+        "If wrong, option to search manually",
+        "For MVP: mock the AI recognition but build the complete UI flow",
+        "Works for clothing (shows fabric tag analysis), bottles (shows material analysis), any product",
+        "App compiles without errors"
+      ],
+      "priority": 16,
+      "passes": false,
+      "notes": "This is the premium-tier feature. Show a subtle 'Premium' badge on this scan mode. The confirmation step is critical to avoid wrong product matches."
+    },
+    {
+      "id": "US-017",
+      "title": "Polish, animations, and empty states",
+      "description": "As a user, I want the app to feel polished and delightful with smooth animations, proper loading states, and helpful empty states.",
+      "acceptanceCriteria": [
+        "Screen transition animations (smooth slide/fade)",
+        "Button press animations (scale down slightly)",
+        "Like button heart animation",
+        "Scan success animation (checkmark burst)",
+        "Loading skeletons on all list screens",
+        "Empty states for: no scans yet, no saved items, no posts, no search results",
+        "Each empty state has an illustration/icon, message, and CTA",
+        "Pull-to-refresh on all scrollable screens",
+        "Haptic feedback on key actions (scan, like, save)",
+        "App compiles without errors"
+      ],
+      "priority": 17,
+      "passes": false,
+      "notes": "Use react-native-reanimated for animations. Use expo-haptics for haptic feedback. Empty states should be encouraging, not depressing ('Start your clean living journey by scanning your first product!')."
+    },
+    {
+      "id": "US-018",
+      "title": "Interest selection and personalization",
+      "description": "As a new user after taking the quiz, I want to select my interests so the app can personalize my experience.",
+      "acceptanceCriteria": [
+        "Interest selection screen shown after quiz/signup",
+        "Categories with toggle chips: Food & Beverages, Skincare & Beauty, Cleaning Products, Personal Care, Clothing & Textiles, Home & Living, Baby Products",
+        "Minimum 2 selections required",
+        "Selected interests influence home screen content (swap of the day category, trending posts)",
+        "Interests saved to user profile",
+        "Can be edited later from profile settings",
+        "App compiles without errors"
+      ],
+      "priority": 18,
+      "passes": false,
+      "notes": "Make the chips visually appealing with icons. This data is valuable for personalization and will drive engagement."
+    }
+  ]
+}
