@@ -226,7 +226,7 @@
         "App compiles without errors"
       ],
       "priority": 12,
-      "passes": false,
+      "passes": true,
       "notes": "The crunchy score badge should be prominent and feel like an achievement. Think gamification."
     },
     {

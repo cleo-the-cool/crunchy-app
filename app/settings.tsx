@@ -1,0 +1,224 @@
+import { useState } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Switch,
+  Alert,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { useAuth } from "@/contexts/AuthContext";
+
+export default function SettingsScreen() {
+  const { user, signOut } = useAuth();
+  const router = useRouter();
+  const [scanNotifications, setScanNotifications] = useState(true);
+  const [communityNotifications, setCommunityNotifications] = useState(true);
+  const [weeklyDigest, setWeeklyDigest] = useState(false);
+
+  const handleLogout = () => {
+    Alert.alert("Log Out", "Are you sure you want to log out?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Log Out",
+        style: "destructive",
+        onPress: async () => {
+          await signOut();
+          router.replace("/welcome");
+        },
+      },
+    ]);
+  };
+
+  return (
+    <SafeAreaView className="flex-1 bg-cream">
+      {/* Header */}
+      <View className="flex-row items-center px-5 pt-2 pb-4">
+        <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
+          <Ionicons name="arrow-back" size={24} color="#2D2D2D" />
+        </TouchableOpacity>
+        <Text className="text-xl font-bold text-dark ml-4">Settings</Text>
+      </View>
+
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: 48 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Account Section */}
+        <SectionHeader title="Account" />
+        <View className="mx-5 bg-white rounded-2xl overflow-hidden" style={cardShadow}>
+          <SettingsRow
+            icon="person-outline"
+            label="Name"
+            value={user?.name ?? "Not set"}
+          />
+          <Divider />
+          <SettingsRow
+            icon="mail-outline"
+            label="Email"
+            value={user?.email ?? "Not set"}
+          />
+          <Divider />
+          <SettingsRow
+            icon="star-outline"
+            label="Subscription"
+            value="Free Plan"
+            valueColor="#8B9E7C"
+          />
+        </View>
+
+        {/* Notifications Section */}
+        <SectionHeader title="Notifications" />
+        <View className="mx-5 bg-white rounded-2xl overflow-hidden" style={cardShadow}>
+          <SettingsToggle
+            icon="scan-outline"
+            label="Scan Alerts"
+            description="Get notified about product recalls"
+            value={scanNotifications}
+            onToggle={setScanNotifications}
+          />
+          <Divider />
+          <SettingsToggle
+            icon="people-outline"
+            label="Community"
+            description="Likes and comments on your posts"
+            value={communityNotifications}
+            onToggle={setCommunityNotifications}
+          />
+          <Divider />
+          <SettingsToggle
+            icon="newspaper-outline"
+            label="Weekly Digest"
+            description="Clean living tips and trends"
+            value={weeklyDigest}
+            onToggle={setWeeklyDigest}
+          />
+        </View>
+
+        {/* About Section */}
+        <SectionHeader title="About" />
+        <View className="mx-5 bg-white rounded-2xl overflow-hidden" style={cardShadow}>
+          <SettingsRow icon="information-circle-outline" label="Version" value="1.0.0" />
+          <Divider />
+          <TouchableOpacity>
+            <SettingsRow icon="document-text-outline" label="Privacy Policy" chevron />
+          </TouchableOpacity>
+          <Divider />
+          <TouchableOpacity>
+            <SettingsRow icon="shield-checkmark-outline" label="Terms of Service" chevron />
+          </TouchableOpacity>
+          <Divider />
+          <TouchableOpacity>
+            <SettingsRow icon="help-circle-outline" label="Help & Support" chevron />
+          </TouchableOpacity>
+        </View>
+
+        {/* Logout */}
+        <View className="mx-5 mt-6">
+          <TouchableOpacity
+            onPress={handleLogout}
+            className="bg-white rounded-2xl py-4 items-center"
+            style={cardShadow}
+          >
+            <View className="flex-row items-center">
+              <Ionicons name="log-out-outline" size={20} color="#F44336" />
+              <Text className="text-base font-semibold text-rating-avoid ml-2">
+                Log Out
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const cardShadow = {
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.06,
+  shadowRadius: 6,
+  elevation: 2,
+};
+
+function SectionHeader({ title }: { title: string }) {
+  return (
+    <Text className="text-sm font-semibold text-dark/40 uppercase tracking-wider px-5 mt-6 mb-2">
+      {title}
+    </Text>
+  );
+}
+
+function Divider() {
+  return <View className="h-px bg-dark/5 ml-14" />;
+}
+
+function SettingsRow({
+  icon,
+  label,
+  value,
+  valueColor,
+  chevron,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  value?: string;
+  valueColor?: string;
+  chevron?: boolean;
+}) {
+  return (
+    <View className="flex-row items-center px-4 py-3.5">
+      <View className="w-8 items-center">
+        <Ionicons name={icon} size={20} color="#8B9E7C" />
+      </View>
+      <Text className="text-base text-dark ml-2 flex-1">{label}</Text>
+      {value && (
+        <Text
+          className="text-sm text-dark/50"
+          style={valueColor ? { color: valueColor } : undefined}
+        >
+          {value}
+        </Text>
+      )}
+      {chevron && (
+        <Ionicons name="chevron-forward" size={18} color="#ccc" />
+      )}
+    </View>
+  );
+}
+
+function SettingsToggle({
+  icon,
+  label,
+  description,
+  value,
+  onToggle,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  description: string;
+  value: boolean;
+  onToggle: (v: boolean) => void;
+}) {
+  return (
+    <View className="flex-row items-center px-4 py-3">
+      <View className="w-8 items-center">
+        <Ionicons name={icon} size={20} color="#8B9E7C" />
+      </View>
+      <View className="flex-1 ml-2">
+        <Text className="text-base text-dark">{label}</Text>
+        <Text className="text-xs text-dark/40">{description}</Text>
+      </View>
+      <Switch
+        value={value}
+        onValueChange={onToggle}
+        trackColor={{ false: "#ddd", true: "#8B9E7C" }}
+        thumbColor="white"
+      />
+    </View>
+  );
+}

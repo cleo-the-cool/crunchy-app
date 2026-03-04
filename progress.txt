@@ -32,6 +32,8 @@
 - Products link to recipes via `diyRecipeId` field matching recipe `id` values (e.g., "recipe-001")
 - Community post data in `data/community.ts`: `COMMUNITY_POSTS`, `TRENDING_HASHTAGS`, `getPostById()`, `getPostsByHashtag()`
 - Create post screen at `app/create-post.tsx`, navigate via `router.push("/create-post")`
+- Settings screen at `app/settings.tsx`, navigate via `router.push("/settings")`
+- Profile tabs use state toggle (`activeTab`) with conditional rendering, no nested navigators
 
 ## 2026-03-04 - US-001
 - Project setup with Expo, TypeScript, NativeWind, and Expo Router (previously committed)
@@ -221,4 +223,21 @@
   - FAB positioned with `absolute bottom-24 right-5` to sit above tab bar
   - Navigate to create-post via `router.push("/create-post")` (non-tab screen in app/ directory)
   - `formatTimeAgo()` helper converts ISO timestamps to relative time strings (just now, Xm, Xh, Xd)
+---
+
+## 2026-03-04 - US-012
+- Profile screen with avatar (initials), username, email, crunchy score badge with label (Seedling/Sprout/Blooming/Thriving/Fully Rooted)
+- Stats row: total scans, recipes made, days active
+- 3 tab sections: Scan History (list of past scans with rating badges, tappable to view product), Saved Items (grid of saved products and recipes, tappable), My Posts (user's community posts with likes/comments/hashtags)
+- Settings screen (`app/settings.tsx`): account info, notification toggles (scan alerts, community, weekly digest), about section (version, privacy, terms, help), logout with confirmation alert
+- Settings gear icon in profile header navigates to settings screen
+- Mock data: 7 scan history items, 6 saved items (mix of products and recipes), 3 user posts
+- Files: app/(tabs)/profile.tsx, app/settings.tsx, prd.json
+- **Learnings for future iterations:**
+  - Settings screen at `app/settings.tsx`, navigate via `router.push("/settings")`
+  - `Switch` component with `trackColor={{ false: "#ddd", true: "#8B9E7C" }}` for on-brand toggles
+  - Saved items grid uses `style={{ width: "47%" }}` with `flex-wrap` and `gap: 12` for 2-column layout
+  - Profile tab sections use simple state toggle (`activeTab`) with conditional rendering, no nested navigators
+  - `signOut()` from AuthContext + `router.replace("/welcome")` for logout flow
+  - `Alert.alert()` with destructive style for logout confirmation
 ---
