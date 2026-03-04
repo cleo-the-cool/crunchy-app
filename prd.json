@@ -93,7 +93,7 @@
         "App compiles without errors"
       ],
       "priority": 5,
-      "passes": false,
+      "passes": true,
       "notes": "Keep the auth screens on-brand (sage green, warm). No generic-looking auth forms."
     },
     {
@@ -111,7 +111,7 @@
         "App compiles without errors"
       ],
       "priority": 6,
-      "passes": false,
+      "passes": true,
       "notes": "The scan button should be unmissable. Think of it as the primary CTA of the entire app. Use haptic feedback on tap."
     },
     {
@@ -129,7 +129,7 @@
         "App compiles without errors"
       ],
       "priority": 7,
-      "passes": false,
+      "passes": true,
       "notes": "Use expo-camera and expo-barcode-scanner. Add expo-haptics for feedback on scan."
     },
     {
@@ -150,7 +150,7 @@
         "App compiles without errors"
       ],
       "priority": 8,
-      "passes": false,
+      "passes": true,
       "notes": "This screen needs to be information-dense but not overwhelming. Progressive disclosure: show rating first, details on tap. The alternatives carousel should feel like shopping."
     },
     {

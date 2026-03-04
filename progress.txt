@@ -14,6 +14,17 @@
 - Screens outside tabs go directly in `app/` directory (e.g., `app/welcome.tsx`, `app/onboarding.tsx`)
 - Use `react-native-view-shot` + `expo-sharing` for shareable card images
 - ScrollView with `scrollEnabled={false}` + programmatic `scrollTo` for controlled carousels
+- Auth context lives in `contexts/AuthContext.tsx`, provides `useAuth()` hook
+- AuthProvider wraps the app in `app/_layout.tsx`
+- Mock auth uses `@react-native-async-storage/async-storage` with key `@crunchy_auth_user`
+- Protected routes: check `useSegments()` in root layout effect, redirect to `/login` if not authed and in `(tabs)`
+- Use `expo-haptics` for haptic feedback: `Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)`
+- Badge component accepts optional `label` prop to override default rating text
+- `expo-camera` v55 uses `CameraView` (not `Camera`), with `barcodeScannerSettings` and `onBarcodeScanned` props
+- Set `onBarcodeScanned={undefined}` to pause scanning and prevent rapid re-fires
+- Use `useLocalSearchParams` from expo-router to read route params in destination screens
+- Mock product data in `data/products.ts`: use `findProductByBarcode()` to look up, `getDefaultProduct()` for unknown barcodes
+- Product types (Product, Ingredient, Alternative, Rating, IngredientRisk) exported from `data/products.ts`
 
 ## 2026-03-04 - US-001
 - Project setup with Expo, TypeScript, NativeWind, and Expo Router (previously committed)
@@ -72,4 +83,74 @@
   - Score normalization: map raw range (10-40) to display range (1-100) with `((raw - min) / (max - min)) * 99 + 1`
   - Use `setInterval` with manual easing for score counter animation (reanimated shared values can't directly drive React state text)
   - ScrollView with `scrollEnabled={false}` + `scrollTo` makes a controlled carousel
+---
+
+## 2026-03-04 - US-005
+- Sign up screen with name/email/password fields, form validation, loading states
+- Login screen with email/password fields, forgot password link, form validation, loading states
+- Google OAuth and Apple Sign-In buttons (mocked with Alert)
+- Auth context using React Context + AsyncStorage for mock auth persistence
+- Protected routes: root layout checks auth state and redirects unauthenticated users away from tabs
+- Password visibility toggle with eye icon
+- Quiz result "Create Account" CTA now routes to /signup
+- Files: contexts/AuthContext.tsx, app/signup.tsx, app/login.tsx, app/_layout.tsx, app/quiz-result.tsx, package.json
+- **Learnings for future iterations:**
+  - `useSegments()` from expo-router gives current route segments for auth guards
+  - Auth loading state must be handled to prevent flash of wrong screen
+  - `KeyboardAvoidingView` with `behavior="padding"` on iOS prevents keyboard from covering inputs
+  - `router.replace()` for auth navigation prevents back-button issues
+  - `keyboardShouldPersistTaps="handled"` on ScrollView prevents keyboard dismiss on button tap
+---
+
+## 2026-03-04 - US-006
+- Home screen with greeting, crunchy score badge, prominent scan button, stats row, swap of the day card, trending community posts
+- Pull-to-refresh with RefreshControl
+- Haptic feedback on scan button using expo-haptics
+- Badge component updated to support custom label prop
+- Mock data for stats, swap of the day, and trending posts
+- Files: app/(tabs)/index.tsx, components/Badge.tsx, package.json
+- **Learnings for future iterations:**
+  - `expo-haptics` provides `impactAsync` for haptic feedback with styles (Light/Medium/Heavy)
+  - Badge component now accepts optional `label` prop to override default rating text
+  - Use inline `style` for shadows on custom components (not just Card) since RN doesn't support CSS box-shadow
+  - `RefreshControl` accepts `tintColor` to match app theme color
+  - `router.push("/(tabs)/scan")` navigates to the scan tab from home
+---
+
+## 2026-03-04 - US-007
+- Camera viewfinder screen using expo-camera CameraView component
+- Camera permissions request with friendly explanation alert
+- Barcode detection supporting EAN-13, EAN-8, UPC-A, UPC-E, Code128, Code39
+- Scan mode toggle UI (Barcode / Label / Product) with segmented control
+- On barcode detection: heavy haptic feedback + navigate to scan-result screen
+- Recent scans list with 3 mock scans below camera when not scanning
+- Flashlight toggle button in camera overlay
+- Scan overlay with corner bracket viewfinder guide
+- Placeholder scan-result screen (full implementation in US-008)
+- Files: app/(tabs)/scan.tsx, app/scan-result.tsx, package.json
+- **Learnings for future iterations:**
+  - `expo-camera` v55 uses `CameraView` component (not `Camera`) with `barcodeScannerSettings` prop
+  - Set `onBarcodeScanned` to `undefined` to pause scanning (prevents rapid re-fires)
+  - `enableTorch` prop controls flashlight on CameraView
+  - `BarcodeScanningResult` type from expo-camera provides `data` and `type` fields
+  - Non-tab screens like scan-result go in `app/scan-result.tsx`, navigated via `router.push("/scan-result")`
+  - Use `useLocalSearchParams` for reading route params in result screens
+---
+
+## 2026-03-04 - US-008
+- Full scan result screen with product header, overall rating badge, ingredient breakdown, alternatives, DIY button, share, and save
+- Created `data/products.ts` with 22 realistic mock products across categories (Skincare, Cleaning, Personal Care, Food, Home)
+- Each product has color-coded ingredients (safe/concern/toxic) with tappable explanations
+- Horizontal scrollable alternatives carousel with price, rating, and "View Details" button
+- DIY Instead button shown when product has a linked recipe
+- Shareable result card using react-native-view-shot + expo-sharing
+- Save/bookmark toggle in header
+- Ingredient summary counters (safe/concern/toxic counts)
+- Files: app/scan-result.tsx, data/products.ts, prd.json
+- **Learnings for future iterations:**
+  - Mock product data lives in `data/products.ts` with `findProductByBarcode()` and `getDefaultProduct()` helpers
+  - Use hex color + opacity string (e.g., `"#4CAF50" + "15"`) for inline style backgrounds with transparency
+  - `ViewShot` ref with `capture()` returns a URI for sharing; wrap only the shareable portion
+  - Products link to alternatives via `Alternative[]` array and to DIY recipes via optional `diyRecipeId`
+  - Ingredient expansion uses simple state toggle (one at a time) for progressive disclosure
 ---
