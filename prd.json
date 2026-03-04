@@ -320,7 +320,7 @@
         "App compiles without errors"
       ],
       "priority": 17,
-      "passes": false,
+      "passes": true,
       "notes": "Use react-native-reanimated for animations. Use expo-haptics for haptic feedback. Empty states should be encouraging, not depressing ('Start your clean living journey by scanning your first product!')."
     },
     {

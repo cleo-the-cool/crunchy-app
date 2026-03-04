@@ -42,6 +42,9 @@
 - Use `{"text with apostrophe"}` JSX expression for text containing apostrophes to satisfy `react/no-unescaped-entities` lint rule
 - Product scan screen at `app/product-scan.tsx`, navigate via `router.push("/product-scan")` from scan.tsx product mode
 - For scan modes: barcode is inline in scan.tsx, label and product each have dedicated screens (`label-scan.tsx`, `product-scan.tsx`)
+- Use `Animated.createAnimatedComponent(Pressable)` with `withSpring` scale for press animations on buttons
+- `SkeletonLoader`, `CardSkeleton`, `ProductCardSkeleton` exported from `@/components` for loading states
+- Screen transitions configured in root `Stack` via `animation: "slide_from_right"` in `app/_layout.tsx`
 
 ## 2026-03-04 - US-001
 - Project setup with Expo, TypeScript, NativeWind, and Expo Router (previously committed)
@@ -333,4 +336,26 @@
   - Premium badge uses `<Ionicons name="diamond" />` with peach color scheme
   - Dashed circle border guide uses inline `style={{ borderStyle: "dashed" }}` since NativeWind doesn't support dashed borders
   - `router.replace()` used after confirmed recognition to prevent going back to confirmation screen
+---
+
+## 2026-03-04 - US-017
+- Polish, animations, and empty states across the entire app
+- Screen transition animations: Added `slide_from_right` animation with 250ms duration to root Stack navigator in `app/_layout.tsx`
+- Button press animations: Rewrote `components/Button.tsx` to use `Animated.createAnimatedComponent(Pressable)` with spring scale (0.95) on press
+- Like button heart animation: Created `AnimatedHeart` component in community.tsx with spring scale burst (1.4 → 1.0) on like
+- Scan success animation: Created `ScanSuccessAnimation` component in scan-result.tsx with checkmark burst + expanding ring + fade out
+- Loading skeletons: Created `components/SkeletonLoader.tsx` with `SkeletonLoader`, `CardSkeleton`, and `ProductCardSkeleton` components using reanimated pulse animation. Added to community and explore screens
+- Empty states: Added `EmptyState` component in profile.tsx with icon, title, message, and CTA button. Added empty states for Scan History, Saved Items, My Posts tabs. Improved community empty state with CTA button
+- Pull-to-refresh: Added RefreshControl to scan screen ScrollView (was missing)
+- Haptic feedback: Added haptic to profile tab switching. All other screens already had haptics from previous stories
+- Files: app/_layout.tsx, components/Button.tsx, components/SkeletonLoader.tsx, components/index.ts, app/(tabs)/community.tsx, app/(tabs)/explore.tsx, app/(tabs)/profile.tsx, app/(tabs)/scan.tsx, app/scan-result.tsx
+- **Learnings for future iterations:**
+  - `Animated.createAnimatedComponent(Pressable)` is the pattern for animated pressable buttons (replaces TouchableOpacity)
+  - Spring config `{ damping: 15, stiffness: 300 }` gives snappy press feel; `{ damping: 4, stiffness: 400 }` gives bouncy heart pop
+  - `withSequence` chains animations (e.g., scale up then back down for burst effect)
+  - `withDelay` offsets animation start time for staggered effects
+  - `FadeIn.delay(200).duration(400)` is the layout animation pattern for entering views
+  - `pointerEvents="none"` on overlay animations prevents blocking touch events underneath
+  - SkeletonLoader uses `withRepeat(withTiming(...), -1, true)` for infinite pulse between opacity 0.3-0.7
+  - Simulate initial loading with `useState(() => { setTimeout(...) })` pattern for mock data screens
 ---
