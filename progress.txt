@@ -25,6 +25,8 @@
 - Use `useLocalSearchParams` from expo-router to read route params in destination screens
 - Mock product data in `data/products.ts`: use `findProductByBarcode()` to look up, `getDefaultProduct()` for unknown barcodes
 - Product types (Product, Ingredient, Alternative, Rating, IngredientRisk) exported from `data/products.ts`
+- Categories constant `CATEGORIES` and helpers `getProductsByCategory()`, `searchProducts()` exported from `data/products.ts`
+- Navigate to product detail via `router.push(/scan-result?barcode=${product.barcode})` to reuse scan-result screen
 
 ## 2026-03-04 - US-001
 - Project setup with Expo, TypeScript, NativeWind, and Expo Router (previously committed)
@@ -153,4 +155,25 @@
   - `ViewShot` ref with `capture()` returns a URI for sharing; wrap only the shareable portion
   - Products link to alternatives via `Alternative[]` array and to DIY recipes via optional `diyRecipeId`
   - Ingredient expansion uses simple state toggle (one at a time) for progressive disclosure
+---
+
+## 2026-03-04 - US-009
+- Explore screen with search bar, 6-category grid (Food, Skincare, Cleaning, Personal Care, Clothing, Home), rating filter bar, and product list
+- Category grid with emoji icons, toggle selection (tap to filter, tap again to deselect)
+- Search filters by product name, brand, and category
+- Rating filter bar (All/Clean/Caution/Avoid) with "Clear all" button
+- Product cards with image, name, brand, rating badge, category, and save/bookmark toggle
+- Tapping a product navigates to scan-result screen via barcode param
+- Empty state when no products match filters
+- Pull-to-refresh support
+- Expanded product data from 22 to 32 products, added Clothing category (Shein T-Shirt, Patagonia Hoodie, Lululemon Leggings)
+- Added `CATEGORIES`, `getProductsByCategory()`, and `searchProducts()` helpers to data/products.ts
+- Files: app/(tabs)/explore.tsx, data/products.ts
+- **Learnings for future iterations:**
+  - Product data types and helpers are in `data/products.ts` - extend this file for new product features
+  - `CATEGORIES` constant with icon/name pairs exported from `data/products.ts` for reuse
+  - Navigate to scan-result with `router.push(/scan-result?barcode=${product.barcode})` to reuse existing result screen
+  - Use `useMemo` for filtered lists to avoid recalculating on every render
+  - Category grid uses `width: "31%"` with flexWrap for 3-column layout (flex gap doesn't work well with percentage widths in RN)
+  - `hitSlop={8}` on small touch targets (like bookmark icon) improves tap accuracy
 ---

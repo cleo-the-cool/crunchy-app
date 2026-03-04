@@ -169,7 +169,7 @@
         "App compiles without errors"
       ],
       "priority": 9,
-      "passes": false,
+      "passes": true,
       "notes": "Make the category icons fun and on-brand. Think emoji-style or minimal illustrations."
     },
     {
