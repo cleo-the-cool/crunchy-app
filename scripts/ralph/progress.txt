@@ -1,0 +1,37 @@
+## Codebase Patterns
+- Use `--legacy-peer-deps` when installing npm packages (peer dep conflicts with expo-router's radix-ui deps)
+- Run TypeScript check with `node node_modules/typescript/lib/tsc.js --noEmit` (npx tsc symlink is broken)
+- Verify builds with `npx expo export --platform ios --output-dir /tmp/crunchy-export`
+- NativeWind v4 uses `nativewind/preset` in tailwind.config.js and `nativewind/babel` preset in babel.config.js
+- Metro config needs `withNativeWind` wrapper from `nativewind/metro`
+- Import `../global.css` in app/_layout.tsx for NativeWind to work
+- Design system colors: sage=#8B9E7C, peach=#F4A574, cream=#FAF8F5, dark=#2D2D2D
+- Expo SDK 55 with expo-router v55, React 19, React Native 0.83
+
+---
+
+## 2026-03-04 - US-001
+- What was implemented: Full project scaffolding with Expo SDK 55, TypeScript, expo-router file-based navigation, and NativeWind v4. Bottom tab navigation with 5 tabs (Home, Scan, Explore, Community, Profile) each with placeholder screens using NativeWind/Tailwind classes.
+- Files changed:
+  - package.json (dependencies, entry point)
+  - app.json (name, scheme, expo-router plugin)
+  - tsconfig.json (paths, nativewind types)
+  - tailwind.config.js (new - custom colors, NativeWind preset)
+  - global.css (new - Tailwind directives)
+  - babel.config.js (new - NativeWind babel preset)
+  - metro.config.js (new - NativeWind metro wrapper)
+  - nativewind-env.d.ts (new - NativeWind TypeScript types)
+  - app/_layout.tsx (new - root layout with Stack)
+  - app/(tabs)/_layout.tsx (new - tab layout with 5 tabs)
+  - app/(tabs)/index.tsx (new - Home placeholder)
+  - app/(tabs)/scan.tsx (new - Scan placeholder)
+  - app/(tabs)/explore.tsx (new - Explore placeholder)
+  - app/(tabs)/community.tsx (new - Community placeholder)
+  - app/(tabs)/profile.tsx (new - Profile placeholder)
+- **Learnings for future iterations:**
+  - Expo SDK 55 uses React 19 and RN 0.83 - peer dep conflicts are common, use --legacy-peer-deps
+  - react-native-reanimated requires react-native-worklets as a peer dep in SDK 55
+  - babel-preset-expo must be explicitly installed (not bundled with expo in SDK 55)
+  - The npx tsc binary symlink is broken; use node directly to run tsc
+  - NativeWind v4 requires: tailwind.config.js with nativewind/preset, babel.config.js with nativewind/babel, metro.config.js with withNativeWind, and global.css imported in root layout
+---
