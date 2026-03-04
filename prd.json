@@ -187,7 +187,7 @@
         "App compiles without errors"
       ],
       "priority": 10,
-      "passes": false,
+      "passes": true,
       "notes": "Recipes should feel like a clean, modern recipe blog. Big hero images, clear steps. Include real-sounding recipe content (e.g., 'All-Purpose Citrus Cleaner', 'Honey Oat Face Mask')."
     },
     {

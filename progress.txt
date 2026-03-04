@@ -27,6 +27,9 @@
 - Product types (Product, Ingredient, Alternative, Rating, IngredientRisk) exported from `data/products.ts`
 - Categories constant `CATEGORIES` and helpers `getProductsByCategory()`, `searchProducts()` exported from `data/products.ts`
 - Navigate to product detail via `router.push(/scan-result?barcode=${product.barcode})` to reuse scan-result screen
+- Recipe data in `data/recipes.ts`: `getRecipeById()`, `getRecipesByCategory()`, `searchRecipes()`, `filterRecipes()`
+- Navigate to recipe detail via `router.push(/recipe-detail?id=${recipe.id})`, recipe list via `router.push("/recipes")`
+- Products link to recipes via `diyRecipeId` field matching recipe `id` values (e.g., "recipe-001")
 
 ## 2026-03-04 - US-001
 - Project setup with Expo, TypeScript, NativeWind, and Expo Router (previously committed)
@@ -176,4 +179,22 @@
   - Use `useMemo` for filtered lists to avoid recalculating on every render
   - Category grid uses `width: "31%"` with flexWrap for 3-column layout (flex gap doesn't work well with percentage widths in RN)
   - `hitSlop={8}` on small touch targets (like bookmark icon) improves tap accuracy
+---
+
+## 2026-03-04 - US-010
+- DIY recipe library with recipe list screen and recipe detail screen
+- Created `data/recipes.ts` with 31 recipes across 5 categories (Cleaning: 7, Skincare: 7, Haircare: 6, Home: 5, Personal Care: 6)
+- Recipe list screen with: search bar, horizontal category tabs, difficulty and time filters, recipe cards with hero image/difficulty stars/time/cost/made-it count, save/bookmark toggle, empty state, pull-to-refresh
+- Recipe detail screen with: hero image, title/description, meta info card (difficulty/time/cost), cost vs store-bought comparison, ingredients list with quantities and notes, numbered step-by-step instructions with tips, tips section, "I Made It" button with counter, share and save actions
+- Updated scan-result DIY button to navigate to actual recipe detail instead of alert placeholder
+- Updated product diyRecipeId values in products.ts to reference actual recipe IDs (recipe-001, recipe-007, recipe-022, recipe-023)
+- Files: data/recipes.ts, app/recipes.tsx, app/recipe-detail.tsx, app/scan-result.tsx, data/products.ts, prd.json
+- **Learnings for future iterations:**
+  - Recipe data lives in `data/recipes.ts` with helpers: `getRecipeById()`, `getRecipesByCategory()`, `searchRecipes()`, `filterRecipes()`
+  - Navigate to recipe detail via `router.push(/recipe-detail?id=${recipe.id})`
+  - Navigate to recipe list via `router.push("/recipes")`
+  - Recipe categories: Cleaning, Skincare, Haircare, Home, Personal Care (different from product categories)
+  - DifficultyStars component renders 1-3 stars with peach color (#F4A574) based on Easy/Medium/Hard
+  - Products link to recipes via `diyRecipeId` field matching recipe `id` values
+  - Recipe cards use a hero image area with sage/15 background and large emoji as placeholder
 ---

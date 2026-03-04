@@ -106,11 +106,9 @@ export default function ScanResultScreen() {
 
   const handleDIY = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Alert.alert(
-      "DIY Recipe",
-      "DIY recipes are coming soon! You'll be able to make your own clean alternatives at home.",
-      [{ text: "OK" }]
-    );
+    if (product.diyRecipeId) {
+      router.push(`/recipe-detail?id=${product.diyRecipeId}`);
+    }
   };
 
   const handleAlternativePress = (alt: Alternative) => {

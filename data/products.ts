@@ -98,7 +98,7 @@ export const PRODUCTS: Product[] = [
       { id: "a5", name: "Laundry Sheets", brand: "Earth Breeze", price: "$15.99", rating: "clean", category: "Cleaning", image: "🌊" },
       { id: "a6", name: "Laundry Detergent", brand: "Branch Basics", price: "$49.00", rating: "clean", category: "Cleaning", image: "🌱" },
     ],
-    diyRecipeId: "r1",
+    diyRecipeId: "recipe-001",
   },
   {
     id: "p4",
@@ -183,7 +183,7 @@ export const PRODUCTS: Product[] = [
       { id: "a13", name: "Multi-Surface Cleaner", brand: "Branch Basics", price: "$5.00", rating: "clean", category: "Cleaning", image: "🌿" },
       { id: "a14", name: "All-Purpose Cleaner", brand: "Mrs. Meyer's", price: "$4.99", rating: "clean", category: "Cleaning", image: "🌻" },
     ],
-    diyRecipeId: "r2",
+    diyRecipeId: "recipe-001",
   },
   {
     id: "p8",
@@ -265,7 +265,7 @@ export const PRODUCTS: Product[] = [
     alternatives: [
       { id: "a20", name: "Dish Soap", brand: "Seventh Generation", price: "$4.49", rating: "clean", category: "Cleaning", image: "🌿" },
     ],
-    diyRecipeId: "r3",
+    diyRecipeId: "recipe-007",
   },
   {
     id: "p12",
@@ -343,7 +343,7 @@ export const PRODUCTS: Product[] = [
       { id: "a23", name: "Essential Oil Diffuser", brand: "Vitruvi", price: "$89.00", rating: "clean", category: "Home", image: "🪴" },
       { id: "a24", name: "Room Spray", brand: "Aesop", price: "$55.00", rating: "clean", category: "Home", image: "🌿" },
     ],
-    diyRecipeId: "r4",
+    diyRecipeId: "recipe-023",
   },
   {
     id: "p16",
@@ -439,7 +439,7 @@ export const PRODUCTS: Product[] = [
       { id: "a30", name: "Soy Candle", brand: "P.F. Candle Co.", price: "$22.00", rating: "clean", category: "Home", image: "🌱" },
       { id: "a31", name: "Beeswax Candle", brand: "Bluecorn", price: "$28.00", rating: "clean", category: "Home", image: "🐝" },
     ],
-    diyRecipeId: "r5",
+    diyRecipeId: "recipe-022",
   },
   {
     id: "p21",

@@ -1,0 +1,339 @@
+import { useState } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+  Share,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import * as Haptics from "expo-haptics";
+import { getRecipeById, type Recipe, type Difficulty } from "@/data/recipes";
+
+function DifficultyStars({ difficulty }: { difficulty: Difficulty }) {
+  const count = difficulty === "Easy" ? 1 : difficulty === "Medium" ? 2 : 3;
+  return (
+    <View className="flex-row items-center gap-0.5">
+      {[1, 2, 3].map((i) => (
+        <Ionicons
+          key={i}
+          name="star"
+          size={14}
+          color={i <= count ? "#F4A574" : "#E0E0E0"}
+        />
+      ))}
+      <Text className="text-sm text-dark/60 ml-1">{difficulty}</Text>
+    </View>
+  );
+}
+
+export default function RecipeDetailScreen() {
+  const router = useRouter();
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const [isSaved, setIsSaved] = useState(false);
+  const [madeIt, setMadeIt] = useState(false);
+
+  const recipe = id ? getRecipeById(id) : undefined;
+
+  if (!recipe) {
+    return (
+      <SafeAreaView className="flex-1 bg-cream items-center justify-center">
+        <Text className="text-5xl mb-4">🤔</Text>
+        <Text className="text-lg font-bold text-dark">Recipe not found</Text>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className="bg-sage rounded-2xl px-6 py-3 mt-4"
+        >
+          <Text className="text-white font-semibold">Go Back</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
+
+  const handleSave = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setIsSaved(!isSaved);
+  };
+
+  const handleMadeIt = () => {
+    if (madeIt) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    setMadeIt(true);
+  };
+
+  const handleShare = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      await Share.share({
+        message: `Check out this DIY recipe from Crunchy: ${recipe.title}\n\n${recipe.description}\n\nDownload Crunchy to see the full recipe!`,
+      });
+    } catch {
+      // User cancelled share
+    }
+  };
+
+  const displayMadeItCount = recipe.madeItCount + (madeIt ? 1 : 0);
+
+  return (
+    <SafeAreaView className="flex-1 bg-cream">
+      {/* Header */}
+      <View className="px-5 pt-3 pb-2 flex-row items-center justify-between">
+        <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
+          <Ionicons name="arrow-back" size={24} color="#2D2D2D" />
+        </TouchableOpacity>
+        <View className="flex-row gap-4">
+          <TouchableOpacity onPress={handleSave} hitSlop={8}>
+            <Ionicons
+              name={isSaved ? "bookmark" : "bookmark-outline"}
+              size={24}
+              color={isSaved ? "#8B9E7C" : "#2D2D2D"}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleShare} hitSlop={8}>
+            <Ionicons name="share-outline" size={24} color="#2D2D2D" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: 40 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Hero Image */}
+        <View
+          className="mx-5 h-48 rounded-3xl items-center justify-center"
+          style={{ backgroundColor: "#8B9E7C15" }}
+        >
+          <Text className="text-7xl">{recipe.image}</Text>
+        </View>
+
+        {/* Title & Meta */}
+        <View className="px-5 mt-4">
+          <Text className="text-2xl font-bold text-dark">{recipe.title}</Text>
+          <Text className="text-sm text-dark/50 mt-1 leading-5">
+            {recipe.description}
+          </Text>
+
+          {/* Meta Info */}
+          <View
+            className="flex-row mt-4 bg-white rounded-2xl p-4"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.06,
+              shadowRadius: 6,
+              elevation: 2,
+            }}
+          >
+            <View className="flex-1 items-center">
+              <DifficultyStars difficulty={recipe.difficulty} />
+              <Text className="text-xs text-dark/40 mt-1">Difficulty</Text>
+            </View>
+            <View className="w-px bg-dark/10" />
+            <View className="flex-1 items-center">
+              <View className="flex-row items-center gap-1">
+                <Ionicons name="time-outline" size={16} color="#8B9E7C" />
+                <Text className="text-sm font-semibold text-dark">
+                  {recipe.timeMinutes} min
+                </Text>
+              </View>
+              <Text className="text-xs text-dark/40 mt-1">Time</Text>
+            </View>
+            <View className="w-px bg-dark/10" />
+            <View className="flex-1 items-center">
+              <View className="flex-row items-center gap-1">
+                <Ionicons name="wallet-outline" size={16} color="#8B9E7C" />
+                <Text className="text-sm font-semibold text-dark">
+                  {recipe.costEstimate}
+                </Text>
+              </View>
+              <Text className="text-xs text-dark/40 mt-1">Cost</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Cost Comparison */}
+        <View className="px-5 mt-4">
+          <View
+            className="bg-sage/10 rounded-2xl p-4 flex-row items-center"
+          >
+            <Ionicons name="trending-down" size={24} color="#8B9E7C" />
+            <View className="ml-3 flex-1">
+              <Text className="text-sm font-semibold text-dark">
+                Save money making your own!
+              </Text>
+              <Text className="text-xs text-dark/60 mt-0.5">
+                DIY: {recipe.costEstimate} vs Store: {recipe.storeBoughtCost}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Ingredients */}
+        <View className="px-5 mt-6">
+          <Text className="text-lg font-bold text-dark mb-3">
+            Ingredients
+          </Text>
+          <View
+            className="bg-white rounded-2xl p-4"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.06,
+              shadowRadius: 6,
+              elevation: 2,
+            }}
+          >
+            {recipe.ingredients.map((ing, index) => (
+              <View
+                key={index}
+                className={`flex-row items-start py-3 ${
+                  index < recipe.ingredients.length - 1
+                    ? "border-b border-dark/5"
+                    : ""
+                }`}
+              >
+                <View
+                  className="w-6 h-6 rounded-full bg-sage/15 items-center justify-center mr-3 mt-0.5"
+                >
+                  <Ionicons name="leaf" size={12} color="#8B9E7C" />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-sm text-dark font-medium">
+                    {ing.name}
+                  </Text>
+                  <Text className="text-xs text-dark/50 mt-0.5">
+                    {ing.quantity}
+                    {ing.note ? ` (${ing.note})` : ""}
+                  </Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Steps */}
+        <View className="px-5 mt-6">
+          <Text className="text-lg font-bold text-dark mb-3">
+            Instructions
+          </Text>
+          <View style={{ gap: 12 }}>
+            {recipe.steps.map((step) => (
+              <View
+                key={step.step}
+                className="bg-white rounded-2xl p-4"
+                style={{
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.06,
+                  shadowRadius: 6,
+                  elevation: 2,
+                }}
+              >
+                <View className="flex-row items-start">
+                  <View
+                    className="w-8 h-8 rounded-full bg-sage items-center justify-center mr-3"
+                  >
+                    <Text className="text-sm font-bold text-white">
+                      {step.step}
+                    </Text>
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-sm text-dark leading-5">
+                      {step.instruction}
+                    </Text>
+                    {step.tip && (
+                      <View className="flex-row items-start mt-2 bg-peach/10 rounded-xl p-2.5">
+                        <Ionicons
+                          name="bulb-outline"
+                          size={14}
+                          color="#F4A574"
+                        />
+                        <Text className="text-xs text-peach-dark ml-2 flex-1">
+                          {step.tip}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Tips */}
+        {recipe.tips.length > 0 && (
+          <View className="px-5 mt-6">
+            <Text className="text-lg font-bold text-dark mb-3">
+              Tips
+            </Text>
+            <View
+              className="bg-white rounded-2xl p-4"
+              style={{
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.06,
+                shadowRadius: 6,
+                elevation: 2,
+              }}
+            >
+              {recipe.tips.map((tip, index) => (
+                <View
+                  key={index}
+                  className={`flex-row items-start py-2.5 ${
+                    index < recipe.tips.length - 1
+                      ? "border-b border-dark/5"
+                      : ""
+                  }`}
+                >
+                  <Text className="text-sage mr-2">•</Text>
+                  <Text className="text-sm text-dark/70 flex-1 leading-5">
+                    {tip}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Made It Button */}
+        <View className="px-5 mt-6">
+          <TouchableOpacity
+            onPress={handleMadeIt}
+            activeOpacity={0.8}
+            className={`rounded-2xl py-4 flex-row items-center justify-center ${
+              madeIt ? "bg-sage" : "bg-peach"
+            }`}
+            style={{
+              shadowColor: madeIt ? "#8B9E7C" : "#F4A574",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.25,
+              shadowRadius: 8,
+              elevation: 4,
+            }}
+          >
+            <Ionicons
+              name={madeIt ? "checkmark-circle" : "flask"}
+              size={22}
+              color="white"
+            />
+            <Text className="text-white font-bold text-base ml-2">
+              {madeIt ? "You made it!" : "I Made It!"}
+            </Text>
+          </TouchableOpacity>
+
+          <View className="flex-row items-center justify-center mt-3">
+            <Ionicons name="people-outline" size={16} color="#8B9E7C" />
+            <Text className="text-sm text-sage ml-1.5">
+              {displayMadeItCount.toLocaleString()} people made this
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
