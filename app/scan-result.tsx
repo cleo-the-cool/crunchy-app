@@ -12,7 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as Haptics from "../utils/haptics";
 import ViewShot from "../utils/view-shot";
-import * as Sharing from "expo-sharing";
+import * as Sharing from "../utils/sharing";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,

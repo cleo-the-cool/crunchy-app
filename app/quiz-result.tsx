@@ -18,7 +18,7 @@ import Animated, {
   runOnJS,
 } from "react-native-reanimated";
 import ViewShot from "../utils/view-shot";
-import * as Sharing from "expo-sharing";
+import * as Sharing from "../utils/sharing";
 import { SafeAreaWrapper, Button } from "@/components";
 import { Ionicons } from "@expo/vector-icons";
 
