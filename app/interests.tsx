@@ -6,7 +6,7 @@ import {
   ScrollView,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import * as Haptics from "expo-haptics";
+import * as Haptics from "../utils/haptics";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,

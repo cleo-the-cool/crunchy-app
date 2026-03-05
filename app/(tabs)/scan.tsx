@@ -14,8 +14,8 @@ import {
   CameraView,
   useCameraPermissions,
   BarcodeScanningResult,
-} from "expo-camera";
-import * as Haptics from "expo-haptics";
+} from "../../utils/camera";
+import * as Haptics from "../../utils/haptics";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 
 type ScanMode = "barcode" | "label" | "product";

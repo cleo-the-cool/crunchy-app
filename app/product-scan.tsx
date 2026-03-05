@@ -11,8 +11,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { CameraView, useCameraPermissions } from "expo-camera";
-import * as Haptics from "expo-haptics";
+import { CameraView, useCameraPermissions } from "../utils/camera";
+import * as Haptics from "../utils/haptics";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { PRODUCTS, searchProducts } from "@/data/products";
 

@@ -10,8 +10,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import * as Haptics from "expo-haptics";
-import ViewShot from "react-native-view-shot";
+import * as Haptics from "../utils/haptics";
+import ViewShot from "../utils/view-shot";
 import * as Sharing from "expo-sharing";
 import Animated, {
   useSharedValue,
