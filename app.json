@@ -13,7 +13,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.cleothecooldev.crunchyapp",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -22,13 +26,25 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.cleothecooldev.crunchyapp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-router"
-    ]
+    ],
+    "owner": "cleothecooldev",
+    "runtimeVersion": "exposdk:55.0.0",
+    "updates": {
+      "url": "https://u.expo.dev/9bf7d334-4566-40dc-85ab-e49c856c8d7b"
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "9bf7d334-4566-40dc-85ab-e49c856c8d7b"
+      }
+    }
   }
 }
