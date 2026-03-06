@@ -192,7 +192,7 @@ export default function ScanResultScreen() {
       <View className="flex-row items-center justify-between px-5 pt-3 pb-2">
         <View className="flex-row items-center">
           <TouchableOpacity
-            onPress={() => router.back()}
+            onPress={() => router.replace("/(tabs)/scan")}
             className="w-10 h-10 rounded-full bg-white items-center justify-center mr-3"
             style={{
               shadowColor: "#000",

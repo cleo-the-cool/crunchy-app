@@ -5,24 +5,22 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { CameraView, useCameraPermissions } from "../utils/camera";
 import * as Haptics from "../utils/haptics";
 import { useSubscription } from "@/contexts/SubscriptionContext";
-import { PRODUCTS } from "@/data/products";
+import {
+  analyzeWithGemini,
+  type ScanMode,
+  type GeminiAnalysis,
+} from "@/services/gemini";
+import { Badge } from "@/components";
 
-type LabelScanState = "camera" | "processing" | "error";
-
-// Mock OCR: randomly pick a product with multiple ingredients to simulate label reading
-const MOCK_OCR_PRODUCTS = PRODUCTS.filter((p) => p.ingredients.length >= 4);
-
-function getRandomOCRProduct() {
-  const idx = Math.floor(Math.random() * MOCK_OCR_PRODUCTS.length);
-  return MOCK_OCR_PRODUCTS[idx];
-}
+type LabelScanState = "camera" | "processing" | "result" | "error";
 
 const SCAN_TIPS = [
   "Hold the camera steady over the ingredient list",
@@ -31,13 +29,24 @@ const SCAN_TIPS = [
   "Avoid shadows and glare on the label",
 ];
 
+const RISK_CONFIG = {
+  safe: { color: "#4CAF50", icon: "checkmark-circle" as const, label: "Safe" },
+  concern: { color: "#FFC107", icon: "alert-circle" as const, label: "Concern" },
+  toxic: { color: "#F44336", icon: "warning" as const, label: "Toxic" },
+};
+
 export default function LabelScanScreen() {
   const router = useRouter();
+  const { mode: modeParam } = useLocalSearchParams<{ mode?: string }>();
+  const scanMode: ScanMode = modeParam === "label" ? "label" : "ingredients";
   const { canScan, recordScan } = useSubscription();
   const [permission, requestPermission] = useCameraPermissions();
   const [state, setState] = useState<LabelScanState>("camera");
   const [flashOn, setFlashOn] = useState(false);
   const [showTips, setShowTips] = useState(false);
+  const [analysis, setAnalysis] = useState<GeminiAnalysis | null>(null);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [expandedIngredient, setExpandedIngredient] = useState<string | null>(null);
   const cameraRef = useRef<CameraView>(null);
 
   const handleCapture = async () => {
@@ -49,40 +58,56 @@ export default function LabelScanScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     setState("processing");
 
-    // Simulate OCR processing delay
-    setTimeout(() => {
-      // 85% chance of success, 15% chance of "failure" for realistic UX
-      const success = Math.random() > 0.15;
+    try {
+      let base64Image = "";
 
-      if (success) {
-        const product = getRandomOCRProduct();
-        recordScan();
-        router.replace({
-          pathname: "/scan-result",
-          params: { barcode: product.barcode, type: "label-ocr" },
-        });
-      } else {
-        setState("error");
+      // Try to take a photo with the camera
+      if (cameraRef.current) {
+        try {
+          const photo = await (cameraRef.current as unknown as { takePictureAsync: (opts: { base64: boolean; quality: number }) => Promise<{ base64?: string }> }).takePictureAsync({
+            base64: true,
+            quality: 0.7,
+          });
+          if (photo?.base64) {
+            base64Image = photo.base64;
+          }
+        } catch {
+          // Camera might not support takePictureAsync in all environments
+        }
       }
-    }, 2500);
+
+      const result = await analyzeWithGemini(base64Image, scanMode);
+      recordScan();
+      setAnalysis(result);
+      setState("result");
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "Something went wrong");
+      setState("error");
+    }
   };
 
   const handleRetry = () => {
     setState("camera");
+    setAnalysis(null);
+    setErrorMessage("");
   };
 
   const handleClose = () => {
     router.back();
   };
 
-  // Request permission if needed
+  const handleBackToScanner = () => {
+    router.replace("/(tabs)/scan");
+  };
+
   const ensurePermission = async () => {
     if (!permission?.granted) {
       const result = await requestPermission();
       if (!result.granted) {
         Alert.alert(
           "Camera Permission Needed",
-          "Crunchy needs camera access to scan ingredient labels. Please enable camera access in your device settings.",
+          "Crunchy needs camera access to scan labels. Please enable camera access in your device settings.",
           [{ text: "OK", onPress: () => router.back() }]
         );
         return false;
@@ -91,7 +116,12 @@ export default function LabelScanScreen() {
     return true;
   };
 
-  // Loading permission state
+  const screenTitle = scanMode === "label" ? "Scan Label" : "Scan Ingredients";
+  const processingText = scanMode === "label" ? "Analyzing Label..." : "Reading Ingredients...";
+  const processingSubtext = scanMode === "label"
+    ? "Analyzing nutrition claims and certifications"
+    : "Analyzing the label for toxins and harmful ingredients";
+
   if (!permission) {
     return (
       <SafeAreaView className="flex-1 bg-cream">
@@ -121,20 +151,240 @@ export default function LabelScanScreen() {
               <Ionicons name="document-text" size={36} color="#8B9E7C" />
             </View>
             <Text className="text-xl font-bold text-dark mb-2">
-              Reading Ingredients...
+              {processingText}
             </Text>
             <Text className="text-sm text-dark/50 text-center mb-6">
-              Analyzing the label for toxins and harmful ingredients
+              {processingSubtext}
             </Text>
             <ActivityIndicator size="large" color="#8B9E7C" />
             <View className="flex-row items-center mt-6 bg-sage/5 rounded-xl px-4 py-3">
               <Ionicons name="sparkles" size={16} color="#8B9E7C" />
               <Text className="text-xs text-dark/40 ml-2">
-                Powered by Crunchy AI
+                Powered by Gemini AI
               </Text>
             </View>
           </View>
         </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Result state
+  if (state === "result" && analysis) {
+    const ratingColor = analysis.rating === "clean" ? "#4CAF50" : analysis.rating === "caution" ? "#FFC107" : "#F44336";
+    const ratingLabel = analysis.rating === "clean" ? "Clean" : analysis.rating === "caution" ? "Caution" : "Avoid";
+
+    return (
+      <SafeAreaView className="flex-1 bg-cream">
+        {/* Header */}
+        <View className="flex-row items-center justify-between px-5 pt-3 pb-2">
+          <TouchableOpacity
+            onPress={handleBackToScanner}
+            className="w-10 h-10 rounded-full bg-white items-center justify-center"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.06,
+              shadowRadius: 6,
+              elevation: 2,
+            }}
+          >
+            <Ionicons name="arrow-back" size={20} color="#2D2D2D" />
+          </TouchableOpacity>
+          <Text className="text-xl font-bold text-dark">Analysis Result</Text>
+          <View className="w-10" />
+        </View>
+
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ paddingBottom: 40 }}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Product Header Card */}
+          <View className="mx-5 mt-2 bg-white rounded-3xl p-5" style={{
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.08,
+            shadowRadius: 12,
+            elevation: 4,
+          }}>
+            <View className="flex-row items-center">
+              <View
+                className="w-16 h-16 rounded-2xl items-center justify-center mr-4"
+                style={{ backgroundColor: ratingColor + "15" }}
+              >
+                <Ionicons
+                  name={analysis.rating === "clean" ? "checkmark-circle" : analysis.rating === "caution" ? "alert-circle" : "warning"}
+                  size={30}
+                  color={ratingColor}
+                />
+              </View>
+              <View className="flex-1">
+                <Text className="text-xs text-dark/40 uppercase font-medium tracking-wide">
+                  {analysis.category}
+                </Text>
+                <Text className="text-lg font-bold text-dark mt-0.5">
+                  {analysis.productName}
+                </Text>
+                <Text className="text-sm text-dark/50">{analysis.brand}</Text>
+              </View>
+            </View>
+
+            {/* Rating */}
+            <View
+              className="mt-4 rounded-2xl p-4 flex-row items-center"
+              style={{ backgroundColor: ratingColor + "12" }}
+            >
+              <View className="flex-1">
+                <View className="flex-row items-center gap-2">
+                  <Text className="text-xl font-bold" style={{ color: ratingColor }}>
+                    {ratingLabel}
+                  </Text>
+                  <Badge rating={analysis.rating} size="sm" />
+                </View>
+                <Text className="text-sm text-dark/60 mt-1">
+                  Crunchy Score: {analysis.crunchyScore}/100
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Summary */}
+          <View className="mx-5 mt-4 bg-white rounded-2xl p-4" style={{
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.05,
+            shadowRadius: 6,
+            elevation: 2,
+          }}>
+            <Text className="text-sm text-dark/70 leading-5">{analysis.summary}</Text>
+          </View>
+
+          {/* Ingredient Summary Counts */}
+          <View className="flex-row mx-5 mt-4 gap-2">
+            {(["safe", "concern", "toxic"] as const).map((risk) => {
+              const count = analysis.ingredients.filter((i) => i.risk === risk).length;
+              const config = RISK_CONFIG[risk];
+              return (
+                <View key={risk} className="flex-1 bg-white rounded-2xl p-3 items-center" style={{
+                  shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
+                }}>
+                  <Text className="text-lg font-bold" style={{ color: config.color }}>
+                    {count}
+                  </Text>
+                  <Text className="text-xs text-dark/50">{config.label}</Text>
+                </View>
+              );
+            })}
+          </View>
+
+          {/* Ingredients */}
+          <View className="mx-5 mt-4">
+            <Text className="text-lg font-bold text-dark mb-3">Ingredients</Text>
+            {analysis.ingredients.map((ingredient) => {
+              const risk = RISK_CONFIG[ingredient.risk];
+              const isExpanded = expandedIngredient === ingredient.name;
+              return (
+                <TouchableOpacity
+                  key={ingredient.name}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setExpandedIngredient(isExpanded ? null : ingredient.name);
+                  }}
+                  activeOpacity={0.7}
+                  className="bg-white rounded-2xl mb-2 overflow-hidden"
+                  style={{
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 1 },
+                    shadowOpacity: 0.04,
+                    shadowRadius: 4,
+                    elevation: 1,
+                  }}
+                >
+                  <View className="flex-row items-center p-3.5">
+                    <View
+                      className="w-8 h-8 rounded-full items-center justify-center mr-3"
+                      style={{ backgroundColor: risk.color + "18" }}
+                    >
+                      <Ionicons name={risk.icon} size={16} color={risk.color} />
+                    </View>
+                    <Text className="flex-1 text-base text-dark font-medium">
+                      {ingredient.name}
+                    </Text>
+                    <Text
+                      className="text-xs font-semibold mr-2"
+                      style={{ color: risk.color }}
+                    >
+                      {risk.label}
+                    </Text>
+                    <Ionicons
+                      name={isExpanded ? "chevron-up" : "chevron-down"}
+                      size={16}
+                      color="#999"
+                    />
+                  </View>
+                  {isExpanded && (
+                    <View
+                      className="px-3.5 pb-3.5 pt-0"
+                      style={{ borderTopWidth: 1, borderTopColor: "#f0f0f0" }}
+                    >
+                      <Text className="text-sm text-dark/60 leading-5 mt-2.5">
+                        {ingredient.explanation}
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Concerns */}
+          {analysis.concerns.length > 0 && (
+            <View className="mx-5 mt-4">
+              <Text className="text-lg font-bold text-dark mb-3">Concerns</Text>
+              <View className="bg-white rounded-2xl p-4" style={{
+                shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
+              }}>
+                {analysis.concerns.map((concern, i) => (
+                  <View key={i} className="flex-row items-start mb-2">
+                    <Ionicons name="alert-circle" size={16} color="#F44336" style={{ marginTop: 2 }} />
+                    <Text className="text-sm text-dark/70 ml-2 flex-1">{concern}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* Clean Alternatives */}
+          {analysis.cleanAlternatives.length > 0 && (
+            <View className="mx-5 mt-4">
+              <Text className="text-lg font-bold text-dark mb-3">Clean Alternatives</Text>
+              <View className="bg-white rounded-2xl p-4" style={{
+                shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
+              }}>
+                {analysis.cleanAlternatives.map((alt, i) => (
+                  <View key={i} className="flex-row items-center mb-2">
+                    <Ionicons name="leaf" size={16} color="#4CAF50" style={{ marginTop: 1 }} />
+                    <Text className="text-sm text-dark/70 ml-2 flex-1">{alt}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* Scan Again Button */}
+          <View className="mx-5 mt-6">
+            <TouchableOpacity
+              onPress={handleBackToScanner}
+              activeOpacity={0.85}
+              className="bg-sage rounded-2xl py-4 items-center"
+            >
+              <Text className="text-white font-semibold text-base">
+                Back to Scanner
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
@@ -158,11 +408,10 @@ export default function LabelScanScreen() {
               <Ionicons name="alert-circle" size={36} color="#F4A574" />
             </View>
             <Text className="text-xl font-bold text-dark mb-2">
-              {"Couldn't Read Label"}
+              {"Couldn't Analyze"}
             </Text>
             <Text className="text-sm text-dark/50 text-center mb-6 leading-5">
-              {"The ingredient list wasn't clear enough. Try again with better"}
-              lighting and make sure the text is in focus.
+              {errorMessage || "Something went wrong. Try again with better lighting and make sure the text is in focus."}
             </Text>
             <TouchableOpacity
               onPress={handleRetry}
@@ -193,7 +442,7 @@ export default function LabelScanScreen() {
         >
           <Ionicons name="close" size={22} color="white" />
         </TouchableOpacity>
-        <Text className="text-white text-lg font-bold">Scan Label</Text>
+        <Text className="text-white text-lg font-bold">{screenTitle}</Text>
         <TouchableOpacity
           onPress={() => setShowTips(!showTips)}
           className="w-10 h-10 rounded-full bg-white/10 items-center justify-center"
@@ -250,43 +499,35 @@ export default function LabelScanScreen() {
           >
             {/* Frame Guide Overlay */}
             <View className="flex-1 items-center justify-center">
-              {/* Darkened overlay outside the frame */}
               <View className="absolute inset-0 bg-black/40" />
 
-              {/* Clear frame area */}
               <View className="w-72 h-96 relative z-10">
-                {/* Clear background cutout */}
                 <View className="absolute inset-0 bg-black/0" />
-
                 {/* Corner brackets */}
-                {/* Top-left */}
                 <View className="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-white rounded-tl-lg" />
-                {/* Top-right */}
                 <View className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-white rounded-tr-lg" />
-                {/* Bottom-left */}
                 <View className="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-white rounded-bl-lg" />
-                {/* Bottom-right */}
                 <View className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-white rounded-br-lg" />
 
-                {/* Horizontal scan lines for label effect */}
+                {/* Scan lines */}
                 <View className="absolute top-16 left-4 right-4 h-px bg-white/20" />
                 <View className="absolute top-32 left-4 right-4 h-px bg-white/20" />
                 <View className="absolute bottom-32 left-4 right-4 h-px bg-white/20" />
                 <View className="absolute bottom-16 left-4 right-4 h-px bg-white/20" />
 
-                {/* Label icon in center */}
                 <View className="flex-1 items-center justify-center">
                   <Ionicons
-                    name="document-text-outline"
+                    name={scanMode === "label" ? "nutrition-outline" : "document-text-outline"}
                     size={32}
                     color="rgba(255,255,255,0.3)"
                   />
                 </View>
               </View>
 
-              {/* Instructions */}
               <Text className="text-white text-sm mt-5 font-medium z-10">
-                Position the ingredient list inside the frame
+                {scanMode === "label"
+                  ? "Position the nutrition label inside the frame"
+                  : "Position the ingredient list inside the frame"}
               </Text>
               <Text className="text-white/50 text-xs mt-1 z-10">
                 Make sure the text is clear and readable
@@ -296,7 +537,6 @@ export default function LabelScanScreen() {
             {/* Bottom Controls */}
             <View className="absolute bottom-8 left-0 right-0">
               <View className="flex-row items-center justify-center gap-8">
-                {/* Flashlight */}
                 <TouchableOpacity
                   onPress={() => {
                     setFlashOn(!flashOn);
@@ -313,7 +553,6 @@ export default function LabelScanScreen() {
                   />
                 </TouchableOpacity>
 
-                {/* Capture Button */}
                 <TouchableOpacity
                   onPress={handleCapture}
                   activeOpacity={0.7}
@@ -328,7 +567,6 @@ export default function LabelScanScreen() {
                   </View>
                 </TouchableOpacity>
 
-                {/* Tips */}
                 <TouchableOpacity
                   onPress={() => setShowTips(true)}
                   className="w-12 h-12 rounded-full bg-white/20 items-center justify-center"
@@ -339,7 +577,6 @@ export default function LabelScanScreen() {
             </View>
           </CameraView>
         ) : (
-          /* Permission not granted */
           <View className="flex-1 items-center justify-center px-8">
             <View className="bg-white/10 rounded-full w-20 h-20 items-center justify-center mb-5">
               <Ionicons name="camera-outline" size={36} color="white" />
@@ -348,7 +585,7 @@ export default function LabelScanScreen() {
               Camera Access Needed
             </Text>
             <Text className="text-white/60 text-sm text-center mb-6 leading-5">
-              To scan ingredient labels, Crunchy needs access to your camera.
+              To scan labels, Crunchy needs access to your camera.
             </Text>
             <TouchableOpacity
               onPress={async () => {

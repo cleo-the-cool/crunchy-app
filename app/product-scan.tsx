@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  TextInput,
   ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -14,17 +13,19 @@ import { useRouter } from "expo-router";
 import { CameraView, useCameraPermissions } from "../utils/camera";
 import * as Haptics from "../utils/haptics";
 import { useSubscription } from "@/contexts/SubscriptionContext";
-import { PRODUCTS, searchProducts } from "@/data/products";
+import {
+  analyzeWithGemini,
+  type GeminiAnalysis,
+} from "@/services/gemini";
+import { Badge } from "@/components";
 
-type ProductScanState = "camera" | "processing" | "confirm" | "error" | "manual-search";
+type ProductScanState = "camera" | "processing" | "result" | "error";
 
-// Mock AI: randomly pick a product to simulate product recognition
-const MOCK_AI_PRODUCTS = PRODUCTS.filter((p) => p.image);
-
-function getRandomAIProduct() {
-  const idx = Math.floor(Math.random() * MOCK_AI_PRODUCTS.length);
-  return MOCK_AI_PRODUCTS[idx];
-}
+const RISK_CONFIG = {
+  safe: { color: "#4CAF50", icon: "checkmark-circle" as const, label: "Safe" },
+  concern: { color: "#FFC107", icon: "alert-circle" as const, label: "Concern" },
+  toxic: { color: "#F44336", icon: "warning" as const, label: "Toxic" },
+};
 
 export default function ProductScanScreen() {
   const router = useRouter();
@@ -32,8 +33,9 @@ export default function ProductScanScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [state, setState] = useState<ProductScanState>("camera");
   const [flashOn, setFlashOn] = useState(false);
-  const [identifiedProduct, setIdentifiedProduct] = useState<(typeof PRODUCTS)[0] | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [analysis, setAnalysis] = useState<GeminiAnalysis | null>(null);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [expandedIngredient, setExpandedIngredient] = useState<string | null>(null);
   const cameraRef = useRef<CameraView>(null);
 
   const handleCapture = async () => {
@@ -45,52 +47,46 @@ export default function ProductScanScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     setState("processing");
 
-    // Simulate AI processing delay
-    setTimeout(() => {
-      const success = Math.random() > 0.1;
+    try {
+      let base64Image = "";
 
-      if (success) {
-        const product = getRandomAIProduct();
-        setIdentifiedProduct(product);
-        setState("confirm");
-      } else {
-        setState("error");
+      if (cameraRef.current) {
+        try {
+          const photo = await (cameraRef.current as unknown as { takePictureAsync: (opts: { base64: boolean; quality: number }) => Promise<{ base64?: string }> }).takePictureAsync({
+            base64: true,
+            quality: 0.7,
+          });
+          if (photo?.base64) {
+            base64Image = photo.base64;
+          }
+        } catch {
+          // Camera might not support takePictureAsync in all environments
+        }
       }
-    }, 3000);
-  };
 
-  const handleConfirmYes = () => {
-    if (identifiedProduct) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      const result = await analyzeWithGemini(base64Image, "item");
       recordScan();
-      router.replace({
-        pathname: "/scan-result",
-        params: { barcode: identifiedProduct.barcode, type: "ai-recognition" },
-      });
+      setAnalysis(result);
+      setState("result");
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "Something went wrong");
+      setState("error");
     }
-  };
-
-  const handleConfirmNo = () => {
-    setState("manual-search");
-    setSearchQuery("");
   };
 
   const handleRetry = () => {
     setState("camera");
-    setIdentifiedProduct(null);
+    setAnalysis(null);
+    setErrorMessage("");
   };
 
   const handleClose = () => {
     router.back();
   };
 
-  const handleSelectSearchResult = (product: (typeof PRODUCTS)[0]) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    recordScan();
-    router.replace({
-      pathname: "/scan-result",
-      params: { barcode: product.barcode, type: "ai-recognition" },
-    });
+  const handleBackToScanner = () => {
+    router.replace("/(tabs)/scan");
   };
 
   const ensurePermission = async () => {
@@ -108,11 +104,6 @@ export default function ProductScanScreen() {
     return true;
   };
 
-  const searchResults = searchQuery.trim().length >= 2
-    ? searchProducts(searchQuery.trim())
-    : [];
-
-  // Loading permission state
   if (!permission) {
     return (
       <SafeAreaView className="flex-1 bg-cream">
@@ -145,13 +136,13 @@ export default function ProductScanScreen() {
               Identifying Product...
             </Text>
             <Text className="text-sm text-dark/50 text-center mb-6">
-              Our AI is analyzing the product to find its ingredients
+              Our AI is analyzing the product to find its ingredients and rate it
             </Text>
             <ActivityIndicator size="large" color="#8B9E7C" />
             <View className="flex-row items-center mt-6 bg-sage/5 rounded-xl px-4 py-3">
               <Ionicons name="sparkles" size={16} color="#8B9E7C" />
               <Text className="text-xs text-dark/40 ml-2">
-                Powered by Crunchy AI
+                Powered by Gemini AI
               </Text>
             </View>
           </View>
@@ -160,105 +151,18 @@ export default function ProductScanScreen() {
     );
   }
 
-  // Confirmation state
-  if (state === "confirm" && identifiedProduct) {
+  // Result state
+  if (state === "result" && analysis) {
+    const ratingColor = analysis.rating === "clean" ? "#4CAF50" : analysis.rating === "caution" ? "#FFC107" : "#F44336";
+    const ratingLabel = analysis.rating === "clean" ? "Clean" : analysis.rating === "caution" ? "Caution" : "Avoid";
+
     return (
       <SafeAreaView className="flex-1 bg-cream">
-        <View className="flex-1 items-center justify-center px-8">
-          <View
-            className="bg-white rounded-3xl p-8 items-center w-full"
-            style={{
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.08,
-              shadowRadius: 12,
-              elevation: 4,
-            }}
-          >
-            {/* Premium badge */}
-            <View className="flex-row items-center bg-peach/10 rounded-full px-3 py-1.5 mb-5">
-              <Ionicons name="diamond" size={12} color="#F4A574" />
-              <Text className="text-xs font-semibold text-peach ml-1">
-                Premium
-              </Text>
-            </View>
-
-            {/* Product image placeholder */}
-            <View className="bg-sage/10 rounded-2xl w-24 h-24 items-center justify-center mb-5">
-              <Text className="text-4xl">{identifiedProduct.image}</Text>
-            </View>
-
-            <Text className="text-lg font-bold text-dark mb-1 text-center">
-              Is this the right product?
-            </Text>
-            <Text className="text-base font-semibold text-dark/80 mb-1 text-center">
-              {identifiedProduct.name}
-            </Text>
-            <Text className="text-sm text-dark/50 mb-1">
-              {identifiedProduct.brand}
-            </Text>
-            <Text className="text-xs text-dark/30 mb-6">
-              {identifiedProduct.category}
-            </Text>
-
-            {/* Yes/No buttons */}
-            <View className="flex-row w-full gap-3">
-              <TouchableOpacity
-                onPress={handleConfirmNo}
-                activeOpacity={0.85}
-                className="flex-1 bg-dark/5 rounded-2xl py-3.5 items-center"
-              >
-                <Text className="text-dark/60 font-semibold text-base">
-                  No
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleConfirmYes}
-                activeOpacity={0.85}
-                className="flex-1 bg-sage rounded-2xl py-3.5 items-center"
-              >
-                <Text className="text-white font-semibold text-base">
-                  {"Yes, that's it!"}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            <TouchableOpacity onPress={handleRetry} className="mt-4 py-2">
-              <Text className="text-dark/40 text-sm">Take another photo</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  // Manual search state
-  if (state === "manual-search") {
-    return (
-      <SafeAreaView className="flex-1 bg-cream" edges={["top"]}>
         {/* Header */}
-        <View className="flex-row items-center justify-between px-5 pt-3 pb-3">
+        <View className="flex-row items-center justify-between px-5 pt-3 pb-2">
           <TouchableOpacity
-            onPress={handleRetry}
-            className="w-10 h-10 rounded-full bg-dark/5 items-center justify-center"
-          >
-            <Ionicons name="arrow-back" size={22} color="#2D2D2D" />
-          </TouchableOpacity>
-          <Text className="text-lg font-bold text-dark">Search Product</Text>
-          <TouchableOpacity
-            onPress={handleClose}
-            className="w-10 h-10 rounded-full bg-dark/5 items-center justify-center"
-          >
-            <Ionicons name="close" size={22} color="#2D2D2D" />
-          </TouchableOpacity>
-        </View>
-
-        <View className="px-5 mb-4">
-          <Text className="text-sm text-dark/50 mb-3 text-center">
-            {"We couldn't match the product. Try searching by name."}
-          </Text>
-          <View
-            className="flex-row items-center bg-white rounded-2xl px-4 py-3"
+            onPress={handleBackToScanner}
+            className="w-10 h-10 rounded-full bg-white items-center justify-center"
             style={{
               shadowColor: "#000",
               shadowOffset: { width: 0, height: 2 },
@@ -267,72 +171,201 @@ export default function ProductScanScreen() {
               elevation: 2,
             }}
           >
-            <Ionicons name="search" size={18} color="#999" />
-            <TextInput
-              className="flex-1 ml-2 text-base text-dark"
-              placeholder="Search by product name or brand..."
-              placeholderTextColor="#999"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              autoFocus
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => setSearchQuery("")} hitSlop={8}>
-                <Ionicons name="close-circle" size={18} color="#999" />
-              </TouchableOpacity>
-            )}
-          </View>
+            <Ionicons name="arrow-back" size={20} color="#2D2D2D" />
+          </TouchableOpacity>
+          <Text className="text-xl font-bold text-dark">Scan Result</Text>
+          <View className="w-10" />
         </View>
 
         <ScrollView
-          className="flex-1 px-5"
+          className="flex-1"
+          contentContainerStyle={{ paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
         >
-          {searchQuery.trim().length < 2 ? (
-            <View className="items-center mt-8">
-              <Ionicons name="search-outline" size={40} color="#ccc" />
-              <Text className="text-dark/30 text-sm mt-3">
-                Type at least 2 characters to search
-              </Text>
-            </View>
-          ) : searchResults.length === 0 ? (
-            <View className="items-center mt-8">
-              <Ionicons name="leaf-outline" size={40} color="#ccc" />
-              <Text className="text-dark/30 text-sm mt-3">
-                No products found
-              </Text>
-            </View>
-          ) : (
-            searchResults.map((product) => (
-              <TouchableOpacity
-                key={product.barcode}
-                onPress={() => handleSelectSearchResult(product)}
-                activeOpacity={0.7}
-                className="bg-white rounded-2xl p-4 mb-3 flex-row items-center"
-                style={{
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.06,
-                  shadowRadius: 6,
-                  elevation: 2,
-                }}
+          {/* Product Header Card */}
+          <View className="mx-5 mt-2 bg-white rounded-3xl p-5" style={{
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.08,
+            shadowRadius: 12,
+            elevation: 4,
+          }}>
+            <View className="flex-row items-center">
+              <View
+                className="w-16 h-16 rounded-2xl items-center justify-center mr-4"
+                style={{ backgroundColor: ratingColor + "15" }}
               >
-                <View className="bg-sage/10 rounded-2xl w-12 h-12 items-center justify-center mr-3">
-                  <Text className="text-xl">{product.image}</Text>
-                </View>
-                <View className="flex-1">
-                  <Text className="text-base font-semibold text-dark">
-                    {product.name}
+                <Ionicons
+                  name={analysis.rating === "clean" ? "checkmark-circle" : analysis.rating === "caution" ? "alert-circle" : "warning"}
+                  size={30}
+                  color={ratingColor}
+                />
+              </View>
+              <View className="flex-1">
+                <Text className="text-xs text-dark/40 uppercase font-medium tracking-wide">
+                  {analysis.category}
+                </Text>
+                <Text className="text-lg font-bold text-dark mt-0.5">
+                  {analysis.productName}
+                </Text>
+                <Text className="text-sm text-dark/50">{analysis.brand}</Text>
+              </View>
+            </View>
+
+            {/* Rating */}
+            <View
+              className="mt-4 rounded-2xl p-4 flex-row items-center"
+              style={{ backgroundColor: ratingColor + "12" }}
+            >
+              <View className="flex-1">
+                <View className="flex-row items-center gap-2">
+                  <Text className="text-xl font-bold" style={{ color: ratingColor }}>
+                    {ratingLabel}
                   </Text>
-                  <Text className="text-xs text-dark/50">
-                    {product.brand} · {product.category}
-                  </Text>
+                  <Badge rating={analysis.rating} size="sm" />
                 </View>
-                <Ionicons name="chevron-forward" size={18} color="#999" />
-              </TouchableOpacity>
-            ))
+                <Text className="text-sm text-dark/60 mt-1">
+                  Crunchy Score: {analysis.crunchyScore}/100
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Summary */}
+          <View className="mx-5 mt-4 bg-white rounded-2xl p-4" style={{
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.05,
+            shadowRadius: 6,
+            elevation: 2,
+          }}>
+            <Text className="text-sm text-dark/70 leading-5">{analysis.summary}</Text>
+          </View>
+
+          {/* Ingredient Summary Counts */}
+          <View className="flex-row mx-5 mt-4 gap-2">
+            {(["safe", "concern", "toxic"] as const).map((risk) => {
+              const count = analysis.ingredients.filter((i) => i.risk === risk).length;
+              const config = RISK_CONFIG[risk];
+              return (
+                <View key={risk} className="flex-1 bg-white rounded-2xl p-3 items-center" style={{
+                  shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
+                }}>
+                  <Text className="text-lg font-bold" style={{ color: config.color }}>
+                    {count}
+                  </Text>
+                  <Text className="text-xs text-dark/50">{config.label}</Text>
+                </View>
+              );
+            })}
+          </View>
+
+          {/* Ingredients */}
+          <View className="mx-5 mt-4">
+            <Text className="text-lg font-bold text-dark mb-3">Ingredients</Text>
+            {analysis.ingredients.map((ingredient) => {
+              const risk = RISK_CONFIG[ingredient.risk];
+              const isExpanded = expandedIngredient === ingredient.name;
+              return (
+                <TouchableOpacity
+                  key={ingredient.name}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setExpandedIngredient(isExpanded ? null : ingredient.name);
+                  }}
+                  activeOpacity={0.7}
+                  className="bg-white rounded-2xl mb-2 overflow-hidden"
+                  style={{
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 1 },
+                    shadowOpacity: 0.04,
+                    shadowRadius: 4,
+                    elevation: 1,
+                  }}
+                >
+                  <View className="flex-row items-center p-3.5">
+                    <View
+                      className="w-8 h-8 rounded-full items-center justify-center mr-3"
+                      style={{ backgroundColor: risk.color + "18" }}
+                    >
+                      <Ionicons name={risk.icon} size={16} color={risk.color} />
+                    </View>
+                    <Text className="flex-1 text-base text-dark font-medium">
+                      {ingredient.name}
+                    </Text>
+                    <Text
+                      className="text-xs font-semibold mr-2"
+                      style={{ color: risk.color }}
+                    >
+                      {risk.label}
+                    </Text>
+                    <Ionicons
+                      name={isExpanded ? "chevron-up" : "chevron-down"}
+                      size={16}
+                      color="#999"
+                    />
+                  </View>
+                  {isExpanded && (
+                    <View
+                      className="px-3.5 pb-3.5 pt-0"
+                      style={{ borderTopWidth: 1, borderTopColor: "#f0f0f0" }}
+                    >
+                      <Text className="text-sm text-dark/60 leading-5 mt-2.5">
+                        {ingredient.explanation}
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Concerns */}
+          {analysis.concerns.length > 0 && (
+            <View className="mx-5 mt-4">
+              <Text className="text-lg font-bold text-dark mb-3">Concerns</Text>
+              <View className="bg-white rounded-2xl p-4" style={{
+                shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
+              }}>
+                {analysis.concerns.map((concern, i) => (
+                  <View key={i} className="flex-row items-start mb-2">
+                    <Ionicons name="alert-circle" size={16} color="#F44336" style={{ marginTop: 2 }} />
+                    <Text className="text-sm text-dark/70 ml-2 flex-1">{concern}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
           )}
+
+          {/* Clean Alternatives */}
+          {analysis.cleanAlternatives.length > 0 && (
+            <View className="mx-5 mt-4">
+              <Text className="text-lg font-bold text-dark mb-3">Clean Alternatives</Text>
+              <View className="bg-white rounded-2xl p-4" style={{
+                shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
+              }}>
+                {analysis.cleanAlternatives.map((alt, i) => (
+                  <View key={i} className="flex-row items-center mb-2">
+                    <Ionicons name="leaf" size={16} color="#4CAF50" style={{ marginTop: 1 }} />
+                    <Text className="text-sm text-dark/70 ml-2 flex-1">{alt}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* Back to Scanner Button */}
+          <View className="mx-5 mt-6">
+            <TouchableOpacity
+              onPress={handleBackToScanner}
+              activeOpacity={0.85}
+              className="bg-sage rounded-2xl py-4 items-center"
+            >
+              <Text className="text-white font-semibold text-base">
+                Back to Scanner
+              </Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       </SafeAreaView>
     );
@@ -360,8 +393,7 @@ export default function ProductScanScreen() {
               {"Couldn't Identify Product"}
             </Text>
             <Text className="text-sm text-dark/50 text-center mb-6 leading-5">
-              {"We couldn't recognize this product. Try again with a clearer"}{" "}
-              view, or search for it manually.
+              {errorMessage || "Try again with a clearer view of the product."}
             </Text>
             <TouchableOpacity
               onPress={handleRetry}
@@ -370,17 +402,6 @@ export default function ProductScanScreen() {
             >
               <Text className="text-white font-semibold text-base">
                 Try Again
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                setState("manual-search");
-                setSearchQuery("");
-              }}
-              className="py-2 mb-1"
-            >
-              <Text className="text-sage text-sm font-semibold">
-                Search Manually
               </Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={handleClose} className="py-2">
@@ -403,15 +424,7 @@ export default function ProductScanScreen() {
         >
           <Ionicons name="close" size={22} color="white" />
         </TouchableOpacity>
-        <View className="flex-row items-center">
-          <Text className="text-white text-lg font-bold">Identify Product</Text>
-          <View className="flex-row items-center bg-peach/20 rounded-full px-2 py-0.5 ml-2">
-            <Ionicons name="diamond" size={10} color="#F4A574" />
-            <Text className="text-xs font-semibold text-peach ml-0.5">
-              Premium
-            </Text>
-          </View>
-        </View>
+        <Text className="text-white text-lg font-bold">Scan Item</Text>
         <View className="w-10" />
       </View>
 
@@ -426,7 +439,6 @@ export default function ProductScanScreen() {
           >
             {/* Overlay */}
             <View className="flex-1 items-center justify-center">
-              {/* Darkened overlay */}
               <View className="absolute inset-0 bg-black/30" />
 
               {/* Center circle guide */}
@@ -445,7 +457,6 @@ export default function ProductScanScreen() {
                 />
               </View>
 
-              {/* Instructions */}
               <Text className="text-white text-sm mt-6 font-medium z-10">
                 Point at the product
               </Text>
@@ -489,21 +500,12 @@ export default function ProductScanScreen() {
                   </View>
                 </TouchableOpacity>
 
-                {/* Search manually */}
-                <TouchableOpacity
-                  onPress={() => {
-                    setState("manual-search");
-                    setSearchQuery("");
-                  }}
-                  className="w-12 h-12 rounded-full bg-white/20 items-center justify-center"
-                >
-                  <Ionicons name="search" size={22} color="white" />
-                </TouchableOpacity>
+                {/* Placeholder for balance */}
+                <View className="w-12 h-12" />
               </View>
             </View>
           </CameraView>
         ) : (
-          /* Permission not granted */
           <View className="flex-1 items-center justify-center px-8">
             <View className="bg-white/10 rounded-full w-20 h-20 items-center justify-center mb-5">
               <Ionicons name="camera-outline" size={36} color="white" />
