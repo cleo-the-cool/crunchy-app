@@ -1,0 +1,111 @@
+# Iteration 6 Log
+
+## Metadata
+
+- **Task ID**: STORY-007
+- **Task Title**: Recipe Library
+- **Description**: - Create `services/recipes.ts` with 50+ curated recipes across categories: - DIY Cleaning (15+): all-purpose cleaner, glass cleaner, laundry detergent, dish soap, etc. - Skincare (15+): face masks, bo...
+- **Status**: completed
+- **Task Completed**: Yes
+- **Promise Detected**: Yes
+- **Started At**: 2026-03-07T03:04:40.571Z
+- **Ended At**: 2026-03-07T03:10:12.715Z
+- **Duration**: 5m 32s
+- **Input Tokens**: 91
+- **Output Tokens**: 22713
+- **Total Tokens**: 22804
+- **Agent**: claude
+- **Model**: claude-opus-4-6
+- **Sandbox Mode**: auto
+- **Sandbox Network**: Enabled
+--- RAW OUTPUT ---
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/prd.json[0m
+[94m[Bash][0m List app structure $ ls /Users/10-mac-alpha/Projects/crunchy-app/app/ /Users/10-mac-alpha/Projects/crunchy-app/services/ ...
+I see `recipes.tsx` and `recipe-detail.tsx` already exist. Let me check what's already implemented.
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/recipes.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/recipe-detail.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/index.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/settings.tsx[0m
+The screens already exist and import from `@/data/recipes`. Let me check if that data file exists.
+[94m[Glob][0m pattern: [96mdata/**/*[0m
+[94m[Glob][0m pattern: [96mservices/recipes*[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/data/recipes.ts[0m
+[94m[TodoWrite][0m
+Current state: 31 recipes across Cleaning (7), Skincare (7), Haircare (6), Home (5), Personal Care (6). Missing "Cooking" category entirely (PRD requires 15+), and need 15+ each for Cleaning and Skincare. Also need ingredient search and persistent favorites.
+
+Let me start building out the recipes. I'll add the Cooking category and fill gaps in parallel.
+[94m[TodoWrite][0m
+First, I need to add "Cooking" to the RecipeCategory type and RECIPE_CATEGORIES, then add all the new recipes.
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/data/recipes.ts[0m edit: "export type RecipeCategory =
+  | "Cleaning"
+  | "S..." → "export type RecipeCategory =
+  | "Cleaning"
+  | "S..."
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/data/recipes.ts[0m edit: "export const RECIPE_CATEGORIES: { name: RecipeCate..." → "export const RECIPE_CATEGORIES: { name: RecipeCate..."
+Now let me add the Cooking recipes, more Cleaning recipes, and more Skincare recipes. I'll add them all at once before the closing bracket of the RECIPES array.
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/data/recipes.ts[0m edit: "];
+
+export function getRecipeById(id: string): Rec..." → "
+  // ===== CLEANING (8 more, total 15) =====
+  {
+..."
+[94m[TodoWrite][0m
+Now let me add ingredient search to the search and filter functions.
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/data/recipes.ts[0m edit: "export function searchRecipes(query: string): Reci..." → "export function searchRecipes(query: string): Reci..."
+Also update `filterRecipes` and the inline search in `recipes.tsx`:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/data/recipes.ts[0m edit: "  if (opts.query) {
+    const q = opts.query.toLow..." → "  if (opts.query) {
+    const q = opts.query.toLow..."
+Now update the inline search in `recipes.tsx` to also search ingredients:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/recipes.tsx[0m edit: "      results = results.filter(
+        (r) =>
+   ..." → "      results = results.filter(
+        (r) =>
+   ..."
+[94m[TodoWrite][0m
+Now let me add persistent saved recipes using AsyncStorage. I'll update both the recipes list screen and recipe detail screen.
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/recipes.tsx[0m edit: "import { useState, useCallback, useMemo } from "re..." → "import { useState, useCallback, useMemo, useEffect..."
+Now update the savedRecipes state to load from and persist to AsyncStorage:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/recipes.tsx[0m edit: "  const [refreshing, setRefreshing] = useState(fal..." → "  const [refreshing, setRefreshing] = useState(fal..."
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/recipes.tsx[0m edit: "  const handleSaveToggle = (recipeId: string) => {..." → "  const handleSaveToggle = (recipeId: string) => {..."
+Now do the same for `recipe-detail.tsx`:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/recipe-detail.tsx[0m edit: "import { useState } from "react";
+import {
+  View,..." → "import { useState, useEffect } from "react";
+impor..."
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/recipe-detail.tsx[0m edit: "  const [isSaved, setIsSaved] = useState(false);
+ ..." → "  const [isSaved, setIsSaved] = useState(false);
+ ..."
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/recipe-detail.tsx[0m edit: "  const handleSave = () => {
+    Haptics.impactAsy..." → "  const handleSave = async () => {
+    Haptics.imp..."
+[94m[TodoWrite][0m
+[94m[Bash][0m Run TypeScript typecheck $ npx tsc --noEmit 2>&1 | head -50
+TypeScript passes clean. Now let me update the PRD and progress log.
+[94m[TodoWrite][0m
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/prd.json[0m edit: "      "id": "STORY-007",
+      "title": "Recipe Li..." → "      "id": "STORY-007",
+      "title": "Recipe Li..."
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m edit: "- `quiz-result.tsx` uses centralized `getTierInfo(..." → "- `quiz-result.tsx` uses centralized `getTierInfo(..."
+Now append the progress entry:
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m edit: "  - Avatar presets use emojis (consistent with app..." → "  - Avatar presets use emojis (consistent with app..."
+[94m[TodoWrite][0m
+STORY-007 is complete. Here's what was implemented:
+
+**Recipe Library (62 recipes total):**
+- **Cleaning**: 15 recipes (was 7) - added laundry detergent, fabric softener, stainless steel polish, drain unclogger, garbage disposal freshener, carpet deodorizer, shower door cleaner, oven cleaner
+- **Skincare**: 15 recipes (was 7) - added avocado mask, after-sun gel, cucumber eye patches, clay mask, night cream, oat milk bath soak, vitamin C serum, honey cinnamon spot treatment
+- **Cooking**: 15 recipes (new category) - green smoothie, golden milk, overnight oats, dressings, energy balls, granola, avocado toast, chia jam, cauliflower rice, grain bowls, almond milk, frittata, smoothie bowl, zucchini pesto, banana oat pancakes
+- **Haircare**: 6 recipes (unchanged)
+- **Home**: 5 recipes (unchanged)
+- **Personal Care**: 6 recipes (unchanged)
+
+**Search**: Now searches by ingredient name in addition to title, category, and description
+
+**Favorites**: Saved recipes persist to AsyncStorage (`@crunchy_saved_recipes`) across both the list and detail screens
+
+**TypeScript**: Passes clean
+
+<promise>COMPLETE</promise>

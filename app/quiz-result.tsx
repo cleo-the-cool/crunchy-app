@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   Share,
-  Platform,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import Animated, {
@@ -13,70 +12,49 @@ import Animated, {
   withTiming,
   withDelay,
   withSpring,
-  withSequence,
   Easing,
-  runOnJS,
 } from "react-native-reanimated";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import ViewShot from "../utils/view-shot";
 import * as Sharing from "../utils/sharing";
 import { SafeAreaWrapper, Button } from "@/components";
 import { Ionicons } from "@expo/vector-icons";
+import { getTierInfo, type TierInfo } from "@/lib/crunchyScore";
+import { useAuth } from "@/contexts/AuthContext";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 
-type ScoreLabel = {
-  label: string;
-  emoji: string;
-  description: string;
-  color: string;
+const TIER_COLORS: Record<string, string> = {
+  seedling: "#A8B89C",
+  sprout: "#8B9E7C",
+  sapling: "#6B7E5C",
+  bloom: "#F4A574",
 };
 
-function getScoreLabel(score: number): ScoreLabel {
-  if (score <= 20) {
-    return {
-      label: "Seedling",
-      emoji: "🌱",
-      description: "You're just starting your clean living journey. Every step counts!",
-      color: "#A8B89C",
-    };
-  } else if (score <= 40) {
-    return {
-      label: "Sprout",
-      emoji: "🌿",
-      description: "You're growing your awareness. Keep making swaps, one at a time!",
-      color: "#8B9E7C",
-    };
-  } else if (score <= 60) {
-    return {
-      label: "Blooming",
-      emoji: "🌸",
-      description: "You're well on your way to a cleaner lifestyle. Looking good!",
-      color: "#F4A574",
-    };
-  } else if (score <= 80) {
-    return {
-      label: "Thriving",
-      emoji: "🌻",
-      description: "You're seriously committed to clean living. Inspiring!",
-      color: "#E88B4E",
-    };
-  } else {
-    return {
-      label: "Fully Rooted",
-      emoji: "🌳",
-      description: "You're a clean living icon. Time to help others on their journey!",
-      color: "#6B7E5C",
-    };
+function getTierDescription(tier: TierInfo): string {
+  switch (tier.tier) {
+    case "seedling":
+      return "You're just starting your clean living journey. Every step counts!";
+    case "sprout":
+      return "You're growing your awareness. Keep making swaps, one at a time!";
+    case "sapling":
+      return "You're well on your way to a cleaner lifestyle. Looking good!";
+    case "bloom":
+      return "You're a clean living icon. Time to help others on their journey!";
+    default:
+      return "Welcome to your clean living journey!";
   }
 }
 
 function ShareableCard({
   score,
-  scoreLabel,
+  tier,
   viewShotRef,
 }: {
   score: number;
-  scoreLabel: ScoreLabel;
+  tier: TierInfo;
   viewShotRef: React.RefObject<ViewShot | null>;
 }) {
+  const color = TIER_COLORS[tier.tier] || "#8B9E7C";
   return (
     <ViewShot
       ref={viewShotRef}
@@ -97,12 +75,12 @@ function ShareableCard({
         {/* Score circle */}
         <View
           className="w-36 h-36 rounded-full items-center justify-center mb-4"
-          style={{ backgroundColor: scoreLabel.color + "20" }}
+          style={{ backgroundColor: color + "20" }}
         >
-          <Text className="text-4xl mb-1">{scoreLabel.emoji}</Text>
+          <Text className="text-4xl mb-1">{tier.emoji}</Text>
           <Text
             className="text-4xl font-bold"
-            style={{ color: scoreLabel.color }}
+            style={{ color }}
           >
             {score}
           </Text>
@@ -110,10 +88,10 @@ function ShareableCard({
 
         {/* Label */}
         <Text className="text-2xl font-bold text-dark mb-2">
-          {scoreLabel.label}
+          {tier.label}
         </Text>
         <Text className="text-sm text-dark-light text-center px-4 mb-4">
-          {scoreLabel.description}
+          {getTierDescription(tier)}
         </Text>
 
         {/* Footer */}
@@ -129,13 +107,14 @@ function ShareableCard({
 
 export default function QuizResultScreen() {
   const router = useRouter();
+  const { user } = useAuth();
   const { score: scoreParam } = useLocalSearchParams<{ score: string }>();
   const score = parseInt(scoreParam || "50", 10);
-  const scoreLabel = getScoreLabel(score);
+  const tier = getTierInfo(score);
   const viewShotRef = useRef<ViewShot>(null);
+  const color = TIER_COLORS[tier.tier] || "#8B9E7C";
 
   // Animation values
-  const scoreAnim = useSharedValue(0);
   const cardScale = useSharedValue(0.8);
   const cardOpacity = useSharedValue(0);
   const labelOpacity = useSharedValue(0);
@@ -143,20 +122,12 @@ export default function QuizResultScreen() {
   const [displayScore, setDisplayScore] = useState(0);
 
   useEffect(() => {
+    // Save quiz score to AsyncStorage + Supabase
+    saveQuizScore();
+
     // Animate card in
     cardScale.value = withSpring(1, { damping: 12 });
     cardOpacity.value = withTiming(1, { duration: 500 });
-
-    // Animate score counting up
-    scoreAnim.value = withTiming(score, {
-      duration: 1500,
-      easing: Easing.out(Easing.cubic),
-    });
-
-    // Update display score via polling during animation
-    const interval = setInterval(() => {
-      // We'll use the label opacity trigger instead
-    }, 50);
 
     // Show label after score animation
     labelOpacity.value = withDelay(1600, withTiming(1, { duration: 400 }));
@@ -164,9 +135,9 @@ export default function QuizResultScreen() {
     // Show buttons after label
     buttonsOpacity.value = withDelay(2000, withTiming(1, { duration: 400 }));
 
-    // Simple score counter
+    // Score counter animation
     let frame = 0;
-    const totalFrames = 45; // ~1.5s at 30fps
+    const totalFrames = 45;
     const timer = setInterval(() => {
       frame++;
       const progress = Math.min(frame / totalFrames, 1);
@@ -175,11 +146,35 @@ export default function QuizResultScreen() {
       if (frame >= totalFrames) clearInterval(timer);
     }, 33);
 
-    return () => {
-      clearInterval(interval);
-      clearInterval(timer);
-    };
+    return () => clearInterval(timer);
   }, []);
+
+  async function saveQuizScore() {
+    try {
+      // Save to AsyncStorage for local score calculation
+      await AsyncStorage.setItem(
+        "@crunchy_quiz_score",
+        JSON.stringify({
+          score,
+          completedAt: new Date().toISOString(),
+        })
+      );
+
+      // Save to Supabase if configured
+      if (isSupabaseConfigured() && user) {
+        await supabase
+          .from("profiles")
+          .update({
+            quiz_score: score,
+            quiz_completed_at: new Date().toISOString(),
+          })
+          .eq("id", user.id)
+          .then(() => {}); // silently ignore errors
+      }
+    } catch {
+      // Never block the user from seeing results
+    }
+  }
 
   const cardAnimStyle = useAnimatedStyle(() => ({
     transform: [{ scale: cardScale.value }],
@@ -205,19 +200,20 @@ export default function QuizResultScreen() {
             dialogTitle: "Share your Crunchy Score",
           });
         } else {
-          // Fallback to text share
           await Share.share({
-            message: `I scored ${score}/100 on the Crunchy Quiz! I'm a ${scoreLabel.label} ${scoreLabel.emoji}. Take the quiz at crunchy.app`,
+            message: `I scored ${score}/100 on the Crunchy Quiz! I'm a ${tier.label} ${tier.emoji}. Take the quiz at crunchy.app`,
           });
         }
       }
-    } catch (error) {
-      // Fallback to text share
+    } catch {
       await Share.share({
-        message: `I scored ${score}/100 on the Crunchy Quiz! I'm a ${scoreLabel.label} ${scoreLabel.emoji}. Take the quiz at crunchy.app`,
+        message: `I scored ${score}/100 on the Crunchy Quiz! I'm a ${tier.label} ${tier.emoji}. Take the quiz at crunchy.app`,
       });
     }
   };
+
+  // If user is signed in, this is post-signup onboarding; otherwise pre-signup
+  const isPostSignup = !!user;
 
   return (
     <SafeAreaWrapper>
@@ -241,7 +237,7 @@ export default function QuizResultScreen() {
           >
             <ShareableCard
               score={displayScore}
-              scoreLabel={scoreLabel}
+              tier={tier}
               viewShotRef={viewShotRef}
             />
           </View>
@@ -250,7 +246,9 @@ export default function QuizResultScreen() {
         {/* Label and description (animated in) */}
         <Animated.View style={labelAnimStyle} className="items-center mb-8">
           <Text className="text-base text-dark-light text-center">
-            You're a <Text className="font-bold text-dark">{scoreLabel.label}</Text> on the crunchy scale!
+            You're a{" "}
+            <Text className="font-bold text-dark">{tier.label}</Text> on the
+            crunchy scale!
           </Text>
         </Animated.View>
 
@@ -267,14 +265,26 @@ export default function QuizResultScreen() {
             </Text>
           </TouchableOpacity>
 
-          <Button
-            title="Create Account"
-            variant="secondary"
-            onPress={() => router.push("/signup")}
-          />
+          {isPostSignup ? (
+            <Button
+              title="Pick Your Interests"
+              variant="secondary"
+              onPress={() => router.replace("/interests")}
+            />
+          ) : (
+            <Button
+              title="Create Account"
+              variant="secondary"
+              onPress={() => router.push("/signup")}
+            />
+          )}
 
           <TouchableOpacity
-            onPress={() => router.push("/interests")}
+            onPress={() =>
+              isPostSignup
+                ? router.replace("/(tabs)")
+                : router.push("/interests")
+            }
             className="items-center py-3"
           >
             <Text className="text-sage font-medium">Skip for now</Text>

@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "sessionId": "fcf2d540-344f-4d0f-af68-82d93e83e14b",
+  "status": "interrupted",
+  "startedAt": "2026-03-07T02:41:54.605Z",
+  "updatedAt": "2026-03-07T02:43:57.541Z",
+  "currentIteration": 1,
+  "maxIterations": 0,
+  "tasksCompleted": 1,
+  "isPaused": false,
+  "agentPlugin": "claude",
+  "trackerState": {
+    "plugin": "json",
+    "prdPath": "prd.json",
+    "totalTasks": 10,
+    "tasks": [
+      {
+        "id": "STORY-001",
+        "title": "Supabase Client Setup",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "STORY-002",
+        "title": "Privacy Policy, ToS, Help & Support",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "STORY-003",
+        "title": "Dev Coupon \"COOL\"",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "STORY-004",
+        "title": "Scanner with Gemini Vision",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "STORY-005",
+        "title": "Crunchy Score & Tiers",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "STORY-006",
+        "title": "Onboarding Quiz",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "STORY-007",
+        "title": "Recipe Library",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "STORY-008",
+        "title": "Community Features",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "STORY-009",
+        "title": "Storefronts / User Lists",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "STORY-010",
+        "title": "UI Polish",
+        "status": "open",
+        "completedInSession": false
+      }
+    ]
+  },
+  "iterations": [
+    {
+      "iteration": 1,
+      "status": "completed",
+      "taskId": "STORY-001",
+      "taskTitle": "Supabase Client Setup",
+      "taskCompleted": true,
+      "durationMs": 122929,
+      "startedAt": "2026-03-07T02:41:54.608Z",
+      "endedAt": "2026-03-07T02:43:57.537Z"
+    }
+  ],
+  "skippedTaskIds": [],
+  "cwd": "/Users/10-mac-alpha/Projects/crunchy-app",
+  "activeTaskIds": [],
+  "subagentPanelVisible": false
+}

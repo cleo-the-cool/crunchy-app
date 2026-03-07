@@ -1,0 +1,14 @@
+{
+  "id": "f6b8a28c-4c20-4127-bd38-148d2a541b68",
+  "status": "running",
+  "startedAt": "2026-03-07T02:44:41.819Z",
+  "updatedAt": "2026-03-07T03:25:38.564Z",
+  "agentPlugin": "claude",
+  "trackerPlugin": "json",
+  "prdPath": "prd.json",
+  "currentIteration": 9,
+  "maxIterations": 0,
+  "totalTasks": 0,
+  "tasksCompleted": 8,
+  "cwd": "/Users/10-mac-alpha/Projects/crunchy-app"
+}

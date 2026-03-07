@@ -11,13 +11,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/contexts/AuthContext";
+import { useGoBack } from "@/lib/useGoBack";
 
 export default function SettingsScreen() {
   const { user, signOut } = useAuth();
   const router = useRouter();
-  const [scanNotifications, setScanNotifications] = useState(true);
+  const goBack = useGoBack();
   const [communityNotifications, setCommunityNotifications] = useState(true);
-  const [weeklyDigest, setWeeklyDigest] = useState(false);
 
   const handleLogout = () => {
     Alert.alert("Log Out", "Are you sure you want to log out?", [
@@ -37,7 +37,7 @@ export default function SettingsScreen() {
     <SafeAreaView className="flex-1 bg-cream">
       {/* Header */}
       <View className="flex-row items-center px-5 pt-2 pb-4">
-        <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
+        <TouchableOpacity onPress={goBack} hitSlop={8}>
           <Ionicons name="arrow-back" size={24} color="#2D2D2D" />
         </TouchableOpacity>
         <Text className="text-xl font-bold text-dark ml-4">Settings</Text>
@@ -83,14 +83,6 @@ export default function SettingsScreen() {
         <SectionHeader title="Notifications" />
         <View className="mx-5 bg-white rounded-2xl overflow-hidden" style={cardShadow}>
           <SettingsToggle
-            icon="scan-outline"
-            label="Scan Alerts"
-            description="Get notified about product recalls"
-            value={scanNotifications}
-            onToggle={setScanNotifications}
-          />
-          <Divider />
-          <SettingsToggle
             icon="people-outline"
             label="Community"
             description="Likes and comments on your posts"
@@ -98,13 +90,18 @@ export default function SettingsScreen() {
             onToggle={setCommunityNotifications}
           />
           <Divider />
-          <SettingsToggle
-            icon="newspaper-outline"
-            label="Weekly Digest"
-            description="Clean living tips and trends"
-            value={weeklyDigest}
-            onToggle={setWeeklyDigest}
-          />
+          <View className="flex-row items-center px-4 py-3">
+            <View className="w-8 items-center">
+              <Ionicons name="newspaper-outline" size={20} color="#8B9E7C" />
+            </View>
+            <View className="flex-1 ml-2">
+              <Text className="text-base text-dark">Weekly Digest</Text>
+              <Text className="text-xs text-dark/40">Clean living tips and trends</Text>
+            </View>
+            <View className="bg-sage/15 px-2.5 py-1 rounded-full">
+              <Text className="text-xs font-medium text-sage">Coming Soon</Text>
+            </View>
+          </View>
         </View>
 
         {/* About Section */}
@@ -112,15 +109,15 @@ export default function SettingsScreen() {
         <View className="mx-5 bg-white rounded-2xl overflow-hidden" style={cardShadow}>
           <SettingsRow icon="information-circle-outline" label="Version" value="1.0.0" />
           <Divider />
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push("/privacy-policy")}>
             <SettingsRow icon="document-text-outline" label="Privacy Policy" chevron />
           </TouchableOpacity>
           <Divider />
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push("/terms-of-service")}>
             <SettingsRow icon="shield-checkmark-outline" label="Terms of Service" chevron />
           </TouchableOpacity>
           <Divider />
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push("/help-support")}>
             <SettingsRow icon="help-circle-outline" label="Help & Support" chevron />
           </TouchableOpacity>
         </View>

@@ -12,8 +12,13 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useGoBack } from "@/lib/useGoBack";
 import * as Haptics from "../utils/haptics";
-import { TRENDING_HASHTAGS } from "@/data/community";
+import {
+  TRENDING_HASHTAGS,
+  POST_TYPE_CONFIG,
+  type PostType,
+} from "@/data/community";
 
 const HASHTAG_SUGGESTIONS = [
   ...TRENDING_HASHTAGS,
@@ -25,13 +30,17 @@ const HASHTAG_SUGGESTIONS = [
   "#Greenwashing",
 ];
 
+const POST_TYPES: PostType[] = ["general", "review", "tip", "recipe", "question"];
+
 export default function CreatePostScreen() {
   const router = useRouter();
+  const goBack = useGoBack();
   const [content, setContent] = useState("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedHashtags, setSelectedHashtags] = useState<Set<string>>(
     new Set()
   );
+  const [postType, setPostType] = useState<PostType>("general");
 
   const handleToggleHashtag = (tag: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -71,7 +80,7 @@ export default function CreatePostScreen() {
       >
         {/* Header */}
         <View className="flex-row items-center justify-between px-5 pt-3 pb-3 border-b border-dark/10">
-          <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
+          <TouchableOpacity onPress={goBack} hitSlop={8}>
             <Ionicons name="close" size={24} color="#2D2D2D" />
           </TouchableOpacity>
           <Text className="text-lg font-bold text-dark">New Post</Text>
@@ -99,10 +108,70 @@ export default function CreatePostScreen() {
             <Text className="text-sm font-semibold text-dark">you</Text>
           </View>
 
+          {/* Post Type Selector */}
+          <View className="mb-4">
+            <Text className="text-sm font-semibold text-dark/50 mb-2">
+              Post type
+            </Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 8 }}
+            >
+              {POST_TYPES.map((type) => {
+                const config = POST_TYPE_CONFIG[type];
+                const isActive = postType === type;
+                return (
+                  <TouchableOpacity
+                    key={type}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setPostType(type);
+                    }}
+                    className={`px-3.5 py-2 rounded-full flex-row items-center ${
+                      isActive ? "" : "bg-white"
+                    }`}
+                    style={[
+                      isActive
+                        ? { backgroundColor: config.color + "20" }
+                        : {
+                            shadowColor: "#000",
+                            shadowOffset: { width: 0, height: 1 },
+                            shadowOpacity: 0.04,
+                            shadowRadius: 3,
+                            elevation: 1,
+                          },
+                    ]}
+                  >
+                    <Text className="text-sm mr-1">{config.emoji}</Text>
+                    <Text
+                      className={`text-sm font-medium`}
+                      style={{
+                        color: isActive ? config.color : "#999",
+                      }}
+                    >
+                      {config.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+
           {/* Text Input */}
           <TextInput
             className="text-base text-dark min-h-[120px]"
-            placeholder="What's on your mind? Share a tip, a swap, or something you're proud of..."
+            placeholder={
+              postType === "question"
+                ? "Ask the community a question..."
+                : postType === "tip"
+                ? "Share a clean living tip..."
+                : postType === "review"
+                ? "Write a product or recipe review..."
+                : postType === "recipe"
+                ? "Share a DIY recipe or meal idea..."
+                : "What's on your mind? Share a tip, a swap, or something you're proud of..."
+            }
             placeholderTextColor="#999"
             value={content}
             onChangeText={setContent}

@@ -11,16 +11,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import * as Haptics from "../../utils/haptics";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, Badge } from "@/components";
+import { Card, Badge, ScoreCard } from "@/components";
+import { getMockStats, type CrunchyStats } from "@/lib/crunchyScore";
 
 type TabKey = "history" | "saved" | "posts";
-
-const MOCK_STATS = {
-  totalScans: 12,
-  recipesMade: 5,
-  daysActive: 23,
-  crunchyScore: 74,
-};
 
 const MOCK_SCAN_HISTORY = [
   { id: "s1", productName: "Gentle Skin Cleanser", brand: "Cetaphil", date: "2026-03-04", rating: "caution" as const, barcode: "3574661014647" },
@@ -47,17 +41,6 @@ const MOCK_USER_POSTS = [
   { id: "up3", content: "Day 23 of my clean living journey. Small swaps add up! Already replaced 7 products with cleaner alternatives.", timestamp: "2026-02-28T11:00:00Z", likes: 52, comments: 12, hashtags: ["#CrunchyLife", "#CleanLiving"] },
 ];
 
-function getScoreLabel(score: number): {
-  label: string;
-  badge: "clean" | "caution" | "avoid";
-} {
-  if (score >= 80) return { label: "Fully Rooted", badge: "clean" };
-  if (score >= 60) return { label: "Thriving", badge: "clean" };
-  if (score >= 40) return { label: "Blooming", badge: "caution" };
-  if (score >= 20) return { label: "Sprout", badge: "caution" };
-  return { label: "Seedling", badge: "avoid" };
-}
-
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
   const now = new Date();
@@ -75,12 +58,14 @@ export default function ProfileScreen() {
   const [activeTab, setActiveTab] = useState<TabKey>("history");
   const [refreshing, setRefreshing] = useState(false);
 
+  // TODO: Replace with real Supabase data when auth is wired up
+  const stats: CrunchyStats = getMockStats();
+
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     setTimeout(() => setRefreshing(false), 1500);
   }, []);
 
-  const scoreInfo = getScoreLabel(MOCK_STATS.crunchyScore);
   const initials = user?.name
     ? user.name
         .split(" ")
@@ -131,35 +116,43 @@ export default function ProfileScreen() {
           </View>
           <Text className="text-xl font-bold text-dark">{user?.name ?? "Crunchy User"}</Text>
           <Text className="text-sm text-dark/50 mt-0.5">@{user?.email?.split("@")[0] ?? "user"}</Text>
-
-          {/* Crunchy Score Badge */}
-          <View className="items-center mt-3">
-            <View
-              className="rounded-2xl px-6 py-3 items-center"
-              style={{
-                backgroundColor: scoreInfo.badge === "clean" ? "#4CAF50" + "18" : scoreInfo.badge === "caution" ? "#FFC107" + "18" : "#F44336" + "18",
-              }}
-            >
-              <Text
-                className="text-3xl font-bold"
-                style={{
-                  color: scoreInfo.badge === "clean" ? "#4CAF50" : scoreInfo.badge === "caution" ? "#FFC107" : "#F44336",
-                }}
-              >
-                {MOCK_STATS.crunchyScore}
-              </Text>
-              <Text className="text-sm font-semibold text-dark/70 mt-0.5">
-                {scoreInfo.label}
-              </Text>
-            </View>
-          </View>
         </View>
 
-        {/* Stats Row */}
-        <View className="flex-row px-5 mt-4 gap-3">
-          <StatCard icon="barcode-outline" value={MOCK_STATS.totalScans} label="Scans" />
-          <StatCard icon="flask-outline" value={MOCK_STATS.recipesMade} label="Recipes Made" />
-          <StatCard icon="calendar-outline" value={MOCK_STATS.daysActive} label="Days Active" />
+        {/* Screenshotable Score Card */}
+        <View className="mt-3">
+          <ScoreCard stats={stats} userName={user?.name} />
+        </View>
+
+        {/* Quick Actions */}
+        <View className="flex-row px-5 mt-4" style={{ gap: 10 }}>
+          <TouchableOpacity
+            onPress={() => router.push("/lists")}
+            className="flex-1 bg-white rounded-2xl py-3.5 flex-row items-center justify-center"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.06,
+              shadowRadius: 6,
+              elevation: 2,
+            }}
+          >
+            <Ionicons name="list-outline" size={18} color="#8B9E7C" />
+            <Text className="text-sm font-semibold text-sage ml-2">My Lists</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => router.push("/lists")}
+            className="flex-1 bg-white rounded-2xl py-3.5 flex-row items-center justify-center"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.06,
+              shadowRadius: 6,
+              elevation: 2,
+            }}
+          >
+            <Ionicons name="globe-outline" size={18} color="#8B9E7C" />
+            <Text className="text-sm font-semibold text-sage ml-2">Browse Lists</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Tab Sections */}

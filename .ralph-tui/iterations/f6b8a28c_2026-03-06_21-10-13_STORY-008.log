@@ -1,0 +1,152 @@
+# Iteration 7 Log
+
+## Metadata
+
+- **Task ID**: STORY-008
+- **Task Title**: Community Features
+- **Description**: - Community feed: list of posts with user avatar, content, image, likes, comments count - Create post (text + optional photo upload to Supabase Storage) - Like/unlike posts - Comment on posts - User p...
+- **Status**: completed
+- **Task Completed**: Yes
+- **Promise Detected**: Yes
+- **Started At**: 2026-03-07T03:10:13.731Z
+- **Ended At**: 2026-03-07T03:16:51.044Z
+- **Duration**: 6m 37s
+- **Input Tokens**: 241
+- **Output Tokens**: 24297
+- **Total Tokens**: 24538
+- **Agent**: claude
+- **Model**: claude-opus-4-6
+- **Sandbox Mode**: auto
+- **Sandbox Network**: Enabled
+--- RAW OUTPUT ---
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/prd.json[0m
+[94m[TodoWrite][0m
+[94m[Agent][0m Explore codebase structure
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/_layout.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/components/index.ts[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/_layout.tsx[0m
+[94m[Glob][0m pattern: [96m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/*.tsx[0m
+[94m[Glob][0m pattern: [96m/Users/10-mac-alpha/Projects/crunchy-app/lib/*.ts[0m
+[94m[Glob][0m pattern: [96m/Users/10-mac-alpha/Projects/crunchy-app/contexts/*.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/lib/supabase.ts[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/contexts/AuthContext.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/lib/crunchyScore.ts[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/community.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/profile.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/index.tsx[0m
+[94m[Glob][0m pattern: [96m/Users/10-mac-alpha/Projects/crunchy-app/data/*.ts[0m
+[94m[Glob][0m pattern: [96m/Users/10-mac-alpha/Projects/crunchy-app/contexts/*.tsx[0m
+[94m[Glob][0m pattern: [96m/Users/10-mac-alpha/Projects/crunchy-app/utils/*.ts[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/data/community.ts[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/contexts/InterestsContext.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/contexts/SubscriptionContext.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/data/recipes.ts[0m
+
+[91m[Error: File content (25071 tokens) exceeds maximum allowed tokens (25000). Please use offset and limit parameters to read specific portions of the file, or use the GrepTool to search for specific content.][0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/package.json[0m
+[94m[Glob][0m pattern: [96m/Users/10-mac-alpha/Projects/crunchy-app/components/*.tsx[0m
+[94m[Glob][0m pattern: [96m/Users/10-mac-alpha/Projects/crunchy-app/app/**/*.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/components/Card.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/components/Badge.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/components/ScoreCard.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/prd.json[0m
+Let me read the existing community-related files to understand what's already built and what's missing.
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/community.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/data/community.ts[0m
+[94m[Glob][0m pattern: [96mapp/create-post*[0m
+[94m[Glob][0m pattern: [96mapp/user-profile*[0m
+[94m[Glob][0m pattern: [96mapp/post-detail*[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/create-post.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/profile.tsx[0m
+[94m[TodoWrite][0m
+Let me update the community data model first with post types and user profile data.
+[94m[Write][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/data/community.ts[0m "export type PostType = "general" | "review" | "tip" | "recipe" | "question";
+
+export const POST_TYPE_CONFIG: Record<
+  PostType,
+  { label: string; emoji: string; color: string }
+> = {
+  general: { la... (16725 chars)"
+[94m[TodoWrite][0m
+Now let me read the crunchyScore lib to use the right tier functions in the user profile screen.
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/lib/crunchyScore.ts[0m
+Now let me create the user profile screen and update community.tsx and create-post.tsx in parallel.
+[94m[Write][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/user-profile.tsx[0m "import { useState, useMemo } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+imp... (9155 chars)"
+[94m[TodoWrite][0m
+Now update the community feed to add post type badges, report buttons, and tap-to-profile navigation.
+[94m[Write][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/community.tsx[0m "import { useState, useCallback, useMemo } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  RefreshControl,
+  Modal,
+  FlatList,
+  TextInput,
+  KeyboardAvoidingView,
+  Platfor... (17552 chars)"
+Now update create-post.tsx with post type selector.
+[94m[TodoWrite][0m
+[94m[Write][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/create-post.tsx[0m "import { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+} from "react-native";
+import { SafeAreaView } fr... (9463 chars)"
+[94m[TodoWrite][0m
+[94m[Bash][0m Run TypeScript type check $ npx tsc --noEmit 2>&1 | head -60
+TypeScript check passes clean. Now let me check the home screen - it imports from `@/data/community` and the type may need updating since we added `postType`.
+[94m[Grep][0m pattern: [96mfrom "@/data/community"[0m
+Good - only the files I've already updated import from community data. Let me also verify the home screen's trending posts section still works since the `COMMUNITY_POSTS` data now has the `postType` field (backward compatible since it's a new field, not removing any).
+[94m[Grep][0m pattern: [96mCOMMUNITY_POSTS|CommunityPost[0m
+Only our modified files. The home screen must reference trending posts differently. Let me check for any references to old community types that might have broken.
+[94m[Grep][0m pattern: [96mcommunity[0m
+Good - home screen doesn't import from community data. TypeScript passes cleanly. Now let me update the PRD and progress.
+[94m[TodoWrite][0m
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/prd.json[0m edit: "    {
+      "id": "STORY-008",
+      "title": "Com..." → "    {
+      "id": "STORY-008",
+      "title": "Com..."
+Now update progress.md with learnings.
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m edit: "- Recipe search includes ingredient name matching ..." → "- Recipe search includes ingredient name matching ..."
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m edit: "  - Recipe cards already had save/bookmark UI, jus..." → "  - Recipe cards already had save/bookmark UI, jus..."
+[94m[TodoWrite][0m
+STORY-008 Community Features is complete. Here's what was implemented:
+
+**New features added:**
+1. **Post types** (general, review, tip, recipe, question) - visible as colored badges on each post card, selectable when creating posts
+2. **User profiles** (`app/user-profile.tsx`) - shows avatar, bio, crunchy score with tier badge, total scans, follower/following counts, and user's post history
+3. **Follow/unfollow** - button on user profile screen with visual state toggle
+4. **Content moderation** - report button on posts (ellipsis menu), report button on comments (flag icon), report user option on profile
+5. **Tap-to-profile** - tapping username/avatar on posts or comments navigates to that user's profile
+
+**Files changed:**
+- `data/community.ts` - Added `PostType`, `CommunityUser`, `POST_TYPE_CONFIG`, 10 user profiles, `postType` on all posts
+- `app/(tabs)/community.tsx` - Post type badges, report post/comment, user profile navigation
+- `app/create-post.tsx` - Post type selector with context-aware placeholder text
+- `app/user-profile.tsx` (new) - Full user profile screen
+- `prd.json` - Marked STORY-008 as passes: true
+
+TypeScript check passes clean. All changes are uncommitted for manual review.
+
+<promise>COMPLETE</promise>

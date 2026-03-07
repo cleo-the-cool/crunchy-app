@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useGoBack } from "@/lib/useGoBack";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "../utils/haptics";
 import {
   RECIPES,
@@ -18,6 +20,8 @@ import {
   type RecipeCategory,
   type Difficulty,
 } from "@/data/recipes";
+
+const SAVED_RECIPES_KEY = "@crunchy_saved_recipes";
 
 const DIFFICULTY_OPTIONS: { label: string; value: Difficulty | "all" }[] = [
   { label: "All", value: "all" },
@@ -52,6 +56,7 @@ function DifficultyStars({ difficulty }: { difficulty: Difficulty }) {
 
 export default function RecipesScreen() {
   const router = useRouter();
+  const goBack = useGoBack();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] =
     useState<RecipeCategory | null>(null);
@@ -61,6 +66,12 @@ export default function RecipesScreen() {
   const [filterTime, setFilterTime] = useState<number | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [savedRecipes, setSavedRecipes] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    AsyncStorage.getItem(SAVED_RECIPES_KEY).then((val) => {
+      if (val) setSavedRecipes(new Set(JSON.parse(val)));
+    });
+  }, []);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -76,7 +87,8 @@ export default function RecipesScreen() {
         (r) =>
           r.title.toLowerCase().includes(q) ||
           r.category.toLowerCase().includes(q) ||
-          r.description.toLowerCase().includes(q)
+          r.description.toLowerCase().includes(q) ||
+          r.ingredients.some((ing) => ing.name.toLowerCase().includes(q))
       );
     }
 
@@ -114,6 +126,7 @@ export default function RecipesScreen() {
       } else {
         next.add(recipeId);
       }
+      AsyncStorage.setItem(SAVED_RECIPES_KEY, JSON.stringify([...next]));
       return next;
     });
   };
@@ -136,7 +149,7 @@ export default function RecipesScreen() {
       {/* Header */}
       <View className="px-5 pt-3 pb-2 flex-row items-center">
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={goBack}
           hitSlop={8}
           className="mr-3"
         >

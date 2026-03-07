@@ -13,8 +13,9 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { CameraView, useCameraPermissions } from "../utils/camera";
 import * as Haptics from "../utils/haptics";
 import { useSubscription } from "@/contexts/SubscriptionContext";
+import { useAuth } from "@/contexts/AuthContext";
 import {
-  analyzeWithGemini,
+  analyzeAndSaveScan,
   type ScanMode,
   type GeminiAnalysis,
 } from "@/services/gemini";
@@ -40,6 +41,7 @@ export default function LabelScanScreen() {
   const { mode: modeParam } = useLocalSearchParams<{ mode?: string }>();
   const scanMode: ScanMode = modeParam === "label" ? "label" : "ingredients";
   const { canScan, recordScan } = useSubscription();
+  const { user } = useAuth();
   const [permission, requestPermission] = useCameraPermissions();
   const [state, setState] = useState<LabelScanState>("camera");
   const [flashOn, setFlashOn] = useState(false);
@@ -76,7 +78,7 @@ export default function LabelScanScreen() {
         }
       }
 
-      const result = await analyzeWithGemini(base64Image, scanMode);
+      const result = await analyzeAndSaveScan(base64Image, scanMode, user?.id ?? null);
       recordScan();
       setAnalysis(result);
       setState("result");

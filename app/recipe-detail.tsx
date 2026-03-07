@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,8 +10,12 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { useGoBack } from "@/lib/useGoBack";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "../utils/haptics";
 import { getRecipeById, type Recipe, type Difficulty } from "@/data/recipes";
+
+const SAVED_RECIPES_KEY = "@crunchy_saved_recipes";
 
 function DifficultyStars({ difficulty }: { difficulty: Difficulty }) {
   const count = difficulty === "Easy" ? 1 : difficulty === "Medium" ? 2 : 3;
@@ -32,11 +36,22 @@ function DifficultyStars({ difficulty }: { difficulty: Difficulty }) {
 
 export default function RecipeDetailScreen() {
   const router = useRouter();
+  const goBack = useGoBack();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const [isSaved, setIsSaved] = useState(false);
   const [madeIt, setMadeIt] = useState(false);
 
   const recipe = id ? getRecipeById(id) : undefined;
+
+  useEffect(() => {
+    if (!id) return;
+    AsyncStorage.getItem(SAVED_RECIPES_KEY).then((val) => {
+      if (val) {
+        const saved: string[] = JSON.parse(val);
+        setIsSaved(saved.includes(id));
+      }
+    });
+  }, [id]);
 
   if (!recipe) {
     return (
@@ -44,7 +59,7 @@ export default function RecipeDetailScreen() {
         <Text className="text-5xl mb-4">🤔</Text>
         <Text className="text-lg font-bold text-dark">Recipe not found</Text>
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={goBack}
           className="bg-sage rounded-2xl px-6 py-3 mt-4"
         >
           <Text className="text-white font-semibold">Go Back</Text>
@@ -53,9 +68,23 @@ export default function RecipeDetailScreen() {
     );
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setIsSaved(!isSaved);
+    const newSaved = !isSaved;
+    setIsSaved(newSaved);
+    try {
+      const val = await AsyncStorage.getItem(SAVED_RECIPES_KEY);
+      const saved: string[] = val ? JSON.parse(val) : [];
+      if (newSaved) {
+        if (!saved.includes(id!)) saved.push(id!);
+      } else {
+        const idx = saved.indexOf(id!);
+        if (idx >= 0) saved.splice(idx, 1);
+      }
+      await AsyncStorage.setItem(SAVED_RECIPES_KEY, JSON.stringify(saved));
+    } catch {
+      // Silently handle storage errors
+    }
   };
 
   const handleMadeIt = () => {
@@ -81,7 +110,7 @@ export default function RecipeDetailScreen() {
     <SafeAreaView className="flex-1 bg-cream">
       {/* Header */}
       <View className="px-5 pt-3 pb-2 flex-row items-center justify-between">
-        <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
+        <TouchableOpacity onPress={goBack} hitSlop={8}>
           <Ionicons name="arrow-back" size={24} color="#2D2D2D" />
         </TouchableOpacity>
         <View className="flex-row gap-4">

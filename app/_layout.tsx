@@ -20,6 +20,7 @@ function RootNavigator() {
       segments[0] === "signup" ||
       segments[0] === "welcome" ||
       segments[0] === "onboarding" ||
+      segments[0] === "onboarding-profile" ||
       segments[0] === "quiz" ||
       segments[0] === "quiz-result" ||
       segments[0] === "interests";

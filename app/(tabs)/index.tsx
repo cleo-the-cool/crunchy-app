@@ -14,6 +14,7 @@ import * as Haptics from "../../utils/haptics";
 import { useAuth } from "@/contexts/AuthContext";
 import { useInterests, InterestCategory } from "@/contexts/InterestsContext";
 import { Card, Badge } from "@/components";
+import { getMockStats, getTierInfo } from "@/lib/crunchyScore";
 
 type SwapData = {
   name: string;
@@ -135,11 +136,7 @@ const ALL_TRENDING: TrendingPost[] = [
   },
 ];
 
-const MOCK_STATS = {
-  totalScans: 12,
-  crunchyScore: 74,
-  savedItems: 8,
-};
+const MOCK_SAVED_ITEMS = 8;
 
 function getPersonalizedSwap(interests: InterestCategory[]): SwapData {
   if (interests.length > 0) {
@@ -181,7 +178,9 @@ export default function HomeScreen() {
   };
 
   const firstName = user?.name?.split(" ")[0] ?? "Friend";
-  const scoreLabel = getScoreLabel(MOCK_STATS.crunchyScore);
+  // TODO: Replace with real Supabase data when auth is wired up
+  const stats = getMockStats();
+  const tierInfo = stats.tier;
   const swap = getPersonalizedSwap(interests);
   const trending = getPersonalizedTrending(interests);
 
@@ -210,8 +209,8 @@ export default function HomeScreen() {
             </Text>
           </View>
           <View className="items-center">
-            <Badge rating={scoreLabel.badge} size="md" label={String(MOCK_STATS.crunchyScore)} />
-            <Text className="text-xs text-dark/50 mt-1">{scoreLabel.label}</Text>
+            <Badge rating={tierInfo.badge} size="md" label={String(stats.crunchyScore)} />
+            <Text className="text-xs text-dark/50 mt-1">{tierInfo.emoji} {tierInfo.label}</Text>
           </View>
         </View>
 
@@ -243,17 +242,17 @@ export default function HomeScreen() {
         <View className="flex-row px-5 mt-5 gap-3">
           <StatCard
             icon="barcode-outline"
-            value={MOCK_STATS.totalScans}
+            value={stats.totalScans}
             label="Scans"
           />
           <StatCard
             icon="leaf-outline"
-            value={MOCK_STATS.crunchyScore}
+            value={stats.crunchyScore}
             label="Score"
           />
           <StatCard
             icon="bookmark-outline"
-            value={MOCK_STATS.savedItems}
+            value={MOCK_SAVED_ITEMS}
             label="Saved"
           />
         </View>
@@ -376,13 +375,3 @@ function StatCard({
   );
 }
 
-function getScoreLabel(score: number): {
-  label: string;
-  badge: "clean" | "caution" | "avoid";
-} {
-  if (score >= 80) return { label: "Thriving", badge: "clean" };
-  if (score >= 60) return { label: "Blooming", badge: "clean" };
-  if (score >= 40) return { label: "Sprout", badge: "caution" };
-  if (score >= 20) return { label: "Seedling", badge: "caution" };
-  return { label: "Seedling", badge: "avoid" };
-}

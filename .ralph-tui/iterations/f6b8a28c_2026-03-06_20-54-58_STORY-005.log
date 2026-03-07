@@ -1,0 +1,180 @@
+# Iteration 4 Log
+
+## Metadata
+
+- **Task ID**: STORY-005
+- **Task Title**: Crunchy Score & Tiers
+- **Description**: - Calculate score based on: scan history (80%) + recipes tried (20%) + quiz baseline (decays: 100% at start → 0% after 1 year) - Community engagement does NOT affect score - Tiers: 🌱 Seedling (0-25),...
+- **Status**: completed
+- **Task Completed**: Yes
+- **Promise Detected**: Yes
+- **Started At**: 2026-03-07T02:54:58.006Z
+- **Ended At**: 2026-03-07T03:00:14.345Z
+- **Duration**: 5m 16s
+- **Input Tokens**: 633
+- **Output Tokens**: 14764
+- **Total Tokens**: 15397
+- **Agent**: claude
+- **Model**: claude-opus-4-6
+- **Sandbox Mode**: auto
+- **Sandbox Network**: Enabled
+--- RAW OUTPUT ---
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/prd.json[0m
+[94m[TodoWrite][0m
+[94m[Agent][0m Explore codebase for STORY-005
+[94m[Bash][0m Find PRD and package files to understand project scope $ find /Users/10-mac-alpha/Projects/crunchy-app -type f -name "*.json" | grep -E "(prd|package)" | hea...
+[94m[Bash][0m List app directory structure $ ls -la /Users/10-mac-alpha/Projects/crunchy-app/app/
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/prd.json[0m
+[94m[Bash][0m List the tabs directory structure $ ls -la /Users/10-mac-alpha/Projects/crunchy-app/app/\(tabs\)/
+[94m[Glob][0m pattern: [96m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/*.tsx[0m
+[94m[Glob][0m pattern: [96m/Users/10-mac-alpha/Projects/crunchy-app/lib/**/*.ts[0m
+[94m[Glob][0m pattern: [96m/Users/10-mac-alpha/Projects/crunchy-app/**/*AuthContext*[0m
+[94m[Glob][0m pattern: [96m/Users/10-mac-alpha/Projects/crunchy-app/**/*.sql[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/profile.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/index.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/contexts/AuthContext.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/lib/supabase.ts[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/supabase-schema.sql[0m
+[94m[Bash][0m List migration files $ ls -la /Users/10-mac-alpha/Projects/crunchy-app/supabase/migrations/
+[94m[Glob][0m pattern: [96m/Users/10-mac-alpha/Projects/crunchy-app/**/*score* [0m
+[94m[Grep][0m [95m/Users/10-mac-alpha/Projects/crunchy-app[0m pattern: [96mgetScoreLabel|crunchyScore|tier[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/_layout.tsx[0m
+[94m[Bash][0m Look for recipe tracking logic $ find /Users/10-mac-alpha/Projects/crunchy-app -type f \( -name "*.tsx" -o -name "*.ts" \) | head -20...
+[94m[Grep][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app[0m pattern: [96mMOCK_STATS|crunchyScore[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/progress.txt[0m
+[94m[Glob][0m pattern: [96m/Users/10-mac-alpha/Projects/crunchy-app/contexts/*.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/contexts/InterestsContext.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/scan.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/contexts/SubscriptionContext.tsx[0m
+[94m[Bash][0m Search for score calculation utilities $ find /Users/10-mac-alpha/Projects/crunchy-app -type f \( -name "*.ts" -o -name "*.tsx" \) -not -path...
+
+[91m[Error: Exit code 1][0m
+[94m[Bash][0m List services directory $ ls -la /Users/10-mac-alpha/Projects/crunchy-app/services/
+
+[91m[Error: <tool_use_error>Sibling tool call errored</tool_use_error>][0m
+[94m[Bash][0m List lib directory $ ls -la /Users/10-mac-alpha/Projects/crunchy-app/lib/
+
+[91m[Error: <tool_use_error>Sibling tool call errored</tool_use_error>][0m
+[94m[Bash][0m Look for utilities/helpers directories $ find /Users/10-mac-alpha/Projects/crunchy-app -type d -name "utils" -o -name "helpers"
+
+[91m[Error: <tool_use_error>Sibling tool call errored</tool_use_error>][0m
+[94m[Bash][0m List top-level directories $ find /Users/10-mac-alpha/Projects/crunchy-app -maxdepth 2 -type d
+[94m[Bash][0m List root directory $ ls -la /Users/10-mac-alpha/Projects/crunchy-app/
+[94m[Bash][0m List utils directory $ ls -la /Users/10-mac-alpha/Projects/crunchy-app/utils/
+[94m[Bash][0m List services directory $ ls -la /Users/10-mac-alpha/Projects/crunchy-app/services/
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/services/gemini.ts[0m
+[94m[Bash][0m List data files $ find /Users/10-mac-alpha/Projects/crunchy-app/data -type f -name "*.ts"
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/data/recipes.ts[0m
+Now let me read the key files I'll be modifying.
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/profile.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/index.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/contexts/AuthContext.tsx[0m
+Let me check what packages are available and look at the components directory.
+[94m[Grep][0m [95m/Users/10-mac-alpha/Projects/crunchy-app[0m pattern: [96mreact-native-view-shot|ViewShot[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/components/index.tsx[0m
+
+[91m[Error: File does not exist. Note: your current working directory is /Users/10-mac-alpha/Projects/crunchy-app. Did you mean index.ts?][0m
+[94m[Bash][0m List lib directory $ ls /Users/10-mac-alpha/Projects/crunchy-app/lib/
+
+[91m[Error: <tool_use_error>Sibling tool call errored</tool_use_error>][0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/components/index.ts[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/utils/view-shot.tsx[0m
+[94m[Bash][0m List lib directory $ ls /Users/10-mac-alpha/Projects/crunchy-app/lib/
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/components/Badge.tsx[0m
+Good, I now have a complete understanding. Let me implement STORY-005.
+[94m[TodoWrite][0m
+[94m[Write][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/lib/crunchyScore.ts[0m "/**
+ * Crunchy Score calculation and tier logic.
+ *
+ * Score formula:
+ *   scan history (80%) + recipes tried (20%) + quiz baseline (decays over 1 year)
+ *
+ * Tiers:
+ *   🌱 Seedling  (0-25)
+ *   🌿 S... (5005 chars)"
+[94m[TodoWrite][0m
+Now let me check the quiz-result screen to see how ViewShot is used in this codebase.
+[94m[Grep][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app[0m pattern: [96mViewShot|viewShotRef|captureRef[0m
+Good, I can see the ViewShot pattern. Now let me create the ScoreCard component and update the screens.
+[94m[Write][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/components/ScoreCard.tsx[0m "import React, { useRef } from "react";
+import { View, Text, TouchableOpacity, Alert } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import ViewShot from "../utils/view-shot";
+imp... (4614 chars)"
+Now export ScoreCard from components/index.ts and update the profile and home screens.
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/components/index.ts[0m edit: "export { SkeletonLoader, CardSkeleton, ProductCard..." → "export { SkeletonLoader, CardSkeleton, ProductCard..."
+[94m[TodoWrite][0m
+Now update the profile screen to use the new scoring system and ScoreCard component.
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/profile.tsx[0m edit: "import { useState, useCallback } from "react";
+imp..." → "import { useState, useCallback } from "react";
+imp..."
+Now remove the old `getScoreLabel` function and update the component to use the new scoring:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/profile.tsx[0m edit: "function getScoreLabel(score: number): {
+  label: ..." → "function formatDate"
+Now update the ProfileScreen component to use the new stats and ScoreCard:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/profile.tsx[0m edit: "export default function ProfileScreen() {
+  const ..." → "export default function ProfileScreen() {
+  const ..."
+Now update the home screen to use the centralized scoring:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/index.tsx[0m edit: "import { useAuth } from "@/contexts/AuthContext";
+..." → "import { useAuth } from "@/contexts/AuthContext";
+..."
+Now remove the duplicated MOCK_STATS and getScoreLabel from index.tsx:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/index.tsx[0m edit: "const MOCK_STATS = {
+  totalScans: 12,
+  crunchySc..." → "const MOCK_SAVED_ITEMS = 8;"
+Now remove the old `getScoreLabel` function at the bottom of index.tsx:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/index.tsx[0m
+Now update the HomeScreen component to use the new scoring:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/index.tsx[0m edit: "  const firstName = user?.name?.split(" ")[0] ?? "..." → "  const firstName = user?.name?.split(" ")[0] ?? "..."
+Now update the JSX references from MOCK_STATS to stats:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/index.tsx[0m edit: "          <View className="items-center">
+        ..." → "          <View className="items-center">
+        ..."
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/index.tsx[0m edit: "          <StatCard
+            icon="barcode-outl..." → "          <StatCard
+            icon="barcode-outl..."
+Now let me run the typecheck:
+[94m[TodoWrite][0m
+[94m[Bash][0m Run TypeScript type checking $ npx tsc --noEmit 2>&1 | head -80
+Clean typecheck. Now let me also check if the quiz-result screen has a `getScoreLabel` that should be updated to use the centralized version:
+[94m[Grep][0m [95m/Users/10-mac-alpha/Projects/crunchy-app[0m pattern: [96mgetScoreLabel[0m
+There's one more in quiz-result.tsx, but that's part of STORY-006 (Onboarding Quiz) and it has its own scoring for quiz results specifically. I'll leave it alone since it's out of scope.
+
+Now update the PRD and progress log:
+[94m[TodoWrite][0m
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/prd.json[0m edit: "    {
+      "id": "STORY-005",
+      "title": "Cru..." → "    {
+      "id": "STORY-005",
+      "title": "Cru..."
+Now update the progress log. Let me read the current state first to append properly:
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m edit: "## Codebase Patterns (Study These First)
+
+- Settin..." → "## Codebase Patterns (Study These First)
+
+- Settin..."
+Now append the progress entry:
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m edit: "  - Camera screens import from `@/contexts/AuthCon..." → "  - Camera screens import from `@/contexts/AuthCon..."
+[94m[TodoWrite][0m
+STORY-005 is complete. Here's what was implemented:
+
+**New files:**
+- `lib/crunchyScore.ts` - Score calculation engine with weighted formula (80% scans + 20% recipes + quiz baseline with 1-year linear decay). Exports `getTierInfo()`, `calculateCrunchyScore()`, `buildCrunchyStats()`, `getMockStats()`.
+- `components/ScoreCard.tsx` - Screenshotable card with tier emoji, colored score circle, stats row (scans/recipes/days), and share button via ViewShot.
+
+**Modified files:**
+- `app/(tabs)/profile.tsx` - Replaced hardcoded mock stats and duplicate `getScoreLabel()` with centralized `ScoreCard` component
+- `app/(tabs)/index.tsx` - Replaced hardcoded mock stats and duplicate `getScoreLabel()` with `getMockStats()` and `getTierInfo()`
+- `components/index.ts` - Added `ScoreCard` export
+- `prd.json` - Marked STORY-005 as passing
+
+**Tier system:**
+- Seedling (0-25), Sprout (26-50), Sapling (51-75), In Bloom (76-100)
+
+Typecheck passes cleanly. All changes are uncommitted for manual review.
+
+<promise>COMPLETE</promise>

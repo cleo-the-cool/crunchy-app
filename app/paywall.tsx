@@ -5,10 +5,12 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { useGoBack } from "@/lib/useGoBack";
 import * as Haptics from "../utils/haptics";
 import {
   useSubscription,
@@ -87,10 +89,29 @@ const TIERS: TierInfo[] = [
 
 export default function PaywallScreen() {
   const router = useRouter();
+  const goBack = useGoBack();
   const params = useLocalSearchParams<{ reason?: string }>();
   const { tier: currentTier, subscribe } = useSubscription();
   const [selectedTier, setSelectedTier] = useState<SubscriptionTier>("starter");
   const [loading, setLoading] = useState(false);
+  const [couponCode, setCouponCode] = useState("");
+  const [couponError, setCouponError] = useState("");
+
+  const handleApplyCoupon = async () => {
+    const code = couponCode.trim().toUpperCase();
+    if (code === "COOL") {
+      setCouponError("");
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      await subscribe("premium");
+      Alert.alert(
+        "Welcome to Crunchy Premium!",
+        "Your coupon has been applied. Enjoy full access!",
+        [{ text: "Let's go!", onPress: () => router.back() }]
+      );
+    } else {
+      setCouponError("Invalid coupon code");
+    }
+  };
 
   const reasonText =
     params.reason === "scan_limit"
@@ -134,7 +155,7 @@ export default function PaywallScreen() {
       {/* Close Button */}
       <View className="flex-row justify-end px-5 pt-2">
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={goBack}
           hitSlop={12}
           className="w-9 h-9 rounded-full bg-dark/10 items-center justify-center"
         >
@@ -341,6 +362,33 @@ export default function PaywallScreen() {
             </Text>
           )}
         </TouchableOpacity>
+
+        {/* Coupon Code */}
+        <View className="flex-row items-center mt-3 bg-white rounded-2xl border border-dark/10 overflow-hidden">
+          <TextInput
+            value={couponCode}
+            onChangeText={(text) => {
+              setCouponCode(text);
+              if (couponError) setCouponError("");
+            }}
+            placeholder="Have a coupon code?"
+            placeholderTextColor="#9CA3AF"
+            autoCapitalize="characters"
+            className="flex-1 px-4 py-3 text-sm text-dark"
+          />
+          <TouchableOpacity
+            onPress={handleApplyCoupon}
+            disabled={!couponCode.trim()}
+            className="px-4 py-3"
+          >
+            <Text className={`text-sm font-bold ${couponCode.trim() ? "text-sage" : "text-dark/20"}`}>
+              Apply
+            </Text>
+          </TouchableOpacity>
+        </View>
+        {couponError ? (
+          <Text className="text-xs text-red-500 mt-1 ml-1">{couponError}</Text>
+        ) : null}
 
         {/* Restore purchases */}
         <TouchableOpacity

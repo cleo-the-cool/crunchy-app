@@ -19,6 +19,7 @@ import {
   type Rating,
   type ProductCategory,
 } from "@/data/products";
+import { RECIPES, type Recipe } from "@/data/recipes";
 
 type FilterRating = Rating | "all";
 
@@ -72,6 +73,19 @@ export default function ExploreScreen() {
 
     return results;
   }, [searchQuery, selectedCategory, filterRating]);
+
+  // Search recipes when there's a search query
+  const matchingRecipes = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const q = searchQuery.toLowerCase();
+    return RECIPES.filter(
+      (r) =>
+        r.title.toLowerCase().includes(q) ||
+        r.category.toLowerCase().includes(q) ||
+        r.description.toLowerCase().includes(q) ||
+        r.ingredients.some((ing) => ing.name.toLowerCase().includes(q))
+    ).slice(0, 5);
+  }, [searchQuery]);
 
   const handleCategoryPress = (category: ProductCategory) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -132,7 +146,7 @@ export default function ExploreScreen() {
           <Ionicons name="search" size={20} color="#999" />
           <TextInput
             className="flex-1 ml-3 text-base text-dark"
-            placeholder="Search products, brands..."
+            placeholder="Search products, recipes, brands..."
             placeholderTextColor="#999"
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -241,6 +255,51 @@ export default function ExploreScreen() {
             )}
           </ScrollView>
         </View>
+
+        {/* Recipe Results (shown when searching) */}
+        {matchingRecipes.length > 0 && (
+          <View className="px-5 mt-4">
+            <View className="flex-row items-center justify-between mb-2">
+              <Text className="text-sm font-semibold text-dark">
+                Recipes ({matchingRecipes.length})
+              </Text>
+              <TouchableOpacity onPress={() => router.push("/recipes")}>
+                <Text className="text-sm text-sage font-medium">See all</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 10 }}
+            >
+              {matchingRecipes.map((recipe) => (
+                <TouchableOpacity
+                  key={recipe.id}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    router.push(`/recipe-detail?id=${recipe.id}`);
+                  }}
+                  activeOpacity={0.8}
+                  className="bg-white rounded-2xl p-3 items-center"
+                  style={{
+                    width: 120,
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.06,
+                    shadowRadius: 6,
+                    elevation: 2,
+                  }}
+                >
+                  <Text className="text-3xl mb-1">{recipe.image}</Text>
+                  <Text className="text-xs font-semibold text-dark text-center" numberOfLines={2}>
+                    {recipe.title}
+                  </Text>
+                  <Text className="text-xs text-dark/40 mt-0.5">{recipe.timeMinutes} min</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
 
         {/* Results Count */}
         <View className="px-5 mt-4 mb-2">

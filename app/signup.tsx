@@ -23,7 +23,8 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ name?: string; email?: string; password?: string }>({});
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [errors, setErrors] = useState<{ name?: string; email?: string; password?: string; terms?: string }>({});
 
   function validate(): boolean {
     const newErrors: typeof errors = {};
@@ -32,6 +33,7 @@ export default function SignUpScreen() {
     else if (!email.includes("@") || !email.includes(".")) newErrors.email = "Enter a valid email";
     if (!password) newErrors.password = "Password is required";
     else if (password.length < 6) newErrors.password = "Must be at least 6 characters";
+    if (!agreedToTerms) newErrors.terms = "You must agree to the Terms of Service";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
@@ -41,7 +43,7 @@ export default function SignUpScreen() {
     setLoading(true);
     try {
       await signUp(email, password, name);
-      router.replace("/interests");
+      router.replace("/onboarding-profile");
     } catch (err: any) {
       Alert.alert("Sign Up Failed", err.message || "Something went wrong");
     } finally {
@@ -163,6 +165,47 @@ export default function SignUpScreen() {
               </View>
               {errors.password && <Text className="text-rating-avoid text-sm mt-1">{errors.password}</Text>}
             </View>
+          </View>
+
+          {/* Terms of Service Checkbox */}
+          <View className="mb-6">
+            <TouchableOpacity
+              onPress={() => {
+                setAgreedToTerms(!agreedToTerms);
+                if (errors.terms) setErrors((e) => ({ ...e, terms: undefined }));
+              }}
+              activeOpacity={0.7}
+              className="flex-row items-start"
+            >
+              <View
+                className={`w-5 h-5 rounded border-2 items-center justify-center mt-0.5 ${
+                  agreedToTerms ? "bg-sage border-sage" : "border-cream-dark bg-white"
+                }`}
+              >
+                {agreedToTerms && (
+                  <Ionicons name="checkmark" size={14} color="white" />
+                )}
+              </View>
+              <Text className="text-sm text-dark/70 ml-2 flex-1">
+                I agree to the{" "}
+                <Text
+                  className="text-sage font-semibold"
+                  onPress={() => router.push("/terms-of-service")}
+                >
+                  Terms of Service
+                </Text>
+                {" "}and{" "}
+                <Text
+                  className="text-sage font-semibold"
+                  onPress={() => router.push("/privacy-policy")}
+                >
+                  Privacy Policy
+                </Text>
+              </Text>
+            </TouchableOpacity>
+            {errors.terms && (
+              <Text className="text-rating-avoid text-sm mt-1 ml-7">{errors.terms}</Text>
+            )}
           </View>
 
           {/* Sign Up Button */}

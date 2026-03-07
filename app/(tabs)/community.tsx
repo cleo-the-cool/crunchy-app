@@ -10,6 +10,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -24,8 +25,10 @@ import Animated, {
 import {
   COMMUNITY_POSTS,
   TRENDING_HASHTAGS,
+  POST_TYPE_CONFIG,
   type CommunityPost,
   type Comment,
+  type PostType,
 } from "@/data/community";
 import { CardSkeleton } from "@/components";
 
@@ -115,6 +118,51 @@ export default function CommunityScreen() {
   const handleHashtagPress = (hashtag: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSelectedHashtag(selectedHashtag === hashtag ? null : hashtag);
+  };
+
+  const handleReportPost = (postId: string) => {
+    Alert.alert(
+      "Report Post",
+      "Are you sure you want to report this post for inappropriate content?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Report",
+          style: "destructive",
+          onPress: () => {
+            Alert.alert(
+              "Reported",
+              "Thank you for helping keep our community safe. We will review this report."
+            );
+          },
+        },
+      ]
+    );
+  };
+
+  const handleReportComment = (commentId: string) => {
+    Alert.alert(
+      "Report Comment",
+      "Are you sure you want to report this comment?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Report",
+          style: "destructive",
+          onPress: () => {
+            Alert.alert(
+              "Reported",
+              "Thank you. We will review this comment."
+            );
+          },
+        },
+      ]
+    );
+  };
+
+  const handleUserPress = (userId: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push(`/user-profile?userId=${userId}`);
   };
 
   const filteredPosts = useMemo(() => {
@@ -222,6 +270,8 @@ export default function CommunityScreen() {
                 onLike={() => handleLike(post.id)}
                 onComment={() => handleOpenComments(post.id)}
                 onHashtagPress={handleHashtagPress}
+                onUserPress={handleUserPress}
+                onReport={() => handleReportPost(post.id)}
               />
             ))}
           </View>
@@ -279,14 +329,28 @@ export default function CommunityScreen() {
             }
             renderItem={({ item }) => (
               <View className="flex-row">
-                <View className="w-8 h-8 rounded-full bg-sage/15 items-center justify-center mr-3">
-                  <Text className="text-base">{item.avatar}</Text>
-                </View>
+                <TouchableOpacity
+                  onPress={() => {
+                    setCommentSheetPostId(null);
+                    handleUserPress(item.userId);
+                  }}
+                >
+                  <View className="w-8 h-8 rounded-full bg-sage/15 items-center justify-center mr-3">
+                    <Text className="text-base">{item.avatar}</Text>
+                  </View>
+                </TouchableOpacity>
                 <View className="flex-1">
                   <View className="flex-row items-center gap-2">
-                    <Text className="text-sm font-semibold text-dark">
-                      {item.username}
-                    </Text>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setCommentSheetPostId(null);
+                        handleUserPress(item.userId);
+                      }}
+                    >
+                      <Text className="text-sm font-semibold text-dark">
+                        {item.username}
+                      </Text>
+                    </TouchableOpacity>
                     <Text className="text-xs text-dark/40">
                       {formatTimeAgo(item.timestamp)}
                     </Text>
@@ -294,9 +358,17 @@ export default function CommunityScreen() {
                   <Text className="text-sm text-dark/80 mt-1">
                     {item.content}
                   </Text>
-                  <View className="flex-row items-center mt-2 gap-1">
-                    <Ionicons name="heart-outline" size={14} color="#999" />
-                    <Text className="text-xs text-dark/40">{item.likes}</Text>
+                  <View className="flex-row items-center mt-2 gap-3">
+                    <View className="flex-row items-center gap-1">
+                      <Ionicons name="heart-outline" size={14} color="#999" />
+                      <Text className="text-xs text-dark/40">{item.likes}</Text>
+                    </View>
+                    <TouchableOpacity
+                      onPress={() => handleReportComment(item.id)}
+                      hitSlop={8}
+                    >
+                      <Ionicons name="flag-outline" size={13} color="#ccc" />
+                    </TouchableOpacity>
                   </View>
                 </View>
               </View>
@@ -377,13 +449,19 @@ function PostCard({
   onLike,
   onComment,
   onHashtagPress,
+  onUserPress,
+  onReport,
 }: {
   post: CommunityPost;
   isLiked: boolean;
   onLike: () => void;
   onComment: () => void;
   onHashtagPress: (tag: string) => void;
+  onUserPress: (userId: string) => void;
+  onReport: () => void;
 }) {
+  const typeConfig = POST_TYPE_CONFIG[post.postType];
+
   return (
     <View
       className="bg-white rounded-2xl p-4"
@@ -396,17 +474,41 @@ function PostCard({
       }}
     >
       {/* User Header */}
-      <View className="flex-row items-center mb-3">
-        <View className="w-10 h-10 rounded-full bg-sage/15 items-center justify-center mr-3">
-          <Text className="text-xl">{post.avatar}</Text>
-        </View>
-        <View className="flex-1">
-          <Text className="text-sm font-semibold text-dark">
-            {post.username}
-          </Text>
-          <Text className="text-xs text-dark/40">
-            {formatTimeAgo(post.timestamp)}
-          </Text>
+      <View className="flex-row items-center mb-2">
+        <TouchableOpacity
+          onPress={() => onUserPress(post.userId)}
+          className="flex-row items-center flex-1"
+        >
+          <View className="w-10 h-10 rounded-full bg-sage/15 items-center justify-center mr-3">
+            <Text className="text-xl">{post.avatar}</Text>
+          </View>
+          <View className="flex-1">
+            <Text className="text-sm font-semibold text-dark">
+              {post.username}
+            </Text>
+            <Text className="text-xs text-dark/40">
+              {formatTimeAgo(post.timestamp)}
+            </Text>
+          </View>
+        </TouchableOpacity>
+        <View className="flex-row items-center gap-2">
+          {/* Post Type Badge */}
+          <View
+            className="px-2 py-1 rounded-full flex-row items-center"
+            style={{ backgroundColor: typeConfig.color + "18" }}
+          >
+            <Text className="text-xs mr-0.5">{typeConfig.emoji}</Text>
+            <Text
+              className="text-xs font-medium"
+              style={{ color: typeConfig.color }}
+            >
+              {typeConfig.label}
+            </Text>
+          </View>
+          {/* Report */}
+          <TouchableOpacity onPress={onReport} hitSlop={8}>
+            <Ionicons name="ellipsis-horizontal" size={18} color="#ccc" />
+          </TouchableOpacity>
         </View>
       </View>
 

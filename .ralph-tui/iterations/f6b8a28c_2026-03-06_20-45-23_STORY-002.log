@@ -1,0 +1,112 @@
+# Iteration 1 Log
+
+## Metadata
+
+- **Task ID**: STORY-002
+- **Task Title**: Privacy Policy, ToS, Help & Support
+- **Description**: - Create `app/privacy-policy.tsx` with a real privacy policy for a product scanning app (data collection, Gemini API usage, no selling data) - Create `app/terms-of-service.tsx` with terms of service -...
+- **Status**: completed
+- **Task Completed**: Yes
+- **Promise Detected**: Yes
+- **Started At**: 2026-03-07T02:45:23.794Z
+- **Ended At**: 2026-03-07T02:49:18.234Z
+- **Duration**: 3m 54s
+- **Input Tokens**: 20674
+- **Output Tokens**: 10818
+- **Total Tokens**: 31492
+- **Agent**: claude
+- **Model**: claude-opus-4-6
+- **Sandbox Mode**: auto
+- **Sandbox Network**: Enabled
+--- RAW OUTPUT ---
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/prd.json[0m
+[94m[TodoWrite][0m
+[94m[Agent][0m Explore app structure
+[94m[Bash][0m Find markdown files to understand project structure $ find /Users/10-mac-alpha/Projects/crunchy-app -type f -name "*.md" | head -20
+[94m[Glob][0m [95m/Users/10-mac-alpha/Projects/crunchy-app[0m pattern: [96m**/*.json[0m
+[94m[Bash][0m List root directory contents $ ls -la /Users/10-mac-alpha/Projects/crunchy-app/
+[94m[Bash][0m Find all TypeScript/TSX files in app directory $ find /Users/10-mac-alpha/Projects/crunchy-app/app -type f -name "*.tsx" -o -name "*.ts" | head -50
+[94m[Bash][0m List contents of app directory $ ls -la /Users/10-mac-alpha/Projects/crunchy-app/app/
+[94m[Glob][0m [95m/Users/10-mac-alpha/Projects/crunchy-app[0m pattern: [96mapp/**/*.tsx[0m
+[94m[Glob][0m [95m/Users/10-mac-alpha/Projects/crunchy-app[0m pattern: [96m**/*help*[0m
+[94m[Glob][0m [95m/Users/10-mac-alpha/Projects/crunchy-app[0m pattern: [96m**/*support*[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/prd.json[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/signup.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/login.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/settings.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/tailwind.config.js[0m
+[94m[Bash][0m List components directory $ ls -la /Users/10-mac-alpha/Projects/crunchy-app/components/
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/_layout.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/_layout.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/contexts/AuthContext.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/progress.txt[0m
+[94m[Bash][0m Search for privacy/terms/help related files $ find /Users/10-mac-alpha/Projects/crunchy-app -name "*privacy*" -o -name "*terms*" -o -name "*help*"...
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/README.md[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/components/Button.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/onboarding.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/components/index.ts[0m
+[94m[Bash][0m List all main app screens $ ls -la /Users/10-mac-alpha/Projects/crunchy-app/app/ | grep -E "\.tsx$"
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/interests.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/quiz-result.tsx[0m
+[94m[Bash][0m Count total screens $ find /Users/10-mac-alpha/Projects/crunchy-app -name "*.tsx" -path "*/app/*" ! -path "*/node_modules/...
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/settings.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/signup.tsx[0m
+[94m[TodoWrite][0m
+Now I have a clear picture. Let me create all three pages and modify signup + settings in parallel.
+[94m[Write][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/privacy-policy.tsx[0m "import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useRoute... (6200 chars)"
+[94m[Write][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/terms-of-service.tsx[0m "import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useRoute... (5916 chars)"
+[94m[Write][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/help-support.tsx[0m "import { useState } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Linking,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { I... (5977 chars)"
+[94m[TodoWrite][0m
+Now let me add the ToS checkbox to signup and link pages from settings.
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/signup.tsx[0m edit: "  const [errors, setErrors] = useState<{ name?: st..." → "  const [agreedToTerms, setAgreedToTerms] = useSta..."
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/signup.tsx[0m edit: "    if (!password) newErrors.password = "Password ..." → "    if (!password) newErrors.password = "Password ..."
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/signup.tsx[0m edit: "          {/* Sign Up Button */}
+          <Button..." → "          {/* Terms of Service Checkbox */}
+      ..."
+Now link the pages from settings.
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/settings.tsx[0m edit: "          <TouchableOpacity>
+            <Settings..." → "          <TouchableOpacity onPress={() => router...."
+[94m[TodoWrite][0m
+[94m[Bash][0m Run TypeScript type checking $ npx tsc --noEmit 2>&1 | head -50
+[94m[Bash][0m Run lint check $ npx expo lint 2>&1 | head -30
+TypeScript passes cleanly. ESLint has a pre-existing config issue (not related to my changes).
+[94m[TodoWrite][0m
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/prd.json[0m edit: "      "id": "STORY-002",
+      "title": "Privacy P..." → "      "id": "STORY-002",
+      "title": "Privacy P..."
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m edit: "## Codebase Patterns (Study These First)
+
+*Add reu..." → "## Codebase Patterns (Study These First)
+
+- Settin..."
+[94m[TodoWrite][0m
+STORY-002 is complete. Here's what was implemented:
+
+**New files:**
+- `app/privacy-policy.tsx` - Full privacy policy covering data collection, Gemini API usage, no-sell guarantee
+- `app/terms-of-service.tsx` - 13-section terms of service with scanning disclaimers, community guidelines, subscriptions
+- `app/help-support.tsx` - Contact card with email button + 8 expandable FAQ items
+
+**Modified files:**
+- `app/signup.tsx` - Added ToS checkbox with validation (must agree before creating account), with tappable links to ToS and Privacy Policy
+- `app/settings.tsx` - Wired up Privacy Policy, Terms of Service, and Help & Support navigation links
+
+TypeScript check passes cleanly. All changes are uncommitted for manual review.
+
+<promise>COMPLETE</promise>

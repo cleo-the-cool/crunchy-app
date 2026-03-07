@@ -1,4 +1,5 @@
 import Constants from "expo-constants";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
 export type ScanMode = "item" | "ingredients" | "label";
 
@@ -189,6 +190,121 @@ function parseGeminiResponse(text: string): GeminiAnalysis {
   };
 }
 
+// Map Gemini category strings to Supabase product category enum
+function mapToDbCategory(category: string): string {
+  const lower = category.toLowerCase();
+  if (lower.includes("food") || lower.includes("cooking")) return "food";
+  if (lower.includes("skin") || lower.includes("personal") || lower.includes("cosmetic")) return "cosmetics";
+  if (lower.includes("clean")) return "cleaning";
+  if (lower.includes("baby")) return "baby";
+  if (lower.includes("cloth") || lower.includes("fashion")) return "clothing";
+  if (lower.includes("supplement") || lower.includes("vitamin")) return "supplement";
+  return "other";
+}
+
+// Cache a product analysis in the Supabase products table.
+// Returns the product ID (existing or newly created).
+async function cacheProduct(analysis: GeminiAnalysis): Promise<string | null> {
+  if (!isSupabaseConfigured()) return null;
+
+  try {
+    // Check if this product already exists by name + brand
+    const { data: existing } = await supabase
+      .from("products")
+      .select("id, scan_count")
+      .eq("name", analysis.productName)
+      .eq("brand", analysis.brand)
+      .limit(1)
+      .single();
+
+    if (existing) {
+      // Update scan count and refresh analysis
+      await supabase
+        .from("products")
+        .update({
+          gemini_analysis: analysis,
+          overall_score: analysis.crunchyScore,
+          scan_count: (existing.scan_count ?? 0) + 1,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", existing.id);
+      return existing.id;
+    }
+
+    // Insert new product
+    const { data: newProduct } = await supabase
+      .from("products")
+      .insert({
+        name: analysis.productName,
+        brand: analysis.brand,
+        category: mapToDbCategory(analysis.category),
+        ingredients: analysis.ingredients.map((i) => i.name),
+        overall_score: analysis.crunchyScore,
+        gemini_analysis: analysis,
+      })
+      .select("id")
+      .single();
+
+    return newProduct?.id ?? null;
+  } catch {
+    // Supabase errors should not block the scan flow
+    return null;
+  }
+}
+
+// Save a scan record to the user's scan history
+async function saveScan(
+  userId: string,
+  productId: string | null,
+  mode: ScanMode,
+  analysis: GeminiAnalysis
+): Promise<void> {
+  if (!isSupabaseConfigured()) return;
+
+  try {
+    await supabase.from("scans").insert({
+      user_id: userId,
+      product_id: productId,
+      scan_type: mode,
+      gemini_response: analysis,
+      score: analysis.crunchyScore,
+    });
+  } catch {
+    // Supabase errors should not block the scan flow
+  }
+}
+
+// Try to find a cached product by name + brand
+async function findCachedProduct(
+  name: string,
+  brand: string
+): Promise<GeminiAnalysis | null> {
+  if (!isSupabaseConfigured()) return null;
+
+  try {
+    const { data } = await supabase
+      .from("products")
+      .select("gemini_analysis, scan_count")
+      .eq("name", name)
+      .eq("brand", brand)
+      .limit(1)
+      .single();
+
+    if (data?.gemini_analysis) {
+      // Increment scan count for cache hit
+      await supabase
+        .from("products")
+        .update({ scan_count: (data.scan_count ?? 0) + 1 })
+        .eq("name", name)
+        .eq("brand", brand);
+      return data.gemini_analysis as GeminiAnalysis;
+    }
+  } catch {
+    // Not found or error, fall through
+  }
+  return null;
+}
+
 export async function analyzeWithGemini(
   base64Image: string,
   mode: ScanMode
@@ -238,4 +354,22 @@ export async function analyzeWithGemini(
   return parseGeminiResponse(textContent);
 }
 
-export { isMockMode };
+// Analyze, cache, and save scan in one call.
+// This is the main entry point for scanner screens.
+export async function analyzeAndSaveScan(
+  base64Image: string,
+  mode: ScanMode,
+  userId: string | null
+): Promise<GeminiAnalysis> {
+  const analysis = await analyzeWithGemini(base64Image, mode);
+
+  // Cache product and save scan in background (don't block UI)
+  const productId = await cacheProduct(analysis);
+  if (userId) {
+    await saveScan(userId, productId, mode, analysis);
+  }
+
+  return analysis;
+}
+
+export { isMockMode, findCachedProduct };

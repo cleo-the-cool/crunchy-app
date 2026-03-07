@@ -13,8 +13,9 @@ import { useRouter } from "expo-router";
 import { CameraView, useCameraPermissions } from "../utils/camera";
 import * as Haptics from "../utils/haptics";
 import { useSubscription } from "@/contexts/SubscriptionContext";
+import { useAuth } from "@/contexts/AuthContext";
 import {
-  analyzeWithGemini,
+  analyzeAndSaveScan,
   type GeminiAnalysis,
 } from "@/services/gemini";
 import { Badge } from "@/components";
@@ -30,6 +31,7 @@ const RISK_CONFIG = {
 export default function ProductScanScreen() {
   const router = useRouter();
   const { canScan, recordScan } = useSubscription();
+  const { user } = useAuth();
   const [permission, requestPermission] = useCameraPermissions();
   const [state, setState] = useState<ProductScanState>("camera");
   const [flashOn, setFlashOn] = useState(false);
@@ -64,7 +66,7 @@ export default function ProductScanScreen() {
         }
       }
 
-      const result = await analyzeWithGemini(base64Image, "item");
+      const result = await analyzeAndSaveScan(base64Image, "item", user?.id ?? null);
       recordScan();
       setAnalysis(result);
       setState("result");

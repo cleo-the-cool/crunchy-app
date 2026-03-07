@@ -1,14 +1,26 @@
-export type CommunityPost = {
+export type PostType = "general" | "review" | "tip" | "recipe" | "question";
+
+export const POST_TYPE_CONFIG: Record<
+  PostType,
+  { label: string; emoji: string; color: string }
+> = {
+  general: { label: "General", emoji: "💬", color: "#8B9E7C" },
+  review: { label: "Review", emoji: "⭐", color: "#F4A574" },
+  tip: { label: "Tip", emoji: "💡", color: "#FFC107" },
+  recipe: { label: "Recipe", emoji: "🧪", color: "#4CAF50" },
+  question: { label: "Question", emoji: "❓", color: "#5C9CE6" },
+};
+
+export type CommunityUser = {
   id: string;
-  userId: string;
   username: string;
   avatar: string;
-  timestamp: string;
-  content: string;
-  image?: string;
-  hashtags: string[];
-  likes: number;
-  comments: Comment[];
+  bio: string;
+  crunchyScore: number;
+  totalScans: number;
+  joinedDate: string;
+  followers: number;
+  following: number;
 };
 
 export type Comment = {
@@ -20,6 +32,133 @@ export type Comment = {
   timestamp: string;
   likes: number;
 };
+
+export type CommunityPost = {
+  id: string;
+  userId: string;
+  username: string;
+  avatar: string;
+  timestamp: string;
+  content: string;
+  image?: string;
+  hashtags: string[];
+  likes: number;
+  comments: Comment[];
+  postType: PostType;
+};
+
+export const COMMUNITY_USERS: CommunityUser[] = [
+  {
+    id: "user-001",
+    username: "sage.mama",
+    avatar: "🌿",
+    bio: "Mom of 2 on a clean living journey. DIY everything. Sharing what works for our family.",
+    crunchyScore: 82,
+    totalScans: 147,
+    joinedDate: "2025-09-15",
+    followers: 234,
+    following: 89,
+  },
+  {
+    id: "user-002",
+    username: "crunchy.claire",
+    avatar: "🍃",
+    bio: "Curly hair enthusiast going clean. One product swap at a time.",
+    crunchyScore: 65,
+    totalScans: 89,
+    joinedDate: "2025-11-01",
+    followers: 156,
+    following: 112,
+  },
+  {
+    id: "user-003",
+    username: "eco.elle",
+    avatar: "🌸",
+    bio: "Skincare minimalist. Oil cleansing convert. Clean beauty advocate.",
+    crunchyScore: 91,
+    totalScans: 203,
+    joinedDate: "2025-08-20",
+    followers: 412,
+    following: 67,
+  },
+  {
+    id: "user-004",
+    username: "green.goddess",
+    avatar: "🌱",
+    bio: "6 months into my crunchy journey and never looking back. Clean home, clean food, clean skin.",
+    crunchyScore: 78,
+    totalScans: 124,
+    joinedDate: "2025-09-01",
+    followers: 567,
+    following: 134,
+  },
+  {
+    id: "user-005",
+    username: "natural.nina",
+    avatar: "🌻",
+    bio: "DIY skincare lover. If I can make it at home, I will.",
+    crunchyScore: 73,
+    totalScans: 95,
+    joinedDate: "2025-10-15",
+    followers: 189,
+    following: 98,
+  },
+  {
+    id: "user-006",
+    username: "wellness.wren",
+    avatar: "🕊️",
+    bio: "Minimalism meets clean living. Less products, better ingredients.",
+    crunchyScore: 88,
+    totalScans: 176,
+    joinedDate: "2025-07-10",
+    followers: 345,
+    following: 45,
+  },
+  {
+    id: "user-007",
+    username: "pure.poppy",
+    avatar: "🌺",
+    bio: "Swapping toxic for clean, one product at a time. Glass everything.",
+    crunchyScore: 71,
+    totalScans: 68,
+    joinedDate: "2025-12-01",
+    followers: 123,
+    following: 156,
+  },
+  {
+    id: "user-008",
+    username: "rootedrose",
+    avatar: "🌹",
+    bio: "DIY toothpaste maker. Natural home advocate. Dentist-approved!",
+    crunchyScore: 85,
+    totalScans: 112,
+    joinedDate: "2025-08-01",
+    followers: 278,
+    following: 73,
+  },
+  {
+    id: "user-009",
+    username: "earth.emma",
+    avatar: "🌍",
+    bio: "Teaching my kids to read labels. Clean living is a family affair.",
+    crunchyScore: 76,
+    totalScans: 198,
+    joinedDate: "2025-06-15",
+    followers: 456,
+    following: 201,
+  },
+  {
+    id: "user-010",
+    username: "bloom.bea",
+    avatar: "🌼",
+    bio: "New to the crunchy world! Learning and sharing as I go.",
+    crunchyScore: 42,
+    totalScans: 34,
+    joinedDate: "2026-01-15",
+    followers: 67,
+    following: 189,
+  },
+];
 
 export const TRENDING_HASHTAGS = [
   "#CleanLiving",
@@ -43,6 +182,7 @@ export const COMMUNITY_POSTS: CommunityPost[] = [
       "Just made my own all-purpose cleaner with vinegar and citrus peels! Smells amazing and works better than the store-bought stuff. So satisfying knowing exactly what's in it.",
     hashtags: ["#CleanLiving", "#DIYCleaner", "#ToxinFree"],
     likes: 42,
+    postType: "tip",
     comments: [
       {
         id: "comment-001",
@@ -75,6 +215,7 @@ export const COMMUNITY_POSTS: CommunityPost[] = [
       "Scanned my favorite shampoo today and it came back as AVOID. I'm devastated but also grateful. Time to find a clean alternative. Any recommendations for curly hair?",
     hashtags: ["#CleanSwap", "#CurlyHair", "#CrunchyLife"],
     likes: 67,
+    postType: "question",
     comments: [
       {
         id: "comment-003",
@@ -99,6 +240,7 @@ export const COMMUNITY_POSTS: CommunityPost[] = [
     image: "🧴",
     hashtags: ["#GreenBeauty", "#DIYSkincare", "#CleanLiving"],
     likes: 89,
+    postType: "review",
     comments: [
       {
         id: "comment-004",
@@ -131,6 +273,7 @@ export const COMMUNITY_POSTS: CommunityPost[] = [
       "Just scored my Crunchy Score: 78/100 Thriving! Not bad for someone who started this journey 6 months ago. When I first took the quiz I was at 34.",
     hashtags: ["#CrunchyLife", "#CrunchyScore", "#Progress"],
     likes: 124,
+    postType: "general",
     comments: [
       {
         id: "comment-006",
@@ -164,6 +307,7 @@ export const COMMUNITY_POSTS: CommunityPost[] = [
     image: "🍯",
     hashtags: ["#DIYSkincare", "#NaturalBeauty", "#FaceMask"],
     likes: 56,
+    postType: "recipe",
     comments: [],
   },
   {
@@ -176,6 +320,7 @@ export const COMMUNITY_POSTS: CommunityPost[] = [
       "Hot take: you don't need 10 products in your skincare routine. I've simplified to 3 clean products and my skin has never been better. Less is more!",
     hashtags: ["#GreenBeauty", "#Minimalism", "#CleanLiving"],
     likes: 201,
+    postType: "tip",
     comments: [
       {
         id: "comment-008",
@@ -199,6 +344,7 @@ export const COMMUNITY_POSTS: CommunityPost[] = [
       "Replaced all my Tupperware with glass containers this weekend. No more microwaving plastic! It feels like such a small change but these little swaps add up.",
     hashtags: ["#ToxinFree", "#NaturalHome", "#CleanSwap"],
     likes: 78,
+    postType: "tip",
     comments: [
       {
         id: "comment-009",
@@ -222,6 +368,7 @@ export const COMMUNITY_POSTS: CommunityPost[] = [
       "Friendly reminder to check your deodorant ingredients! I scanned mine and found aluminum compounds and synthetic fragrances. Switched to a clean brand and no issues at all.",
     hashtags: ["#CleanSwap", "#CrunchyLife", "#ToxinFree"],
     likes: 93,
+    postType: "review",
     comments: [
       {
         id: "comment-010",
@@ -244,6 +391,7 @@ export const COMMUNITY_POSTS: CommunityPost[] = [
       "Took my daughter grocery shopping and she scanned every single item with Crunchy. She's 8 and now she's pickier about ingredients than I am. Starting them young!",
     hashtags: ["#CrunchyLife", "#EcoFriendly", "#CleanLiving"],
     likes: 167,
+    postType: "general",
     comments: [
       {
         id: "comment-011",
@@ -277,6 +425,7 @@ export const COMMUNITY_POSTS: CommunityPost[] = [
     image: "🧺",
     hashtags: ["#DIYCleaner", "#NaturalHome", "#ToxinFree"],
     likes: 45,
+    postType: "recipe",
     comments: [],
   },
   {
@@ -289,6 +438,7 @@ export const COMMUNITY_POSTS: CommunityPost[] = [
       "PSA: Just because something says 'natural' on the label doesn't mean it actually is. Always scan and check the ingredients list. Marketing can be so misleading!",
     hashtags: ["#CleanLiving", "#Greenwashing", "#CrunchyLife"],
     likes: 234,
+    postType: "tip",
     comments: [
       {
         id: "comment-013",
@@ -313,6 +463,7 @@ export const COMMUNITY_POSTS: CommunityPost[] = [
     image: "🥗",
     hashtags: ["#CleanLiving", "#MealPrep", "#EcoFriendly"],
     likes: 88,
+    postType: "tip",
     comments: [],
   },
   {
@@ -325,6 +476,7 @@ export const COMMUNITY_POSTS: CommunityPost[] = [
       "One month of tracking my clean swaps: replaced 14 products with clean alternatives and 3 DIY versions. My bathroom looks so different now and I feel so much better about what I'm putting on my body.",
     hashtags: ["#CleanSwap", "#CrunchyLife", "#Progress"],
     likes: 156,
+    postType: "general",
     comments: [
       {
         id: "comment-014",
@@ -357,6 +509,7 @@ export const COMMUNITY_POSTS: CommunityPost[] = [
       "Does anyone else get overwhelmed when they first start scanning everything? I went through my whole kitchen yesterday and half my pantry got flagged. Remember: progress, not perfection!",
     hashtags: ["#CrunchyLife", "#CleanLiving", "#Progress"],
     likes: 112,
+    postType: "question",
     comments: [
       {
         id: "comment-016",
@@ -380,6 +533,7 @@ export const COMMUNITY_POSTS: CommunityPost[] = [
       "Started making my own toothpaste with coconut oil, baking soda, and peppermint oil. Week 2 update: teeth feel just as clean and my dentist actually said my gums look healthier!",
     hashtags: ["#DIYSkincare", "#ToxinFree", "#NaturalHome"],
     likes: 73,
+    postType: "recipe",
     comments: [
       {
         id: "comment-017",
@@ -413,4 +567,12 @@ export function getPostsByHashtag(hashtag: string): CommunityPost[] {
   return COMMUNITY_POSTS.filter((p) =>
     p.hashtags.some((h) => h.toLowerCase() === hashtag.toLowerCase())
   );
+}
+
+export function getUserById(id: string): CommunityUser | undefined {
+  return COMMUNITY_USERS.find((u) => u.id === id);
+}
+
+export function getPostsByUserId(userId: string): CommunityPost[] {
+  return COMMUNITY_POSTS.filter((p) => p.userId === userId);
 }
