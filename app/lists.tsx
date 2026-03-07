@@ -267,10 +267,26 @@ export default function ListsScreen() {
 }
 
 function ListCard({ list }: { list: ProductList }) {
+  const router = useRouter();
   const catConfig = LIST_CATEGORY_CONFIG[list.category];
 
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - d.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    if (diffDays === 0) return "Today";
+    if (diffDays === 1) return "Yesterday";
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return d.toLocaleDateString();
+  };
+
   return (
-    <View className="mb-3">
+    <TouchableOpacity
+      onPress={() => router.push(`/list-detail?id=${list.id}`)}
+      activeOpacity={0.7}
+      className="mb-3"
+    >
       <View className="bg-white rounded-2xl p-4" style={cardShadow}>
         {/* Top row: category badge + product count */}
         <View className="flex-row items-center justify-between mb-2">
@@ -333,10 +349,10 @@ function ListCard({ list }: { list: ProductList }) {
             {list.isPublic ? "Public" : "Private"}
           </Text>
           <Text className="text-xs text-dark/30 ml-auto">
-            {new Date(list.createdAt).toLocaleDateString()}
+            Updated {formatDate(list.updatedAt)}
           </Text>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }

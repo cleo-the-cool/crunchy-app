@@ -658,20 +658,6 @@ export const CATEGORIES: { name: ProductCategory; icon: string }[] = [
   { name: "Home", icon: "🏠" },
 ];
 
-export function getProductsByCategory(category: string): Product[] {
-  return PRODUCTS.filter((p) => p.category === category);
-}
-
-export function searchProducts(query: string): Product[] {
-  const q = query.toLowerCase();
-  return PRODUCTS.filter(
-    (p) =>
-      p.name.toLowerCase().includes(q) ||
-      p.brand.toLowerCase().includes(q) ||
-      p.category.toLowerCase().includes(q)
-  );
-}
-
 // Helper to get a default product (used when barcode isn't in our database)
 export function getDefaultProduct(barcode: string): Product {
   return {

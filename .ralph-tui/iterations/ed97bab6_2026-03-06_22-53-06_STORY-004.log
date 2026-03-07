@@ -1,0 +1,87 @@
+# Iteration 4 Log
+
+## Metadata
+
+- **Task ID**: STORY-004
+- **Task Title**: Profile Page Polish
+- **Description**: - Large avatar at top (emoji or image) - Display name, bio, tier badge, and crunchy score prominently displayed - Stats row: Total Scans | Recipes Tried | Lists Created - "Edit Profile" button (pencil...
+- **Status**: completed
+- **Task Completed**: Yes
+- **Promise Detected**: Yes
+- **Started At**: 2026-03-07T04:53:06.300Z
+- **Ended At**: 2026-03-07T04:55:33.693Z
+- **Duration**: 2m 27s
+- **Input Tokens**: 63
+- **Output Tokens**: 8945
+- **Total Tokens**: 9008
+- **Agent**: claude
+- **Model**: claude-opus-4-6
+- **Sandbox Mode**: auto
+- **Sandbox Network**: Enabled
+--- RAW OUTPUT ---
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m
+[94m[Glob][0m pattern: [96mapp/(tabs)/profile*.tsx[0m
+[94m[Glob][0m pattern: [96mapp/*profile*.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/prd.json[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/profile.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/lib/crunchyScore.ts[0m
+[94m[Glob][0m pattern: [96mlib/**/*.ts[0m
+[94m[Grep][0m pattern: [96mScoreCard[0m
+[94m[Grep][0m pattern: [96mcaptureRef|ViewShot|react-native-view-shot[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/components/index.ts[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/components/ScoreCard.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/utils/view-shot.tsx[0m
+[94m[TodoWrite][0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/edit-profile.tsx[0m
+[94m[Grep][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/onboarding-profile.tsx[0m pattern: [96mbio|displayName|avatar[0m
+[94m[TodoWrite][0m
+Now I'll rewrite the profile page with all the polish requirements. Let me implement everything at once since the changes are all interconnected.
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/utils/sharing.tsx[0m
+
+[91m[Error: File does not exist. Note: your current working directory is /Users/10-mac-alpha/Projects/crunchy-app. Did you mean sharing.ts?][0m
+[94m[Glob][0m pattern: [96mutils/sharing*[0m
+Good. Now let me write the polished profile page:
+[94m[Write][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/profile.tsx[0m "import { useState, useCallback } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  RefreshControl,
+  TouchableOpacity,
+  FlatList,
+} from "react-native";
+import { SafeAreaView } from "react-nativ... (13477 chars)"
+[94m[TodoWrite][0m
+[94m[Bash][0m Run TypeScript type check $ npx tsc --noEmit 2>&1 | head -50
+Typecheck passes clean. Now let me update the progress log and PRD.
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m edit: "  - The existing AnimatedHeart component with `wit..." → "  - The existing AnimatedHeart component with `wit..."
+Now update the PRD to mark STORY-004 as passing:
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/prd.json[0m
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/prd.json[0m edit: "      "passes": false,
+      "labels": [],
+      "..." → "      "passes": true,
+      "labels": [],
+      "d..."
+[94m[TodoWrite][0m
+STORY-004 (Profile Page Polish) is complete. Here's what was implemented:
+
+**Profile header:**
+- Enlarged avatar (w-28/h-28, text-6xl emoji) with stronger shadow
+- Display name in larger text (text-2xl)
+- Tier badge pill showing emoji, tier name, and score
+- Bio text loaded from AsyncStorage
+
+**Edit Profile button** with pencil icon (Ionicons `pencil-outline`)
+
+**Stats row card:** Total Scans | Recipes Tried | Lists Created with dividers
+
+**Screenshotable Score Card** - existing `ScoreCard` component with ViewShot capture + Share button, now under a "Your Crunchy Card" section header
+
+**Recent Scans** - horizontal FlatList with product cards showing emoji, name, and color-coded score badges (green/yellow/red)
+
+**My Lists** - vertical list of user lists with emoji, name, item count, and chevron navigation
+
+All changes typecheck clean. No commits made per instructions.
+
+<promise>COMPLETE</promise>

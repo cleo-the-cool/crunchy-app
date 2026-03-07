@@ -1,0 +1,127 @@
+# Iteration 2 Log
+
+## Metadata
+
+- **Task ID**: STORY-002
+- **Task Title**: Scanner UI Polish
+- **Description**: - Scan mode selector: clean pill-shaped tabs with icons. "Item" (camera icon), "Ingredients" (list icon), "Label" (tag icon) - Each mode should have a brief description text below the tabs explaining ...
+- **Status**: completed
+- **Task Completed**: Yes
+- **Promise Detected**: Yes
+- **Started At**: 2026-03-07T04:46:51.617Z
+- **Ended At**: 2026-03-07T04:50:10.402Z
+- **Duration**: 3m 18s
+- **Input Tokens**: 304
+- **Output Tokens**: 12094
+- **Total Tokens**: 12398
+- **Agent**: claude
+- **Model**: claude-opus-4-6
+- **Sandbox Mode**: auto
+- **Sandbox Network**: Enabled
+--- RAW OUTPUT ---
+
+
+I'll start by studying the progress file and the current scanner implementation.
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/index.tsx[0m
+Now let me read the scanner file and related files.
+[94m[Glob][0m pattern: [96mapp/(tabs)/scan*[0m
+[94m[Glob][0m pattern: [96mapp/scan*[0m
+[94m[Glob][0m pattern: [96m**/scanner*[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/scan.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/scan-result.tsx[0m
+Let me check the scanning flow screens and related utilities.
+[94m[Glob][0m pattern: [96mapp/product-scan*[0m
+[94m[Glob][0m pattern: [96mapp/label-scan*[0m
+[94m[Glob][0m pattern: [96mutils/camera*[0m
+[94m[Glob][0m pattern: [96mservices/gemini*[0m
+[94m[TodoWrite][0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/product-scan.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/label-scan.tsx[0m
+Now I have a clear picture. Let me implement the polish changes across all scanner screens.
+
+**Key changes needed:**
+1. Add description text below pill tabs on scan.tsx
+2. Improve product-scan camera overlay with corner brackets instead of dashed circle
+3. Add animated scanning line on processing screens (replace plain ActivityIndicator)
+4. Add "Save Product" + "Scan Another" buttons on result screens
+5. Polish error screens
+
+Let me check what components/imports are available.
+[94m[Glob][0m pattern: [96mcomponents/index*[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/utils/camera.tsx[0m
+Good. Now let me implement all the changes. I'll start with the scan tab (mode selector description text), then the camera screens.
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/scan.tsx[0m edit: "      {/* Scan Limit Indicator (free tier) */}" → "      {/* Mode Description */}
+      <View classNa..."
+Now let me update the product-scan screen - replace the dashed circle with corner brackets, add scanning animation, and add Save/Scan Another buttons.
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/product-scan.tsx[0m edit: "import { useState, useRef } from "react";
+import {..." → "import { useState, useRef, useEffect } from "react..."
+Now add the ScanningAnimation component and replace the processing screen.
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/product-scan.tsx[0m edit: "export default function ProductScanScreen() {" → "function ScanningLineAnimation() {
+  const transla..."
+Now replace the processing screen to use the scanning animation.
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/product-scan.tsx[0m edit: "  // Processing state
+  if (state === "processing"..." → "  // Processing state
+  if (state === "processing"..."
+Now replace the result screen bottom button with "Save Product" + "Scan Another".
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/product-scan.tsx[0m edit: "          {/* Back to Scanner Button */}
+         ..." → "          {/* Action Buttons */}
+          <View c..."
+Now I need to add `isSaved` state to product-scan. Let me check if it already exists.
+[94m[Grep][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/product-scan.tsx[0m pattern: [96misSaved[0m
+I need to add the `isSaved` state. Let me add it.
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/product-scan.tsx[0m edit: "  const [expandedIngredient, setExpandedIngredient..." → "  const [expandedIngredient, setExpandedIngredient..."
+Now update the camera overlay in product-scan to use corner brackets instead of the dashed circle.
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/product-scan.tsx[0m edit: "            {/* Overlay */}
+            <View clas..." → "            {/* Overlay */}
+            <View clas..."
+Now do the same for label-scan.tsx - add scanning animation and Save/Scan Another buttons.
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/label-scan.tsx[0m edit: "import { useState, useRef } from "react";
+import {..." → "import { useState, useRef, useEffect } from "react..."
+Add the ScanningLineAnimation component and isSaved state to label-scan.
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/label-scan.tsx[0m edit: "export default function LabelScanScreen() {" → "function ScanningLineAnimation() {
+  const transla..."
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/label-scan.tsx[0m edit: "  const [expandedIngredient, setExpandedIngredient..." → "  const [expandedIngredient, setExpandedIngredient..."
+Replace the processing ActivityIndicator with scanning animation in label-scan.
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/label-scan.tsx[0m edit: "            <Text className="text-sm text-dark/50 ..." → "            <Text className="text-sm text-dark/50 ..."
+Replace label-scan "Back to Scanner" with "Save Product" + "Scan Another".
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/label-scan.tsx[0m edit: "          {/* Scan Again Button */}
+          <Vie..." → "          {/* Action Buttons */}
+          <View c..."
+Now let me also update the scan-result.tsx (the barcode result screen) with Save Product + Scan Another buttons, since it currently only has save/share in the header.
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/scan-result.tsx[0m
+Add Save Product + Scan Another buttons to scan-result.tsx too.
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/scan-result.tsx[0m edit: "        {/* DIY Button */}
+        {product.diyRec..." → "        {/* DIY Button */}
+        {product.diyRec..."
+Now let me run the typecheck.
+[94m[TodoWrite][0m
+[94m[Bash][0m Run TypeScript type check $ npx tsc --noEmit 2>&1 | head -60
+Typecheck passes clean. Now let me update progress.md.
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m edit: "- Haptics via `../../utils/haptics` (platform-safe..." → "- Haptics via `../../utils/haptics` (platform-safe..."
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m edit: "  - NativeWind `border-t` class doesn't apply `bor..." → "  - NativeWind `border-t` class doesn't apply `bor..."
+[94m[TodoWrite][0m
+All changes are complete and typecheck passes. Here's a summary of what was implemented for **STORY-002 - Scanner UI Polish**:
+
+**Changes made:**
+
+1. **`app/(tabs)/scan.tsx`** - Added mode description text below the pill-shaped tab selector showing contextual help for each scan mode
+
+2. **`app/product-scan.tsx`** - 
+   - Replaced dashed circle camera overlay with clean corner bracket frame guide
+   - Added animated scanning line on the processing screen (Reanimated `withRepeat`/`withTiming`)
+   - Added "Save Product" (bookmark toggle) + "Scan Another" buttons at bottom of result screen
+
+3. **`app/label-scan.tsx`** - 
+   - Added animated scanning line on the processing screen
+   - Added "Save Product" + "Scan Another" buttons at bottom of result screen
+
+4. **`app/scan-result.tsx`** - Added "Save Product" + "Scan Another" action buttons at bottom
+
+**Already in good shape (verified):**
+- Pill-shaped tabs with icons were already well-styled
+- Result screens already had clean card layouts with score badges and color-coded ingredients (green/yellow/red)
+- Error screens already showed friendly messages with retry/back buttons and no raw error text
+
+<promise>COMPLETE</promise>

@@ -1,0 +1,118 @@
+# Iteration 7 Log
+
+## Metadata
+
+- **Task ID**: STORY-007
+- **Task Title**: Onboarding & Quiz Polish
+- **Description**: - Welcome screen with app logo and tagline - Smooth transitions between onboarding steps - Quiz questions: one per screen, large text, fun illustrated options (emoji-based if no images) - Progress bar...
+- **Status**: completed
+- **Task Completed**: Yes
+- **Promise Detected**: Yes
+- **Started At**: 2026-03-07T05:01:28.904Z
+- **Ended At**: 2026-03-07T05:04:41.179Z
+- **Duration**: 3m 12s
+- **Input Tokens**: 91
+- **Output Tokens**: 11754
+- **Total Tokens**: 11845
+- **Agent**: claude
+- **Model**: claude-opus-4-6
+- **Sandbox Mode**: auto
+- **Sandbox Network**: Enabled
+--- RAW OUTPUT ---
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m
+[94m[Glob][0m pattern: [96mapp/*onboard*[0m
+[94m[Glob][0m pattern: [96mapp/*quiz*[0m
+[94m[TodoWrite][0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/onboarding.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/quiz.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/quiz-result.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/onboarding-profile.tsx[0m
+Now let me check the interests screen and understand the navigation flow better.
+[94m[Glob][0m pattern: [96mapp/*interest*[0m
+[94m[Glob][0m pattern: [96mapp/*welcome*[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/_layout.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/welcome.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/interests.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/components/index.ts[0m
+Good, I've reviewed all the onboarding/quiz files. The existing implementation is already quite solid. Let me identify the specific polish opportunities:
+
+**What exists:**
+- Welcome screen with logo + tagline (static, no animations)
+- Onboarding carousel with animated dots
+- Quiz with progress bar, one question per screen, emoji options
+- Quiz result with animated score reveal, share button
+- Interest picker with animated chips
+
+**What needs polish:**
+1. Welcome screen needs entrance animations
+2. Onboarding slides could use entrance animations for content
+3. Minor visual consistency improvements
+[94m[TodoWrite][0m
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/welcome.tsx[0m edit: "import { View, Text } from "react-native";
+import ..." → "import { View, Text } from "react-native";
+import ..."
+[94m[TodoWrite][0m
+Now let me polish the onboarding carousel - add entrance animations for the slide content and improve the visual hierarchy.
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/onboarding.tsx[0m edit: "import { View, Text, Dimensions, TouchableOpacity ..." → "import { View, Text, Dimensions, TouchableOpacity ..."
+Now add animations to the slide content and polish icon containers with shadows:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/onboarding.tsx[0m edit: "        {slides.map((slide, index) => (
+          ..." → "        {slides.map((slide, index) => (
+          ..."
+Now add entrance animation to the skip button and bottom CTA:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/onboarding.tsx[0m edit: "      {/* Skip Button */}
+      <View className="f..." → "      {/* Skip Button */}
+      <Animated.View ent..."
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/onboarding.tsx[0m edit: "      {/* Bottom Buttons */}
+      <View className..." → "      {/* Bottom Buttons */}
+      <Animated.View ..."
+[94m[TodoWrite][0m
+Now let me add some polish to the quiz screen - add haptic feedback on option select, and make the question card text slightly larger:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/quiz.tsx[0m edit: "import React, { useState, useRef } from "react";
+i..." → "import React, { useState, useRef } from "react";
+i..."
+Now add haptic feedback to the quiz option selection and the auto-advance:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/quiz.tsx[0m edit: "  const handleSelect = (questionIdx: number, optio..." → "  const handleSelect = (questionIdx: number, optio..."
+Add haptic feedback to the finish button:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/quiz.tsx[0m edit: "  const handleFinish = () => {
+    // Calculate to..." → "  const handleFinish = () => {
+    Haptics.notific..."
+Now let me add a subtle entrance animation to the quiz header and progress bar:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/quiz.tsx[0m edit: "      {/* Header */}
+      <View className="flex-r..." → "      {/* Header */}
+      <Animated.View entering..."
+Now let me add a shadow to the finish button for better visibility:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/quiz.tsx[0m edit: "      {/* Finish Button */}
+      {isLastQuestion ..." → "      {/* Finish Button */}
+      {isLastQuestion ..."
+Now let me check for em-dashes in the onboarding/quiz files and also add a small polish to the quiz result - add haptic on share:
+[94m[Grep][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app[0m pattern: [96m—[0m
+Good, no em-dashes. Now let me add haptic feedback to quiz result share button:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/quiz-result.tsx[0m edit: "import AsyncStorage from "@react-native-async-stor..." → "import AsyncStorage from "@react-native-async-stor..."
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/quiz-result.tsx[0m edit: "  const handleShare = async () => {
+    try {" → "  const handleShare = async () => {
+    Haptics.im..."
+Now let me also add a confetti-like header text animation to the quiz result:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/quiz-result.tsx[0m edit: "        {/* Header */}
+        <View className="it..." → "        {/* Header */}
+        <Animated.View styl..."
+[94m[TodoWrite][0m
+[94m[Bash][0m Run TypeScript type checking $ npx tsc --noEmit 2>&1 | head -60
+Clean typecheck. Now let me update progress.md.
+[94m[TodoWrite][0m
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m edit: "  - `border-t` NativeWind class unreliable in RN -..." → "  - `border-t` NativeWind class unreliable in RN -..."
+[94m[TodoWrite][0m
+Story 7 is complete. Here's a summary of what was done:
+
+**Welcome screen** (`app/welcome.tsx`): Added staggered entrance animations (logo fades in, title slides down, CTA slides up), enlarged logo with sage green shadow.
+
+**Onboarding carousel** (`app/onboarding.tsx`): Added entrance animations for skip button and CTA, enlarged icon containers (w-36) with colored shadows matching each slide's theme color.
+
+**Quiz** (`app/quiz.tsx`): Added haptic feedback on option selection and finish, animated header, thicker progress bar, shadow on the finish button, improved "1 of 10" counter text.
+
+**Quiz result** (`app/quiz-result.tsx`): Added haptic feedback on share, animated header text.
+
+**Already solid:** Quiz one-per-screen layout, progress bar, emoji options, animated score counter, tier reveal, shareable card with ViewShot, interest picker with animated chips, smooth `slide_from_right` transitions. All verified and meeting requirements.
+
+TypeScript check passes cleanly. All changes left uncommitted for review.
+
+<promise>COMPLETE</promise>

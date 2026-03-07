@@ -1,0 +1,93 @@
+# Iteration 8 Log
+
+## Metadata
+
+- **Task ID**: STORY-008
+- **Task Title**: Settings & Edit Profile Completion
+- **Description**: - Settings should look clean and organized in sections: Account, Preferences, Legal, Support, Danger Zone - Edit Profile: avatar selector (grid of emoji avatars to choose from), display name, bio, int...
+- **Status**: completed
+- **Task Completed**: Yes
+- **Promise Detected**: Yes
+- **Started At**: 2026-03-07T05:04:42.192Z
+- **Ended At**: 2026-03-07T05:07:39.434Z
+- **Duration**: 2m 57s
+- **Input Tokens**: 108
+- **Output Tokens**: 10308
+- **Total Tokens**: 10416
+- **Agent**: claude
+- **Model**: claude-opus-4-6
+- **Sandbox Mode**: auto
+- **Sandbox Network**: Enabled
+--- RAW OUTPUT ---
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m
+[94m[Glob][0m pattern: [96mapp/**/settings*[0m
+[94m[Glob][0m pattern: [96mapp/**/edit-profile*[0m
+[94m[Glob][0m pattern: [96mapp/(tabs)/profile*[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/settings.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/edit-profile.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/profile.tsx[0m
+[94m[Agent][0m Explore Supabase and auth
+[94m[Glob][0m pattern: [96m**/AuthContext*[0m
+[94m[Glob][0m pattern: [96m**/supabase*[0m
+[94m[Glob][0m pattern: [96m**/interests.tsx[0m
+[94m[Glob][0m pattern: [96m**/contexts[0m
+[94m[Glob][0m pattern: [96m**/*auth*[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/contexts/AuthContext.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/lib/supabase.ts[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/interests.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/supabase-schema.sql[0m
+[94m[Glob][0m pattern: [96m**/InterestsContext*[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/contexts/InterestsContext.tsx[0m
+[94m[TodoWrite][0m
+Now let me reorganize the Settings screen. I'll restructure sections to: Account, Preferences (profile + personalization + notifications), Legal, Support, Danger Zone (delete account with red styling), with logout separate.
+[94m[Write][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/settings.tsx[0m "import { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Switch,
+  Alert,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-c... (10680 chars)"
+[94m[TodoWrite][0m
+Now let me check how the interests context works so I can add it to Edit Profile, and check for Supabase client.
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/contexts/InterestsContext.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/lib/supabase.ts[0m
+Now I'll update the Edit Profile screen to add interests selection and Supabase persistence (with AsyncStorage fallback).
+[94m[Write][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/edit-profile.tsx[0m "import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+  Keyboard,
+  TouchableWithoutF... (11047 chars)"
+[94m[TodoWrite][0m
+[94m[Bash][0m Run TypeScript typecheck $ npx tsc --noEmit 2>&1 | head -50
+Typecheck passes clean. Let me update the progress log.
+[94m[TodoWrite][0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m edit: "- ViewShot + Sharing utilities already handle the ..." → "- ViewShot + Sharing utilities already handle the ..."
+Story 8 is complete. Here's what was implemented:
+
+**Settings screen** - Reorganized into clean sections:
+- **Account** - Name, email, subscription
+- **Preferences** - Edit Profile, My Interests, and 3 notification toggles (Community, Scan Reminders, Tips & Updates) that persist to AsyncStorage
+- **Legal** - Privacy Policy, Terms of Service
+- **Support** - Help & Support, Send Feedback
+- **About Crunchy** - App name + version 1.0.0
+- **Danger Zone** - Red-styled section header, red icon/text/border, "Delete Account" with description text
+
+**Edit Profile screen** - Enhanced with:
+- **Interests picker** - Tappable chips for all 7 interest categories with selected state (sage green, checkmark)
+- **Supabase persistence** - Save upserts to `profiles` table when Supabase is configured, with AsyncStorage fallback
+- Enlarged avatar preview, bio character limit enforcement
+
+TypeScript typecheck passes clean with no errors.
+
+<promise>COMPLETE</promise>

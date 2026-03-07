@@ -1,0 +1,97 @@
+# Iteration 3 Log
+
+## Metadata
+
+- **Task ID**: STORY-003
+- **Task Title**: Community Feed Polish
+- **Description**: - Post cards: clean layout with user avatar, display name, tier badge, timestamp - Post type badges (Question, Review, Tip, Recipe) as colored pills - Filter bar: horizontal scroll of post type filter...
+- **Status**: completed
+- **Task Completed**: Yes
+- **Promise Detected**: Yes
+- **Started At**: 2026-03-07T04:50:11.415Z
+- **Ended At**: 2026-03-07T04:53:05.285Z
+- **Duration**: 2m 53s
+- **Input Tokens**: 80
+- **Output Tokens**: 9826
+- **Total Tokens**: 9906
+- **Agent**: claude
+- **Model**: claude-opus-4-6
+- **Sandbox Mode**: auto
+- **Sandbox Network**: Enabled
+--- RAW OUTPUT ---
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m
+[94m[Glob][0m pattern: [96mapp/**/community*[0m
+[94m[Glob][0m pattern: [96mapp/(tabs)/*.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/community.tsx[0m
+Now let me check the community data and create-post screen.
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/data/community.ts[0m
+[94m[Glob][0m pattern: [96mapp/create-post*[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/create-post.tsx[0m
+[94m[Grep][0m pattern: [96mtierBadge|tier_badge|tierInfo|TierBadge[0m
+[94m[TodoWrite][0m
+Let me check how tier badges are used elsewhere and understand the CommunityPost type to plan the tier badge addition.
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/user-profile.tsx[0m
+[94m[Grep][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/lib/crunchyScore.ts[0m pattern: [96mgetTierInfo[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/lib/crunchyScore.ts[0m
+Now I have a clear picture. Let me implement the changes. First, I'll populate the community data with sample posts, then add tier badges to the post cards.
+[94m[TodoWrite][0m
+I need to add `crunchyScore` to the `CommunityPost` type and populate sample data. Let me also add a `tierBadge` field or compute it from `crunchyScore`.
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/data/community.ts[0m edit: "export type CommunityPost = {
+  id: string;
+  user..." → "export type CommunityPost = {
+  id: string;
+  user..."
+Now populate the sample data:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/data/community.ts[0m edit: "export const COMMUNITY_USERS: CommunityUser[] = []..." → "export const COMMUNITY_USERS: CommunityUser[] = [
+..."
+[94m[TodoWrite][0m
+Now let me add tier badges to the PostCard component. I need to import `getTierInfo` and show a tier badge next to the username:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/community.tsx[0m edit: "import { useAuth } from "@/contexts/AuthContext";
+..." → "import { useAuth } from "@/contexts/AuthContext";
+..."
+Now add the tier badge to the PostCard. I'll update the user header section:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/community.tsx[0m edit: "  const typeConfig = POST_TYPE_CONFIG[post.postTyp..." → "  const typeConfig = POST_TYPE_CONFIG[post.postTyp..."
+[94m[TodoWrite][0m
+Now update the empty state text to say "Be the first to post!":
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/community.tsx[0m edit: "            <Text className="text-lg font-bold tex..." → "            <Text className="text-lg font-bold tex..."
+Now add character count limit to create-post:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/create-post.tsx[0m edit: "            onChangeText={setContent}" → "            onChangeText={(text) => { if (text.len..."
+Now let me also update the character count display to show a warning color when near limit:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/create-post.tsx[0m edit: "          <Text className="text-xs text-dark/30">
+..." → "          <Text
+            className="text-xs"
+  ..."
+[94m[TodoWrite][0m
+Now I need to check if there are other files that reference `CommunityPost` that need the `crunchyScore` field added:
+[94m[Grep][0m pattern: [96mCommunityPost[0m
+[94m[Bash][0m Typecheck the project $ npx tsc --noEmit 2>&1 | head -50
+Typecheck passes. Let me also check `user-profile.tsx` to make sure it doesn't construct `CommunityPost` objects that would need the new field:
+[94m[Grep][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/user-profile.tsx[0m pattern: [96mCommunityPost[0m
+Good, it only uses the type for reading, not constructing. Typecheck passed so we're clean.
+[94m[TodoWrite][0m
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m edit: "  - The three scan screens share similar patterns ..." → "  - The three scan screens share similar patterns ..."
+[94m[TodoWrite][0m
+Story 3 is complete. Here's what was done:
+
+**Community Feed Polish - Summary:**
+
+1. **Sample data populated** - 7 realistic posts across all post types (tips, questions, reviews, recipes) with comments, images, and hashtags. 5 community users with scores and bios.
+
+2. **Tier badges on post cards** - Each post now shows the user's crunchy tier (emoji + label like "🌸 In Bloom") next to their username, computed via `getTierInfo(crunchyScore)`.
+
+3. **Empty state updated** - Changed to "Be the first to post!" with a descriptive subtitle per PRD.
+
+4. **Character count enforcement** - Create post screen now enforces the 500 character limit with a color-coded counter (normal -> orange at 400 -> red at 480).
+
+**Already implemented (verified meeting PRD):**
+- Post type filter bar (horizontal scroll pills)
+- Colored pill badges for post types
+- Animated heart with scale animation (`AnimatedHeart` component)
+- Comment modal with clean layout
+- Create post screen with post type selector, image upload, character count
+- FAB for creating posts
+- Skeleton loading states
+
+Typecheck passes cleanly. All changes left uncommitted for review.
+
+<promise>COMPLETE</promise>

@@ -396,6 +396,11 @@ function RecipeCard({
         style={{ backgroundColor: "#8B9E7C15" }}
       >
         <Text className="text-5xl">{recipe.image}</Text>
+        <View className="absolute top-3 left-3 bg-white/90 rounded-full px-2.5 py-1 flex-row items-center">
+          <Text className="text-xs font-medium text-dark/70">
+            {recipe.category}
+          </Text>
+        </View>
       </View>
 
       {/* Card Content */}
@@ -417,9 +422,9 @@ function RecipeCard({
           </View>
           <TouchableOpacity onPress={onSave} hitSlop={8}>
             <Ionicons
-              name={isSaved ? "bookmark" : "bookmark-outline"}
+              name={isSaved ? "heart" : "heart-outline"}
               size={20}
-              color={isSaved ? "#8B9E7C" : "#999"}
+              color={isSaved ? "#E57373" : "#999"}
             />
           </TouchableOpacity>
         </View>

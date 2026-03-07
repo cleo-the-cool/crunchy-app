@@ -1,0 +1,93 @@
+# Iteration 5 Log
+
+## Metadata
+
+- **Task ID**: STORY-005
+- **Task Title**: Recipe Detail & Library Polish
+- **Description**: - Recipe cards in grid: nice image placeholder, title, category badge, difficulty, prep time - Recipe detail: hero image area, ingredients as checkable list, step-by-step numbered instructions - "Save...
+- **Status**: completed
+- **Task Completed**: Yes
+- **Promise Detected**: Yes
+- **Started At**: 2026-03-07T04:55:34.704Z
+- **Ended At**: 2026-03-07T04:57:36.518Z
+- **Duration**: 2m 1s
+- **Input Tokens**: 72
+- **Output Tokens**: 6567
+- **Total Tokens**: 6639
+- **Agent**: claude
+- **Model**: claude-opus-4-6
+- **Sandbox Mode**: auto
+- **Sandbox Network**: Enabled
+--- RAW OUTPUT ---
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m
+[94m[Glob][0m pattern: [96m**/*recipe*[0m
+[94m[Glob][0m pattern: [96m**/*Recipe*[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/recipes.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/recipe-detail.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/data/recipes.ts[0m
+
+[91m[Error: File content (25071 tokens) exceeds maximum allowed tokens (25000). Please use offset and limit parameters to read specific portions of the file, or use the GrepTool to search for specific content.][0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/data/recipes.ts[0m
+[94m[Bash][0m Count lines in recipes.ts $ wc -l /Users/10-mac-alpha/Projects/crunchy-app/data/recipes.ts
+[94m[Grep][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/data/recipes.ts[0m pattern: [96mtitle:[0m
+[94m[TodoWrite][0m
+[94m[Grep][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/data/recipes.ts[0m pattern: [96m(placeholder|TODO|TBD|lorem|ipsum|coming soon|FIXME)[0m
+[94m[Grep][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/data/recipes.ts[0m pattern: [96mingredients: \[\]|steps: \[\][0m
+[94m[Grep][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/data/recipes.ts[0m pattern: [96m—[0m
+Good - no placeholder text, no empty ingredients/steps, no em-dashes. 63 recipes with real content. Let me verify the last few recipes have real data too.
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/data/recipes.ts[0m
+[94m[TodoWrite][0m
+Now let me add checkable ingredients to the recipe detail screen. The PRD says "ingredients as checkable list" - currently they show as a static list with leaf icons.
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/recipe-detail.tsx[0m edit: "  const [isSaved, setIsSaved] = useState(false);
+ ..." → "  const [isSaved, setIsSaved] = useState(false);
+ ..."
+Now add the toggle handler and replace the ingredient list rendering with checkable items:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/recipe-detail.tsx[0m edit: "  const displayMadeItCount = recipe.madeItCount + ..." → "  const toggleIngredient = (index: number) => {
+  ..."
+Now replace the ingredients rendering to be checkable:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/recipe-detail.tsx[0m edit: "            {recipe.ingredients.map((ing, index) =..." → "            {recipe.ingredients.map((ing, index) =..."
+Now let me also add a "Save Recipe" heart button as the PRD specifies (currently uses bookmark icon). The PRD says "Save Recipe heart button" - let me change the bookmark to a heart in the recipe detail header:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/recipe-detail.tsx[0m edit: "          <TouchableOpacity onPress={handleSave} h..." → "          <TouchableOpacity onPress={handleSave} h..."
+Now update the recipe list card to also use heart icon:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/recipes.tsx[0m edit: "          <TouchableOpacity onPress={onSave} hitSl..." → "          <TouchableOpacity onPress={onSave} hitSl..."
+Now add a category badge to the recipe cards (PRD says "category badge"):
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/recipes.tsx[0m
+I need to add a category badge to the hero image area of the recipe card:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/recipes.tsx[0m edit: "      {/* Hero Image Area */}
+      <View
+        ..." → "      {/* Hero Image Area */}
+      <View
+        ..."
+[94m[TodoWrite][0m
+[94m[Bash][0m Run TypeScript typecheck $ npx tsc --noEmit 2>&1 | head -50
+Typecheck passes cleanly. Now let me verify the checklist against the PRD one more time:
+
+1. **Recipe cards with image placeholder, title, category badge, difficulty, prep time** - All present
+2. **Recipe detail: hero image, checkable ingredients, numbered instructions** - Done (added checkable)
+3. **Save Recipe heart button** - Changed from bookmark to heart
+4. **Category filter: horizontal scroll pills** - Already implemented
+5. **Search bar that filters** - Already working with debounce
+6. **50+ recipes with complete content** - 63 recipes, all with real ingredients and instructions
+[94m[TodoWrite][0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m edit: "  - AVATAR_EMOJI_MAP is still duplicated in profil..." → "  - AVATAR_EMOJI_MAP is still duplicated in profil..."
+[94m[TodoWrite][0m
+Story 5 is complete. Here's what was done:
+
+**Changes made:**
+- **Checkable ingredients** (`app/recipe-detail.tsx`): Ingredients are now tappable - they toggle between a leaf icon and a sage green checkmark, with strikethrough styling when checked
+- **Heart save button**: Changed bookmark icons to hearts (red when saved) on both recipe cards and detail screen per PRD
+- **Category badge**: Added a category pill badge on the recipe card hero image area
+- **Data verification**: Confirmed all 63 recipes have complete, realistic ingredients and instructions (no placeholders)
+
+**Already working (no changes needed):**
+- Category filter horizontal scroll pills
+- Search bar with filtering
+- Difficulty and time filters
+- Recipe grid cards with image, title, difficulty stars, prep time, cost
+- Recipe detail with hero image, numbered step-by-step instructions, tips
+- Save/unsave persistence via AsyncStorage
+
+TypeScript typecheck passes cleanly.
+
+<promise>COMPLETE</promise>

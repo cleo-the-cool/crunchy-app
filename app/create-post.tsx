@@ -174,7 +174,7 @@ export default function CreatePostScreen() {
             }
             placeholderTextColor="#999"
             value={content}
-            onChangeText={setContent}
+            onChangeText={(text) => { if (text.length <= 500) setContent(text); }}
             multiline
             textAlignVertical="top"
             autoFocus
@@ -263,7 +263,17 @@ export default function CreatePostScreen() {
             <Text className="text-sm text-dark/50 ml-2">Photo</Text>
           </TouchableOpacity>
           <View className="flex-1" />
-          <Text className="text-xs text-dark/30">
+          <Text
+            className="text-xs"
+            style={{
+              color:
+                content.length >= 480
+                  ? "#F44336"
+                  : content.length >= 400
+                  ? "#F4A574"
+                  : "#ccc",
+            }}
+          >
             {content.length}/500
           </Text>
         </View>

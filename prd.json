@@ -1,12 +1,12 @@
 {
-  "name": "Crunchy App - Fix Sprint (Round 1 Feedback)",
-  "description": "Fix all bugs and polish issues from first testing round. Focus on QUALITY over speed. Each fix should be clean and complete.",
-  "branchName": "feature/crunchy-app-fix-sprint-round-1-feedback",
+  "name": "Crunchy App - Overnight Polish & Completion Sprint",
+  "description": "This sprint focuses on UI polish and completing features that are still incomplete or rough. Every change should make the app feel more professional and complete. Take extra care with quality. Test your changes mentally before moving on.",
+  "branchName": "feature/crunchy-app-overnight-polish-completion-sprint",
   "userStories": [
     {
       "id": "STORY-001",
-      "title": "Remove All Dummy/Mock Data",
-      "description": "Remove ALL fake data: fake accounts, fake posts, fake scans, fake recent items. The app should start clean with empty states. Empty states should have nice \"nothing here yet\" messages with CTAs (e.g. \"No scans yet - scan your first product!\" with a scan button). Check every screen for hardcoded mock data and remove it.",
+      "title": "Home Page Polish",
+      "description": "- Redesign the crunchy score card to be larger, more eye-catching, and match the polished card aesthetic (rounded-2xl, sage green gradient, shadow-lg) - Show: tier emoji, tier name, score number (large), and a small \"View Details\" arrow - Quick action buttons (Scan, Score, Saved) should have consistent styling, proper icons, and smooth press animations - Add a \"Welcome back, [name]!\" greeting at the top - If the user hasn't taken the quiz yet, show a prominent \"Take the Crunchy Quiz\" CTA card - Clean spacing throughout, no cramped elements",
       "acceptanceCriteria": [],
       "priority": 1,
       "passes": true,
@@ -16,8 +16,8 @@
     },
     {
       "id": "STORY-002",
-      "title": "Fix Navigation & Broken Buttons",
-      "description": "- Home page quick buttons (scan, score, saved) must navigate to their actual pages - Score box on home page must be tappable and navigate to a score detail page - Create a new `app/score-detail.tsx` page showing: current score, tier, breakdown of how score is calculated, history/progress - All back buttons must work (use the useGoBack hook already created) - Error pages must have a dismiss/back button - Keyboard must dismiss when tapping outside text inputs (use KeyboardAvoidingView + TouchableWithoutFeedback + Keyboard.dismiss)",
+      "title": "Scanner UI Polish",
+      "description": "- Scan mode selector: clean pill-shaped tabs with icons. \"Item\" (camera icon), \"Ingredients\" (list icon), \"Label\" (tag icon) - Each mode should have a brief description text below the tabs explaining what to do - Camera viewfinder should have a nice frame/overlay guide - Scanning animation: show a subtle pulse or scanning line while processing - Result screen: clean card layout with score badge, ingredient list with color-coded safety ratings (green/yellow/red) - \"Save Product\" and \"Scan Another\" buttons at bottom of result - Error screen: friendly message, retry button, back button. Never show raw error text.",
       "acceptanceCriteria": [],
       "priority": 2,
       "passes": true,
@@ -27,8 +27,8 @@
     },
     {
       "id": "STORY-003",
-      "title": "Fix Scanner",
-      "description": "- Update scan mode labels to \"Item\", \"Ingredients\", \"Label\" with correct matching icons (camera for item, document-text for ingredients, pricetag for label) - Fix header spacing to look clean and professional - Add retry logic for Gemini 429 errors (wait 2s, retry up to 3 times) - Add friendly error screen: \"Oops, the scanner is busy. Try again in a moment.\" with a \"Try Again\" button and a \"Go Back\" button - Recently saved items should open a product detail view, NOT the post-scan analysis view - Create `app/product-detail.tsx` for viewing saved/cached products (different from scan-result)",
+      "title": "Community Feed Polish",
+      "description": "- Post cards: clean layout with user avatar, display name, tier badge, timestamp - Post type badges (Question, Review, Tip, Recipe) as colored pills - Filter bar: horizontal scroll of post type filters instead of hashtags - Like animation (heart fill with scale) - Comment section: clean thread layout with indented replies - Empty state: \"Be the first to post!\" with create post button - Create post screen: clean form with post type selector, image upload area, character count",
       "acceptanceCriteria": [],
       "priority": 3,
       "passes": true,
@@ -38,8 +38,8 @@
     },
     {
       "id": "STORY-004",
-      "title": "Fix Community",
-      "description": "- Replace hashtag filters with post type filters: All, Questions, Reviews, Tips, Recipes - Fix comment liking (add likes table support for comments, or remove like button from comments if not supported) - Fix user identity: comments should show the user's display_name and chosen avatar, not \"You\" with random emoji - Fix \"user not found\" when clicking own profile - should navigate to profile tab - Add profile edit screen: `app/edit-profile.tsx` with editable display_name, bio, avatar selection - Link edit profile from settings AND from profile page",
+      "title": "Profile Page Polish",
+      "description": "- Large avatar at top (emoji or image) - Display name, bio, tier badge, and crunchy score prominently displayed - Stats row: Total Scans | Recipes Tried | Lists Created - \"Edit Profile\" button (pencil icon) - My recent scans section (horizontal scroll) - My lists section - Screenshotable score card: create a beautiful card component that shows tier, score, tree emoji, username, and app branding. Add \"Share\" button that captures this card as an image.",
       "acceptanceCriteria": [],
       "priority": 4,
       "passes": true,
@@ -49,8 +49,8 @@
     },
     {
       "id": "STORY-005",
-      "title": "Fix Lists",
-      "description": "- Separate \"My Lists\" (lists I created) from \"Browse Lists\" (other users' public lists) - use tabs/segments - My Lists should also show lists I've saved/followed - Fix create list: add KeyboardAvoidingView, add product search to add products, add save button that actually saves to Supabase - After creating a list, navigate back to My Lists",
+      "title": "Recipe Detail & Library Polish",
+      "description": "- Recipe cards in grid: nice image placeholder, title, category badge, difficulty, prep time - Recipe detail: hero image area, ingredients as checkable list, step-by-step numbered instructions - \"Save Recipe\" heart button - Category filter: horizontal scroll pills (All, Cleaning, Skincare, Cooking, Home) - Search bar that actually filters the recipe list - Ensure all 50+ recipes have complete, realistic ingredients and instructions (not placeholder text)",
       "acceptanceCriteria": [],
       "priority": 4,
       "passes": true,
@@ -60,8 +60,8 @@
     },
     {
       "id": "STORY-006",
-      "title": "Fix Explore/Search",
-      "description": "- Search should query Supabase products table by name and brand - Also search recipes by title - Show \"No results found\" with helpful message if nothing matches - Add debounce to search input (300ms)",
+      "title": "Lists Feature Completion",
+      "description": "- My Lists tab: shows lists I created with item count, last updated - Browse Lists tab: shows other users' public lists - Create List: proper form with name, description, category selector, privacy toggle (public/private) - Add Products to List: search for products (from scanned products in Supabase), tap to add - List Detail: shows products with images, names, scores. Tap product for detail. Remove product with swipe or long press. - Keyboard dismisses properly on all inputs",
       "acceptanceCriteria": [],
       "priority": 4,
       "passes": true,
@@ -71,8 +71,8 @@
     },
     {
       "id": "STORY-007",
-      "title": "Polish Home Page",
-      "description": "- Redesign crunchy score card: bigger, matches the polished card style (rounded-2xl, sage green, shadow), show tier emoji + name + score prominently - Score card is tappable → score detail page - Clean spacing throughout home page",
+      "title": "Onboarding & Quiz Polish",
+      "description": "- Welcome screen with app logo and tagline - Smooth transitions between onboarding steps - Quiz questions: one per screen, large text, fun illustrated options (emoji-based if no images) - Progress bar at top showing question number - Result screen: big animated score reveal, tier announcement, tree emoji, \"Share Your Score\" button - Interest picker: nice grid of interest cards with icons, tappable with selected state - Smooth transition into main app after onboarding",
       "acceptanceCriteria": [],
       "priority": 4,
       "passes": true,
@@ -82,8 +82,8 @@
     },
     {
       "id": "STORY-008",
-      "title": "Fix Profile Page",
-      "description": "- Fix name overlapping tree emoji - add proper spacing/padding - Score section should be tappable → score detail page - Tree emoji selection is a FUTURE feature (just use default tree for now, but leave room for it)",
+      "title": "Settings & Edit Profile Completion",
+      "description": "- Settings should look clean and organized in sections: Account, Preferences, Legal, Support, Danger Zone - Edit Profile: avatar selector (grid of emoji avatars to choose from), display name, bio, interests - Save button that actually persists to Supabase (not just AsyncStorage) - Notification preferences section (even if just toggles that save locally for now) - \"About Crunchy\" section with version number - Delete Account in its own \"Danger Zone\" section with red styling",
       "acceptanceCriteria": [],
       "priority": 4,
       "passes": true,
@@ -93,8 +93,8 @@
     },
     {
       "id": "STORY-009",
-      "title": "Fix Settings & Legal",
-      "description": "- Privacy policy: fill in ALL blank sections with real content - Remove blank bullets/periods - Rephrase \"under 13\" section to be less suspicious: \"This app is designed for users aged 13 and older. We do not knowingly collect personal information from children under 13.\" - Add explicit statement: \"We do not sell, trade, or rent your personal data to third parties.\" - Add \"Delete Account\" button in settings that actually deletes the account (with confirmation dialog) - Add \"Edit Profile\" button in settings → edit-profile page - Make name and other details editable",
+      "title": "Explore/Search Completion",
+      "description": "- Search should be responsive and show results as you type (debounced 300ms) - Results organized in sections: Products, Recipes, Community Posts - Product results show: name, brand, score badge, category - Recipe results show: title, category, difficulty - No results: \"Nothing found for [query]. Try scanning a product to add it to our database!\" - Trending/featured section when search is empty: featured recipes, popular products",
       "acceptanceCriteria": [],
       "priority": 4,
       "passes": true,
@@ -104,20 +104,20 @@
     },
     {
       "id": "STORY-010",
-      "title": "Final Quality Pass",
-      "description": "- Check every screen for visual consistency - Ensure no dummy data remains anywhere - Test all navigation flows work - Ensure clean empty states everywhere - No orphaned screens or dead-end pages - Professional, polished feel throughout",
+      "title": "Overall Visual Consistency Pass",
+      "description": "- Ensure EVERY screen uses the same design tokens: bg color (#FFF9F2 cream), sage green (#8B9E7C), rounded-2xl cards, consistent shadows - Typography: consistent heading sizes, body text sizes, weight usage - Icons: all from the same icon set (Ionicons), consistent size and style - Loading states: skeleton placeholders instead of raw spinners wherever possible - Transitions: smooth navigation transitions - Extract AVATAR_EMOJI_MAP to a shared lib (it's duplicated in community.tsx and profile.tsx) - Clean up any unused exports or dead code flagged in the previous quality pass - Ensure no em-dashes anywhere in any copy text",
       "acceptanceCriteria": [],
       "priority": 4,
       "passes": true,
-      "completionNotes": "Completed by agent",
       "labels": [],
-      "dependsOn": []
+      "dependsOn": [],
+      "completionNotes": "Completed by agent"
     }
   ],
   "metadata": {
-    "createdAt": "2026-03-07T04:01:24.925Z",
+    "createdAt": "2026-03-07T04:42:48.689Z",
     "version": "1.0.0",
-    "sourcePrd": ".ralph/prd-fixes.md",
-    "updatedAt": "2026-03-07T04:33:29.343Z"
+    "sourcePrd": ".ralph/prd-polish.md",
+    "updatedAt": "2026-03-07T05:15:30.782Z"
   }
 }

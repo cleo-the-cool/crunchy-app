@@ -40,6 +40,9 @@ export default function RecipeDetailScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const [isSaved, setIsSaved] = useState(false);
   const [madeIt, setMadeIt] = useState(false);
+  const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(
+    new Set()
+  );
 
   const recipe = id ? getRecipeById(id) : undefined;
 
@@ -104,6 +107,19 @@ export default function RecipeDetailScreen() {
     }
   };
 
+  const toggleIngredient = (index: number) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setCheckedIngredients((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
+  };
+
   const displayMadeItCount = recipe.madeItCount + (madeIt ? 1 : 0);
 
   return (
@@ -116,9 +132,9 @@ export default function RecipeDetailScreen() {
         <View className="flex-row gap-4">
           <TouchableOpacity onPress={handleSave} hitSlop={8}>
             <Ionicons
-              name={isSaved ? "bookmark" : "bookmark-outline"}
+              name={isSaved ? "heart" : "heart-outline"}
               size={24}
-              color={isSaved ? "#8B9E7C" : "#2D2D2D"}
+              color={isSaved ? "#E57373" : "#2D2D2D"}
             />
           </TouchableOpacity>
           <TouchableOpacity onPress={handleShare} hitSlop={8}>
@@ -217,31 +233,52 @@ export default function RecipeDetailScreen() {
               elevation: 2,
             }}
           >
-            {recipe.ingredients.map((ing, index) => (
-              <View
-                key={index}
-                className={`flex-row items-start py-3 ${
-                  index < recipe.ingredients.length - 1
-                    ? "border-b border-dark/5"
-                    : ""
-                }`}
-              >
-                <View
-                  className="w-6 h-6 rounded-full bg-sage/15 items-center justify-center mr-3 mt-0.5"
+            {recipe.ingredients.map((ing, index) => {
+              const isChecked = checkedIngredients.has(index);
+              return (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => toggleIngredient(index)}
+                  activeOpacity={0.7}
+                  className={`flex-row items-start py-3 ${
+                    index < recipe.ingredients.length - 1
+                      ? "border-b border-dark/5"
+                      : ""
+                  }`}
                 >
-                  <Ionicons name="leaf" size={12} color="#8B9E7C" />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-sm text-dark font-medium">
-                    {ing.name}
-                  </Text>
-                  <Text className="text-xs text-dark/50 mt-0.5">
-                    {ing.quantity}
-                    {ing.note ? ` (${ing.note})` : ""}
-                  </Text>
-                </View>
-              </View>
-            ))}
+                  <View
+                    className={`w-6 h-6 rounded-md items-center justify-center mr-3 mt-0.5 ${
+                      isChecked ? "bg-sage" : "bg-sage/15"
+                    }`}
+                  >
+                    {isChecked ? (
+                      <Ionicons name="checkmark" size={14} color="white" />
+                    ) : (
+                      <Ionicons name="leaf" size={12} color="#8B9E7C" />
+                    )}
+                  </View>
+                  <View className="flex-1">
+                    <Text
+                      className={`text-sm font-medium ${
+                        isChecked
+                          ? "text-dark/40 line-through"
+                          : "text-dark"
+                      }`}
+                    >
+                      {ing.name}
+                    </Text>
+                    <Text
+                      className={`text-xs mt-0.5 ${
+                        isChecked ? "text-dark/30" : "text-dark/50"
+                      }`}
+                    >
+                      {ing.quantity}
+                      {ing.note ? ` (${ing.note})` : ""}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
 

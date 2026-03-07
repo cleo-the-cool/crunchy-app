@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,13 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withTiming,
+  Easing,
+} from "react-native-reanimated";
 import { CameraView, useCameraPermissions } from "../utils/camera";
 import * as Haptics from "../utils/haptics";
 import { useSubscription } from "@/contexts/SubscriptionContext";
@@ -36,6 +43,39 @@ const RISK_CONFIG = {
   toxic: { color: "#F44336", icon: "warning" as const, label: "Toxic" },
 };
 
+function ScanningLineAnimation() {
+  const translateY = useSharedValue(0);
+
+  useEffect(() => {
+    translateY.value = withRepeat(
+      withTiming(120, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true
+    );
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
+
+  return (
+    <View className="w-full h-32 overflow-hidden rounded-xl bg-sage/5 items-center">
+      <Animated.View
+        style={[
+          animatedStyle,
+          {
+            width: "80%",
+            height: 2,
+            backgroundColor: "#8B9E7C",
+            borderRadius: 1,
+            opacity: 0.6,
+          },
+        ]}
+      />
+    </View>
+  );
+}
+
 export default function LabelScanScreen() {
   const router = useRouter();
   const { mode: modeParam } = useLocalSearchParams<{ mode?: string }>();
@@ -49,6 +89,7 @@ export default function LabelScanScreen() {
   const [analysis, setAnalysis] = useState<GeminiAnalysis | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [expandedIngredient, setExpandedIngredient] = useState<string | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
   const cameraRef = useRef<CameraView>(null);
 
   const handleCapture = async () => {
@@ -155,11 +196,11 @@ export default function LabelScanScreen() {
             <Text className="text-xl font-bold text-dark mb-2">
               {processingText}
             </Text>
-            <Text className="text-sm text-dark/50 text-center mb-6">
+            <Text className="text-sm text-dark/50 text-center mb-4">
               {processingSubtext}
             </Text>
-            <ActivityIndicator size="large" color="#8B9E7C" />
-            <View className="flex-row items-center mt-6 bg-sage/5 rounded-xl px-4 py-3">
+            <ScanningLineAnimation />
+            <View className="flex-row items-center mt-5 bg-sage/5 rounded-xl px-4 py-3">
               <Ionicons name="sparkles" size={16} color="#8B9E7C" />
               <Text className="text-xs text-dark/40 ml-2">
                 Powered by Gemini AI
@@ -374,15 +415,43 @@ export default function LabelScanScreen() {
             </View>
           )}
 
-          {/* Scan Again Button */}
-          <View className="mx-5 mt-6">
+          {/* Action Buttons */}
+          <View className="mx-5 mt-6 gap-3">
+            <TouchableOpacity
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                setIsSaved(!isSaved);
+              }}
+              activeOpacity={0.85}
+              className={`rounded-2xl py-4 flex-row items-center justify-center ${isSaved ? "bg-sage/10" : "bg-sage"}`}
+              style={isSaved ? { borderWidth: 1, borderColor: "#8B9E7C" } : undefined}
+            >
+              <Ionicons
+                name={isSaved ? "bookmark" : "bookmark-outline"}
+                size={20}
+                color={isSaved ? "#8B9E7C" : "white"}
+              />
+              <Text className={`font-semibold text-base ml-2 ${isSaved ? "text-sage" : "text-white"}`}>
+                {isSaved ? "Product Saved" : "Save Product"}
+              </Text>
+            </TouchableOpacity>
             <TouchableOpacity
               onPress={handleBackToScanner}
               activeOpacity={0.85}
-              className="bg-sage rounded-2xl py-4 items-center"
+              className="bg-white rounded-2xl py-4 flex-row items-center justify-center"
+              style={{
+                borderWidth: 1,
+                borderColor: "#e5e5e5",
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.05,
+                shadowRadius: 6,
+                elevation: 2,
+              }}
             >
-              <Text className="text-white font-semibold text-base">
-                Back to Scanner
+              <Ionicons name="scan-outline" size={20} color="#2D2D2D" />
+              <Text className="text-dark font-semibold text-base ml-2">
+                Scan Another
               </Text>
             </TouchableOpacity>
           </View>

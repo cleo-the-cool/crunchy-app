@@ -30,23 +30,10 @@ import {
   type PostType,
 } from "@/data/community";
 import { useAuth } from "@/contexts/AuthContext";
+import { getTierInfo } from "@/lib/crunchyScore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { CardSkeleton } from "@/components";
-
-const AVATAR_EMOJI_MAP: Record<string, string> = {
-  leaf: "🌿",
-  sunflower: "🌻",
-  mushroom: "🍄",
-  avocado: "🥑",
-  butterfly: "🦋",
-  bee: "🐝",
-  cherry: "🍒",
-  rainbow: "🌈",
-  star: "⭐",
-  cactus: "🌵",
-  peach: "🍑",
-  herb: "🌱",
-};
+import { AVATAR_EMOJI_MAP } from "@/lib/avatars";
 
 function formatTimeAgo(timestamp: string): string {
   const now = new Date();
@@ -282,10 +269,10 @@ export default function CommunityScreen() {
           <View className="items-center mt-16">
             <Text className="text-5xl mb-4">💬</Text>
             <Text className="text-lg font-bold text-dark text-center">
-              No posts yet
+              Be the first to post!
             </Text>
             <Text className="text-sm text-dark/50 text-center mt-2 px-8">
-              Be the first to share something with the community!
+              Share a tip, review, or question with the community.
             </Text>
             <TouchableOpacity
               onPress={() => router.push("/create-post")}
@@ -488,6 +475,7 @@ function PostCard({
   onReport: () => void;
 }) {
   const typeConfig = POST_TYPE_CONFIG[post.postType];
+  const tier = getTierInfo(post.crunchyScore);
 
   return (
     <View
@@ -510,9 +498,17 @@ function PostCard({
             <Text className="text-xl">{post.avatar}</Text>
           </View>
           <View className="flex-1">
-            <Text className="text-sm font-semibold text-dark">
-              {post.username}
-            </Text>
+            <View className="flex-row items-center gap-1.5">
+              <Text className="text-sm font-semibold text-dark">
+                {post.username}
+              </Text>
+              <View className="bg-sage/12 px-1.5 py-0.5 rounded-full flex-row items-center">
+                <Text className="text-xs">{tier.emoji}</Text>
+                <Text className="text-xs text-sage font-medium ml-0.5">
+                  {tier.label}
+                </Text>
+              </View>
+            </View>
             <Text className="text-xs text-dark/40">
               {formatTimeAgo(post.timestamp)}
             </Text>

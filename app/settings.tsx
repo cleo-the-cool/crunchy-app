@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,14 +10,40 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGoBack } from "@/lib/useGoBack";
+
+const NOTIF_STORAGE_KEY = "@crunchy_notification_prefs";
 
 export default function SettingsScreen() {
   const { user, signOut, deleteAccount } = useAuth();
   const router = useRouter();
   const goBack = useGoBack();
   const [communityNotifications, setCommunityNotifications] = useState(true);
+  const [scanReminders, setScanReminders] = useState(false);
+  const [tipsAndUpdates, setTipsAndUpdates] = useState(true);
+
+  useEffect(() => {
+    loadNotifPrefs();
+  }, []);
+
+  async function loadNotifPrefs() {
+    const stored = await AsyncStorage.getItem(NOTIF_STORAGE_KEY);
+    if (stored) {
+      const prefs = JSON.parse(stored);
+      setCommunityNotifications(prefs.community ?? true);
+      setScanReminders(prefs.scanReminders ?? false);
+      setTipsAndUpdates(prefs.tipsAndUpdates ?? true);
+    }
+  }
+
+  async function saveNotifPref(key: string, value: boolean) {
+    const stored = await AsyncStorage.getItem(NOTIF_STORAGE_KEY);
+    const prefs = stored ? JSON.parse(stored) : {};
+    prefs[key] = value;
+    await AsyncStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify(prefs));
+  }
 
   const handleDeleteAccount = () => {
     Alert.alert(
@@ -54,7 +80,7 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-cream">
       {/* Header */}
-      <View className="flex-row items-center px-5 pt-2 pb-4">
+      <View className="flex-row items-center px-6 pt-2 pb-4">
         <TouchableOpacity onPress={goBack} hitSlop={8}>
           <Ionicons name="arrow-back" size={24} color="#2D2D2D" />
         </TouchableOpacity>
@@ -66,9 +92,9 @@ export default function SettingsScreen() {
         contentContainerStyle={{ paddingBottom: 48 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Account Section */}
+        {/* ── Account ── */}
         <SectionHeader title="Account" />
-        <View className="mx-5 bg-white rounded-2xl overflow-hidden" style={cardShadow}>
+        <View className="mx-6 bg-white rounded-2xl overflow-hidden" style={cardShadow}>
           <SettingsRow
             icon="person-outline"
             label="Name"
@@ -89,52 +115,54 @@ export default function SettingsScreen() {
           />
         </View>
 
-        {/* Profile Section */}
-        <SectionHeader title="Profile" />
-        <View className="mx-5 bg-white rounded-2xl overflow-hidden" style={cardShadow}>
+        {/* ── Preferences ── */}
+        <SectionHeader title="Preferences" />
+        <View className="mx-6 bg-white rounded-2xl overflow-hidden" style={cardShadow}>
           <TouchableOpacity onPress={() => router.push("/edit-profile")}>
-            <SettingsRow icon="create-outline" label="Edit Profile" value="Edit" chevron />
+            <SettingsRow icon="create-outline" label="Edit Profile" chevron />
           </TouchableOpacity>
-        </View>
-
-        {/* Personalization Section */}
-        <SectionHeader title="Personalization" />
-        <View className="mx-5 bg-white rounded-2xl overflow-hidden" style={cardShadow}>
+          <Divider />
           <TouchableOpacity onPress={() => router.push({ pathname: "/interests", params: { from: "settings" } })}>
-            <SettingsRow icon="heart-outline" label="My Interests" value="Edit" chevron />
+            <SettingsRow icon="heart-outline" label="My Interests" chevron />
           </TouchableOpacity>
-        </View>
-
-        {/* Notifications Section */}
-        <SectionHeader title="Notifications" />
-        <View className="mx-5 bg-white rounded-2xl overflow-hidden" style={cardShadow}>
+          <Divider />
           <SettingsToggle
             icon="people-outline"
-            label="Community"
+            label="Community Notifications"
             description="Likes and comments on your posts"
             value={communityNotifications}
-            onToggle={setCommunityNotifications}
+            onToggle={(v) => {
+              setCommunityNotifications(v);
+              saveNotifPref("community", v);
+            }}
           />
           <Divider />
-          <View className="flex-row items-center px-4 py-3">
-            <View className="w-8 items-center">
-              <Ionicons name="newspaper-outline" size={20} color="#8B9E7C" />
-            </View>
-            <View className="flex-1 ml-2">
-              <Text className="text-base text-dark">Weekly Digest</Text>
-              <Text className="text-xs text-dark/40">Clean living tips and trends</Text>
-            </View>
-            <View className="bg-sage/15 px-2.5 py-1 rounded-full">
-              <Text className="text-xs font-medium text-sage">Coming Soon</Text>
-            </View>
-          </View>
+          <SettingsToggle
+            icon="scan-outline"
+            label="Scan Reminders"
+            description="Weekly reminders to scan products"
+            value={scanReminders}
+            onToggle={(v) => {
+              setScanReminders(v);
+              saveNotifPref("scanReminders", v);
+            }}
+          />
+          <Divider />
+          <SettingsToggle
+            icon="bulb-outline"
+            label="Tips & Updates"
+            description="Clean living tips and new features"
+            value={tipsAndUpdates}
+            onToggle={(v) => {
+              setTipsAndUpdates(v);
+              saveNotifPref("tipsAndUpdates", v);
+            }}
+          />
         </View>
 
-        {/* About Section */}
-        <SectionHeader title="About" />
-        <View className="mx-5 bg-white rounded-2xl overflow-hidden" style={cardShadow}>
-          <SettingsRow icon="information-circle-outline" label="Version" value="1.0.0" />
-          <Divider />
+        {/* ── Legal ── */}
+        <SectionHeader title="Legal" />
+        <View className="mx-6 bg-white rounded-2xl overflow-hidden" style={cardShadow}>
           <TouchableOpacity onPress={() => router.push("/privacy-policy")}>
             <SettingsRow icon="document-text-outline" label="Privacy Policy" chevron />
           </TouchableOpacity>
@@ -142,41 +170,61 @@ export default function SettingsScreen() {
           <TouchableOpacity onPress={() => router.push("/terms-of-service")}>
             <SettingsRow icon="shield-checkmark-outline" label="Terms of Service" chevron />
           </TouchableOpacity>
-          <Divider />
+        </View>
+
+        {/* ── Support ── */}
+        <SectionHeader title="Support" />
+        <View className="mx-6 bg-white rounded-2xl overflow-hidden" style={cardShadow}>
           <TouchableOpacity onPress={() => router.push("/help-support")}>
             <SettingsRow icon="help-circle-outline" label="Help & Support" chevron />
           </TouchableOpacity>
+          <Divider />
+          <SettingsRow icon="chatbubble-outline" label="Send Feedback" chevron />
         </View>
 
-        {/* Logout */}
-        <View className="mx-5 mt-6">
+        {/* ── About Crunchy ── */}
+        <SectionHeader title="About Crunchy" />
+        <View className="mx-6 bg-white rounded-2xl overflow-hidden" style={cardShadow}>
+          <SettingsRow icon="leaf-outline" label="App" value="Crunchy" valueColor="#8B9E7C" />
+          <Divider />
+          <SettingsRow icon="information-circle-outline" label="Version" value="1.0.0" />
+        </View>
+
+        {/* ── Log Out ── */}
+        <View className="mx-6 mt-6">
           <TouchableOpacity
             onPress={handleLogout}
             className="bg-white rounded-2xl py-4 items-center"
             style={cardShadow}
           >
             <View className="flex-row items-center">
-              <Ionicons name="log-out-outline" size={20} color="#F44336" />
-              <Text className="text-base font-semibold text-rating-avoid ml-2">
+              <Ionicons name="log-out-outline" size={20} color="#8B9E7C" />
+              <Text className="text-base font-semibold text-sage ml-2">
                 Log Out
               </Text>
             </View>
           </TouchableOpacity>
         </View>
 
-        {/* Delete Account */}
-        <View className="mx-5 mt-3 mb-4">
+        {/* ── Danger Zone ── */}
+        <DangerZoneHeader />
+        <View className="mx-6 bg-white rounded-2xl overflow-hidden" style={dangerCardShadow}>
           <TouchableOpacity
             onPress={handleDeleteAccount}
-            className="bg-white rounded-2xl py-4 items-center"
-            style={cardShadow}
+            className="flex-row items-center px-4 py-4"
           >
-            <View className="flex-row items-center">
-              <Ionicons name="trash-outline" size={20} color="#F44336" />
-              <Text className="text-base font-semibold text-rating-avoid ml-2">
+            <View className="w-8 h-8 rounded-full bg-red-50 items-center justify-center">
+              <Ionicons name="trash-outline" size={18} color="#EF4444" />
+            </View>
+            <View className="flex-1 ml-3">
+              <Text className="text-base font-semibold" style={{ color: "#EF4444" }}>
                 Delete Account
               </Text>
+              <Text className="text-xs text-dark/40 mt-0.5">
+                Permanently remove all your data
+              </Text>
             </View>
+            <Ionicons name="chevron-forward" size={18} color="#EF4444" />
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -192,10 +240,31 @@ const cardShadow = {
   elevation: 2,
 };
 
+const dangerCardShadow = {
+  shadowColor: "#EF4444",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.08,
+  shadowRadius: 6,
+  elevation: 2,
+  borderWidth: 1,
+  borderColor: "rgba(239,68,68,0.15)",
+};
+
 function SectionHeader({ title }: { title: string }) {
   return (
-    <Text className="text-sm font-semibold text-dark/40 uppercase tracking-wider px-5 mt-6 mb-2">
+    <Text className="text-sm font-semibold text-dark/40 uppercase tracking-wider px-6 mt-6 mb-2">
       {title}
+    </Text>
+  );
+}
+
+function DangerZoneHeader() {
+  return (
+    <Text
+      className="text-sm font-semibold uppercase tracking-wider px-6 mt-8 mb-2"
+      style={{ color: "#EF4444" }}
+    >
+      Danger Zone
     </Text>
   );
 }

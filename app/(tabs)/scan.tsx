@@ -123,6 +123,13 @@ export default function ScanScreen() {
         ))}
       </View>
 
+      {/* Mode Description */}
+      <View className="mx-5 mb-3">
+        <Text className="text-xs text-dark/40 text-center">
+          {SCAN_MODES.find((m) => m.key === scanMode)?.description}
+        </Text>
+      </View>
+
       {/* Scan Limit Indicator (free tier) */}
       {tier === "free" && (
         <View className="flex-row items-center justify-center mx-5 mb-3">

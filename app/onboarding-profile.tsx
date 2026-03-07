@@ -14,21 +14,7 @@ import * as Haptics from "../utils/haptics";
 import { SafeAreaWrapper, Button } from "@/components";
 import { useAuth } from "@/contexts/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
-
-const AVATAR_PRESETS = [
-  { id: "leaf", emoji: "🌿" },
-  { id: "sunflower", emoji: "🌻" },
-  { id: "mushroom", emoji: "🍄" },
-  { id: "avocado", emoji: "🥑" },
-  { id: "butterfly", emoji: "🦋" },
-  { id: "bee", emoji: "🐝" },
-  { id: "cherry", emoji: "🍒" },
-  { id: "rainbow", emoji: "🌈" },
-  { id: "star", emoji: "⭐" },
-  { id: "cactus", emoji: "🌵" },
-  { id: "peach", emoji: "🍑" },
-  { id: "herb", emoji: "🌱" },
-];
+import { AVATAR_PRESETS } from "@/lib/avatars";
 
 export default function OnboardingProfileScreen() {
   const router = useRouter();

@@ -15,8 +15,10 @@ import Animated, {
   interpolate,
   useAnimatedScrollHandler,
   Extrapolation,
+  FadeIn,
 } from "react-native-reanimated";
 import { SafeAreaWrapper } from "@/components";
+import * as Haptics from "../utils/haptics";
 
 const { width } = Dimensions.get("window");
 
@@ -217,6 +219,7 @@ export default function QuizScreen() {
     const newAnswers = [...answers];
     newAnswers[questionIdx] = optionIdx;
     setAnswers(newAnswers);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     // Auto-advance after short delay
     setTimeout(() => {
@@ -245,6 +248,7 @@ export default function QuizScreen() {
   };
 
   const handleFinish = () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     // Calculate total score
     let totalScore = 0;
     answers.forEach((answerIdx, qIdx) => {
@@ -273,20 +277,20 @@ export default function QuizScreen() {
   return (
     <SafeAreaWrapper>
       {/* Header */}
-      <View className="flex-row items-center justify-between px-6 pt-2 pb-4">
+      <Animated.View entering={FadeIn.duration(400)} className="flex-row items-center justify-between px-6 pt-2 pb-4">
         <TouchableOpacity onPress={handleBack} className="p-1">
           <Text className="text-sage text-base font-medium">
             {currentIndex === 0 ? "Exit" : "Back"}
           </Text>
         </TouchableOpacity>
         <Text className="text-dark font-semibold">
-          {currentIndex + 1} / {questions.length}
+          {currentIndex + 1} of {questions.length}
         </Text>
         <View className="w-12" />
-      </View>
+      </Animated.View>
 
       {/* Progress Bar */}
-      <View className="mx-6 h-2 bg-cream-dark rounded-full overflow-hidden mb-6">
+      <View className="mx-6 h-2.5 bg-cream-dark rounded-full overflow-hidden mb-6">
         <Animated.View
           className="h-full bg-sage rounded-full"
           style={progressStyle}
@@ -321,6 +325,17 @@ export default function QuizScreen() {
             className={`py-4 rounded-2xl items-center ${
               allAnswered ? "bg-sage" : "bg-sage/50"
             }`}
+            style={
+              allAnswered
+                ? {
+                    shadowColor: "#8B9E7C",
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 8,
+                    elevation: 4,
+                  }
+                : undefined
+            }
           >
             <Text className="text-white text-lg font-semibold">
               See My Score

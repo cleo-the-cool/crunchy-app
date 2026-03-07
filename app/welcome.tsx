@@ -2,6 +2,7 @@ import { View, Text } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaWrapper, Button } from "@/components";
 import { Ionicons } from "@expo/vector-icons";
+import Animated, { FadeIn, FadeInDown, FadeInUp } from "react-native-reanimated";
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -10,21 +11,42 @@ export default function WelcomeScreen() {
     <SafeAreaWrapper>
       <View className="flex-1 justify-center items-center px-8">
         {/* Logo */}
-        <View className="w-24 h-24 bg-sage rounded-3xl items-center justify-center mb-6">
-          <Ionicons name="leaf" size={48} color="#FFFFFF" />
-        </View>
+        <Animated.View
+          entering={FadeIn.duration(600)}
+          className="w-28 h-28 bg-sage rounded-3xl items-center justify-center mb-8"
+          style={{
+            shadowColor: "#8B9E7C",
+            shadowOffset: { width: 0, height: 6 },
+            shadowOpacity: 0.25,
+            shadowRadius: 12,
+            elevation: 6,
+          }}
+        >
+          <Ionicons name="leaf" size={56} color="#FFFFFF" />
+        </Animated.View>
 
         {/* App Name */}
-        <Text className="text-4xl font-bold text-dark mb-3">Crunchy</Text>
+        <Animated.Text
+          entering={FadeInDown.delay(200).duration(500)}
+          className="text-4xl font-bold text-dark mb-3"
+        >
+          Crunchy
+        </Animated.Text>
 
         {/* Tagline */}
-        <Text className="text-lg text-dark-light text-center leading-7">
+        <Animated.Text
+          entering={FadeInDown.delay(400).duration(500)}
+          className="text-lg text-dark-light text-center leading-7"
+        >
           The operating system for{"\n"}conscious living
-        </Text>
+        </Animated.Text>
       </View>
 
       {/* CTA */}
-      <View className="px-8 pb-8">
+      <Animated.View
+        entering={FadeInUp.delay(600).duration(500)}
+        className="px-8 pb-8"
+      >
         <Button
           title="Get Started"
           onPress={() => router.push("/onboarding")}
@@ -38,7 +60,7 @@ export default function WelcomeScreen() {
             Log in
           </Text>
         </Text>
-      </View>
+      </Animated.View>
     </SafeAreaWrapper>
   );
 }

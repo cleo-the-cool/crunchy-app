@@ -8,6 +8,8 @@ import Animated, {
   useAnimatedStyle,
   interpolate,
   interpolateColor,
+  FadeIn,
+  FadeInUp,
   type SharedValue,
 } from "react-native-reanimated";
 import { useRef } from "react";
@@ -110,11 +112,11 @@ export default function OnboardingScreen() {
   return (
     <SafeAreaWrapper>
       {/* Skip Button */}
-      <View className="flex-row justify-end px-6 pt-2">
+      <Animated.View entering={FadeIn.delay(300).duration(400)} className="flex-row justify-end px-6 pt-2">
         <TouchableOpacity onPress={() => router.push("/(tabs)")}>
           <Text className="text-sage font-semibold text-base">Skip</Text>
         </TouchableOpacity>
-      </View>
+      </Animated.View>
 
       {/* Carousel */}
       <Animated.ScrollView
@@ -132,12 +134,19 @@ export default function OnboardingScreen() {
             style={{ width }}
             className="flex-1 justify-center items-center px-10"
           >
-            {/* Icon Placeholder */}
+            {/* Icon */}
             <View
-              style={{ backgroundColor: slide.iconBg }}
-              className="w-32 h-32 rounded-3xl items-center justify-center mb-10"
+              style={{
+                backgroundColor: slide.iconBg,
+                shadowColor: slide.iconBg,
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.3,
+                shadowRadius: 12,
+                elevation: 6,
+              }}
+              className="w-36 h-36 rounded-3xl items-center justify-center mb-10"
             >
-              <Ionicons name={slide.icon} size={64} color={slide.iconColor} />
+              <Ionicons name={slide.icon} size={72} color={slide.iconColor} />
             </View>
 
             {/* Title */}
@@ -146,7 +155,7 @@ export default function OnboardingScreen() {
             </Text>
 
             {/* Subtitle */}
-            <Text className="text-base text-dark-light text-center leading-6">
+            <Text className="text-base text-dark-light text-center leading-6 px-2">
               {slide.subtitle}
             </Text>
           </View>
@@ -161,12 +170,12 @@ export default function OnboardingScreen() {
       </View>
 
       {/* Bottom Buttons */}
-      <View className="px-8 pb-8">
+      <Animated.View entering={FadeInUp.delay(400).duration(500)} className="px-8 pb-8">
         <Button
           title="Take the Crunchy Quiz"
           onPress={() => router.push("/quiz")}
         />
-      </View>
+      </Animated.View>
     </SafeAreaWrapper>
   );
 }

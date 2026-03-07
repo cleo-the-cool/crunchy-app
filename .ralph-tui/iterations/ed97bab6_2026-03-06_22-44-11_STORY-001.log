@@ -1,0 +1,101 @@
+# Iteration 1 Log
+
+## Metadata
+
+- **Task ID**: STORY-001
+- **Task Title**: Home Page Polish
+- **Description**: - Redesign the crunchy score card to be larger, more eye-catching, and match the polished card aesthetic (rounded-2xl, sage green gradient, shadow-lg) - Show: tier emoji, tier name, score number (larg...
+- **Status**: completed
+- **Task Completed**: Yes
+- **Promise Detected**: Yes
+- **Started At**: 2026-03-07T04:44:11.420Z
+- **Ended At**: 2026-03-07T04:46:50.602Z
+- **Duration**: 2m 39s
+- **Input Tokens**: 152
+- **Output Tokens**: 7482
+- **Total Tokens**: 7634
+- **Agent**: claude
+- **Model**: claude-opus-4-6
+- **Sandbox Mode**: auto
+- **Sandbox Network**: Enabled
+--- RAW OUTPUT ---
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/prd.json[0m
+[94m[Agent][0m Explore home screen codebase
+[94m[Bash][0m $ find /Users/10-mac-alpha/Projects/crunchy-app -type f -name "*.ts" -o -name "*.tsx" -o -name "*.js" ...
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/index.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/_layout.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/contexts/AuthContext.tsx[0m
+[94m[Glob][0m pattern: [96m**/*util*[0m
+[94m[Glob][0m pattern: [96m**/*score*[0m
+[94m[Glob][0m pattern: [96m**/*quiz*[0m
+[94m[Glob][0m pattern: [96m**/lib/**[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/score-detail.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/quiz.tsx[0m
+[94m[Bash][0m $ find /Users/10-mac-alpha/Projects/crunchy-app -type f -name "*crunchyScore*" -o -name "crunchyScore....
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/lib/crunchyScore.ts[0m
+[94m[Bash][0m $ ls -la /Users/10-mac-alpha/Projects/crunchy-app/lib/
+[94m[Bash][0m $ ls -la /Users/10-mac-alpha/Projects/crunchy-app/utils/
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/quiz-result.tsx[0m
+[94m[Bash][0m $ ls -la /Users/10-mac-alpha/Projects/crunchy-app/contexts/
+[94m[Bash][0m $ ls -la /Users/10-mac-alpha/Projects/crunchy-app/components/
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/_layout.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/components/ScoreCard.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/lib/useGoBack.ts[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/index.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/components/ScoreCard.tsx[0m
+Let me check a few more things before implementing.
+[94m[Grep][0m pattern: [96mquiz.*score|has.*quiz|quiz_score|quizScore|QUIZ[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/components/index.ts[0m
+[94m[Grep][0m pattern: [96mAsyncStorage.*quiz|quiz.*AsyncStorage|@crunchy_quiz[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/quiz-result.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/components/Card.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/tailwind.config.js[0m
+[94m[TodoWrite][0m
+Now I have a good understanding of the codebase. Let me implement the home page polish. The current home screen already has some of these elements but needs significant polish. I'll rewrite it with all the required improvements.
+[94m[Write][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/index.tsx[0m "import { useState, useCallback, useEffect } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  RefreshControl,
+  TouchableOpacity,
+  Animated,
+} from "react-native";
+import { SafeAreaView } from "... (10497 chars)"
+[94m[TodoWrite][0m
+Now let me run quality checks.
+[94m[Bash][0m Run TypeScript typecheck $ npx tsc --noEmit 2>&1 | head -50
+[94m[Bash][0m Run linter $ npx expo lint 2>&1 | head -30
+ESLint config has a known issue in this project - not related to my changes. TypeScript passes clean. Let me remove the unused `Animated` import I added.
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/index.tsx[0m edit: "import {
+  View,
+  Text,
+  ScrollView,
+  RefreshCo..." → "import {
+  View,
+  Text,
+  ScrollView,
+  RefreshCo..."
+[94m[Bash][0m Re-run TypeScript typecheck $ npx tsc --noEmit 2>&1 | head -20
+Clean. Now let me update progress.md.
+[94m[TodoWrite][0m
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m edit: "## Codebase Patterns (Study These First)
+
+*Add reu..." → "## Codebase Patterns (Study These First)
+
+- Quiz s..."
+[94m[TodoWrite][0m
+STORY-001 is complete. Here's what was implemented:
+
+**Changes to `app/(tabs)/index.tsx`:**
+
+1. **"Welcome back, [name]!" greeting** - Updated from "Hey" to "Welcome back" with clean subtitle
+2. **Redesigned Crunchy Score Card** - Larger (p-6), bigger score text (5xl), larger tier emoji (3xl), stronger sage green shadow, uppercase tracking label, centered "View Details" arrow
+3. **Quick Action Buttons** - Three consistent buttons (Scan, Score, Saved) with icon-in-circle style, haptic feedback on press, replacing the old scan button + stat cards layout
+4. **"Take the Crunchy Quiz" CTA** - Prominent peach-colored card that checks AsyncStorage for quiz completion and only displays if the user hasn't taken the quiz yet
+5. **Clean spacing** - Increased horizontal padding (px-6), better vertical rhythm between sections (mt-5/mt-7)
+
+TypeScript passes clean. All changes are uncommitted for manual review.
+
+<promise>COMPLETE</promise>

@@ -22,6 +22,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { getTierInfo, type TierInfo } from "@/lib/crunchyScore";
 import { useAuth } from "@/contexts/AuthContext";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import * as Haptics from "../utils/haptics";
 
 const TIER_COLORS: Record<string, string> = {
   seedling: "#A8B89C",
@@ -190,6 +191,7 @@ export default function QuizResultScreen() {
   }));
 
   const handleShare = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     try {
       if (viewShotRef.current?.capture) {
         const uri = await viewShotRef.current.capture();
@@ -219,9 +221,9 @@ export default function QuizResultScreen() {
     <SafeAreaWrapper>
       <View className="flex-1 px-6 pt-4">
         {/* Header */}
-        <View className="items-center mb-4">
-          <Text className="text-lg font-semibold text-dark">Your Score</Text>
-        </View>
+        <Animated.View style={labelAnimStyle} className="items-center mb-4">
+          <Text className="text-lg font-semibold text-dark">Your Crunchy Score</Text>
+        </Animated.View>
 
         {/* Shareable Result Card */}
         <Animated.View style={cardAnimStyle} className="mb-6">

@@ -472,6 +472,44 @@ export default function ScanResultScreen() {
             <Ionicons name="chevron-forward" size={20} color="#F4A574" />
           </TouchableOpacity>
         )}
+
+        {/* Action Buttons */}
+        <View className="mx-5 mt-6 gap-3">
+          <TouchableOpacity
+            onPress={handleSave}
+            activeOpacity={0.85}
+            className={`rounded-2xl py-4 flex-row items-center justify-center ${isSaved ? "bg-sage/10" : "bg-sage"}`}
+            style={isSaved ? { borderWidth: 1, borderColor: "#8B9E7C" } : undefined}
+          >
+            <Ionicons
+              name={isSaved ? "bookmark" : "bookmark-outline"}
+              size={20}
+              color={isSaved ? "#8B9E7C" : "white"}
+            />
+            <Text className={`font-semibold text-base ml-2 ${isSaved ? "text-sage" : "text-white"}`}>
+              {isSaved ? "Product Saved" : "Save Product"}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => router.replace("/(tabs)/scan")}
+            activeOpacity={0.85}
+            className="bg-white rounded-2xl py-4 flex-row items-center justify-center"
+            style={{
+              borderWidth: 1,
+              borderColor: "#e5e5e5",
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.05,
+              shadowRadius: 6,
+              elevation: 2,
+            }}
+          >
+            <Ionicons name="scan-outline" size={20} color="#2D2D2D" />
+            <Text className="text-dark font-semibold text-base ml-2">
+              Scan Another
+            </Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
