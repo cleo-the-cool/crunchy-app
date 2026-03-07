@@ -1,0 +1,54 @@
+# Iteration 7 Log
+
+## Metadata
+
+- **Task ID**: STORY-007
+- **Task Title**: Polish Home Page
+- **Description**: - Redesign crunchy score card: bigger, matches the polished card style (rounded-2xl, sage green, shadow), show tier emoji + name + score prominently - Score card is tappable → score detail page - Clea...
+- **Status**: completed
+- **Task Completed**: Yes
+- **Promise Detected**: Yes
+- **Started At**: 2026-03-07T04:26:49.734Z
+- **Ended At**: 2026-03-07T04:28:06.346Z
+- **Duration**: 1m 16s
+- **Input Tokens**: 40
+- **Output Tokens**: 4367
+- **Total Tokens**: 4407
+- **Agent**: claude
+- **Model**: claude-opus-4-6
+- **Sandbox Mode**: auto
+- **Sandbox Network**: Enabled
+--- RAW OUTPUT ---
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/index.tsx[0m
+Let me check the score/tier system and the existing card component style.
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/lib/crunchyScore.ts[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/components/index.tsx[0m
+
+[91m[Error: File does not exist. Note: your current working directory is /Users/10-mac-alpha/Projects/crunchy-app. Did you mean index.ts?][0m
+[94m[Glob][0m pattern: [96mcomponents/**/*.{tsx,ts}[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/components/Card.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/components/ScoreCard.tsx[0m
+Now I have a clear picture. The home page needs a prominent score card. Currently the score is just a small badge in the top-right corner. I'll add a big, polished score card and clean up the spacing.
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/index.tsx[0m edit: "        {/* Greeting */}
+        <View className="..." → "        {/* Greeting */}
+        <View className="..."
+Now remove the unused `Badge` import since we no longer use it in the greeting area.
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/index.tsx[0m edit: "import { Card, Badge } from "@/components";" → "import { Card } from "@/components";"
+Now let's run the typecheck to make sure everything compiles.
+[94m[Bash][0m Run TypeScript type checker $ npx tsc --noEmit 2>&1 | head -30
+TypeScript passes cleanly. Let me verify the final file looks good.
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/(tabs)/index.tsx[0m
+Everything looks clean. Now let me update progress.
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m edit: "  - Recipe search was already implemented in the e..." → "  - Recipe search was already implemented in the e..."
+Story 7 is complete. Here's what was done:
+
+**Home page polish:**
+- **New prominent score card** -- big sage green card showing score (4xl bold), tier emoji + name, mini stats row (scans/recipes/days), and "View details" link. Tappable to score-detail page.
+- **Redesigned scan button** -- changed from large vertical block to a cleaner horizontal card with icon, text, and chevron.
+- **Removed duplicate Score stat** from quick stats row (now shown prominently in the main card).
+- **Cleaned spacing** -- consistent `mt-4` gaps, simpler greeting area without the small badge.
+
+TypeScript compiles cleanly with no errors.
+
+<promise>COMPLETE</promise>

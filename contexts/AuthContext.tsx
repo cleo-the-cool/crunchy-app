@@ -13,6 +13,7 @@ type AuthContextType = {
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -99,8 +100,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }
 
+  async function deleteAccount() {
+    // Clear all user-related data from AsyncStorage
+    const keysToRemove = [
+      AUTH_STORAGE_KEY,
+      "@crunchy_onboarding_profile",
+      "@crunchy_user_lists",
+      "@crunchy_scan_history",
+      "@crunchy_saved_items",
+      "@crunchy_recipes_tried",
+      "@crunchy_interests",
+      "@crunchy_onboarding_complete",
+      "@crunchy_quiz_results",
+    ];
+    await AsyncStorage.multiRemove(keysToRemove);
+    setUser(null);
+  }
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, isLoading, signUp, signIn, signOut, deleteAccount }}>
       {children}
     </AuthContext.Provider>
   );

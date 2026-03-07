@@ -315,43 +315,58 @@ export async function analyzeWithGemini(
     return MOCK_RESULTS[mode];
   }
 
-  const response = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [
-        {
-          parts: [
-            { text: SCAN_PROMPTS[mode] },
-            {
-              inline_data: {
-                mime_type: "image/jpeg",
-                data: base64Image,
+  const maxRetries = 3;
+  const retryDelayMs = 2000;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    const response = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              { text: SCAN_PROMPTS[mode] },
+              {
+                inline_data: {
+                  mime_type: "image/jpeg",
+                  data: base64Image,
+                },
               },
-            },
-          ],
+            ],
+          },
+        ],
+        generationConfig: {
+          temperature: 0.2,
+          maxOutputTokens: 2048,
         },
-      ],
-      generationConfig: {
-        temperature: 0.2,
-        maxOutputTokens: 2048,
-      },
-    }),
-  });
+      }),
+    });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Gemini API error (${response.status}): ${errorText}`);
+    if (response.status === 429 && attempt < maxRetries) {
+      await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+      continue;
+    }
+
+    if (!response.ok) {
+      if (response.status === 429) {
+        throw new Error("RATE_LIMITED");
+      }
+      const errorText = await response.text();
+      throw new Error(`Gemini API error (${response.status}): ${errorText}`);
+    }
+
+    const data = await response.json();
+    const textContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!textContent) {
+      throw new Error("No response from Gemini API");
+    }
+
+    return parseGeminiResponse(textContent);
   }
 
-  const data = await response.json();
-  const textContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-  if (!textContent) {
-    throw new Error("No response from Gemini API");
-  }
-
-  return parseGeminiResponse(textContent);
+  throw new Error("RATE_LIMITED");
 }
 
 // Analyze, cache, and save scan in one call.

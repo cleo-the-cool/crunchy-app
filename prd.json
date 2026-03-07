@@ -1,12 +1,12 @@
 {
-  "name": "Crunchy App - Tonight's Build Sprint",
-  "description": "Build out the full Crunchy app: Supabase integration, scanner with Gemini Vision, onboarding quiz, recipes, community features, and UI polish.",
-  "branchName": "feature/crunchy-app-tonights-build-sprint",
+  "name": "Crunchy App - Fix Sprint (Round 1 Feedback)",
+  "description": "Fix all bugs and polish issues from first testing round. Focus on QUALITY over speed. Each fix should be clean and complete.",
+  "branchName": "feature/crunchy-app-fix-sprint-round-1-feedback",
   "userStories": [
     {
       "id": "STORY-001",
-      "title": "Supabase Client Setup",
-      "description": "Create `lib/supabase.ts` with Supabase client initialization using EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY from env vars. Install @supabase/supabase-js. Create React context for auth state. Replace the mock auth in `contexts/AuthContext.tsx` with real Supabase auth (email/password signup + login). Auto-create profile on signup via the database trigger (already in SQL schema).",
+      "title": "Remove All Dummy/Mock Data",
+      "description": "Remove ALL fake data: fake accounts, fake posts, fake scans, fake recent items. The app should start clean with empty states. Empty states should have nice \"nothing here yet\" messages with CTAs (e.g. \"No scans yet - scan your first product!\" with a scan button). Check every screen for hardcoded mock data and remove it.",
       "acceptanceCriteria": [],
       "priority": 1,
       "passes": true,
@@ -16,8 +16,8 @@
     },
     {
       "id": "STORY-002",
-      "title": "Privacy Policy, ToS, Help & Support",
-      "description": "- Create `app/privacy-policy.tsx` with a real privacy policy for a product scanning app (data collection, Gemini API usage, no selling data) - Create `app/terms-of-service.tsx` with terms of service - Add ToS checkbox to signup flow (must agree before creating account) - Build out `app/help-support.tsx` with FAQ and contact email: cleothecoolest@proton.me - Link all from settings page",
+      "title": "Fix Navigation & Broken Buttons",
+      "description": "- Home page quick buttons (scan, score, saved) must navigate to their actual pages - Score box on home page must be tappable and navigate to a score detail page - Create a new `app/score-detail.tsx` page showing: current score, tier, breakdown of how score is calculated, history/progress - All back buttons must work (use the useGoBack hook already created) - Error pages must have a dismiss/back button - Keyboard must dismiss when tapping outside text inputs (use KeyboardAvoidingView + TouchableWithoutFeedback + Keyboard.dismiss)",
       "acceptanceCriteria": [],
       "priority": 2,
       "passes": true,
@@ -27,8 +27,8 @@
     },
     {
       "id": "STORY-003",
-      "title": "Dev Coupon \"COOL\"",
-      "description": "Add a coupon code input in the paywall/subscription screen. If user enters \"COOL\" (case insensitive), bypass the paywall and grant premium access. Store in user profile.",
+      "title": "Fix Scanner",
+      "description": "- Update scan mode labels to \"Item\", \"Ingredients\", \"Label\" with correct matching icons (camera for item, document-text for ingredients, pricetag for label) - Fix header spacing to look clean and professional - Add retry logic for Gemini 429 errors (wait 2s, retry up to 3 times) - Add friendly error screen: \"Oops, the scanner is busy. Try again in a moment.\" with a \"Try Again\" button and a \"Go Back\" button - Recently saved items should open a product detail view, NOT the post-scan analysis view - Create `app/product-detail.tsx` for viewing saved/cached products (different from scan-result)",
       "acceptanceCriteria": [],
       "priority": 3,
       "passes": true,
@@ -38,8 +38,8 @@
     },
     {
       "id": "STORY-004",
-      "title": "Scanner with Gemini Vision",
-      "description": "The scanner already has 3 modes (item/ingredients/label). Ensure the `services/gemini.ts` service: - Takes a base64 image + scan mode - Sends to Gemini 2.0 Flash vision API - Returns: product name, brand, category, ingredients with safety scores, overall score, concerns, clean alternatives - Caches result in Supabase `products` table (so repeat scans are instant) - Saves scan to user's `scans` table - Falls back to mock data if no API key",
+      "title": "Fix Community",
+      "description": "- Replace hashtag filters with post type filters: All, Questions, Reviews, Tips, Recipes - Fix comment liking (add likes table support for comments, or remove like button from comments if not supported) - Fix user identity: comments should show the user's display_name and chosen avatar, not \"You\" with random emoji - Fix \"user not found\" when clicking own profile - should navigate to profile tab - Add profile edit screen: `app/edit-profile.tsx` with editable display_name, bio, avatar selection - Link edit profile from settings AND from profile page",
       "acceptanceCriteria": [],
       "priority": 4,
       "passes": true,
@@ -49,8 +49,8 @@
     },
     {
       "id": "STORY-005",
-      "title": "Crunchy Score & Tiers",
-      "description": "- Calculate score based on: scan history (80%) + recipes tried (20%) + quiz baseline (decays: 100% at start → 0% after 1 year) - Community engagement does NOT affect score - Tiers: 🌱 Seedling (0-25), 🌿 Sprout (26-50), 🌳 Sapling (51-75), 🌸 In Bloom (76-100) - Display score prominently on profile - Make score card screenshotable (nice visual card with tier, score, stats)",
+      "title": "Fix Lists",
+      "description": "- Separate \"My Lists\" (lists I created) from \"Browse Lists\" (other users' public lists) - use tabs/segments - My Lists should also show lists I've saved/followed - Fix create list: add KeyboardAvoidingView, add product search to add products, add save button that actually saves to Supabase - After creating a list, navigate back to My Lists",
       "acceptanceCriteria": [],
       "priority": 4,
       "passes": true,
@@ -60,8 +60,8 @@
     },
     {
       "id": "STORY-006",
-      "title": "Onboarding Quiz",
-      "description": "- After signup, before main app: extended onboarding flow - Steps: display name → avatar (pick from presets) → \"How Crunchy Are You?\" quiz - 5-7 fun questions like: \"Do you read ingredient labels?\", \"What's your go-to skincare?\", \"Organic or conventional?\", \"Ever made your own cleaning products?\" - Calculate initial crunchy score from answers - Show result with tier and fun message - Pick interests (skincare, food, cleaning, fashion, home, baby) - \"Share your score\" button (generates shareable link/image) - Save quiz answers + score to profile in Supabase",
+      "title": "Fix Explore/Search",
+      "description": "- Search should query Supabase products table by name and brand - Also search recipes by title - Show \"No results found\" with helpful message if nothing matches - Add debounce to search input (300ms)",
       "acceptanceCriteria": [],
       "priority": 4,
       "passes": true,
@@ -71,8 +71,8 @@
     },
     {
       "id": "STORY-007",
-      "title": "Recipe Library",
-      "description": "- Create `services/recipes.ts` with 50+ curated recipes across categories: - DIY Cleaning (15+): all-purpose cleaner, glass cleaner, laundry detergent, dish soap, etc. - Skincare (15+): face masks, body scrubs, lip balm, toner, moisturizer, etc. - Cooking (15+): healthy meals, snacks, smoothies, dressings, etc. - Home (5+): candles, air freshener, pest repellent, etc. - Each recipe: title, description, ingredients list, step-by-step instructions, difficulty, prep time, image placeholder - Recipes should be REAL and GOOD (researched, not made up) - Recipe search by title, category, ingredient - Save recipe to favorites (saved_recipes table) - Recipe detail page with nice UI",
+      "title": "Polish Home Page",
+      "description": "- Redesign crunchy score card: bigger, matches the polished card style (rounded-2xl, sage green, shadow), show tier emoji + name + score prominently - Score card is tappable → score detail page - Clean spacing throughout home page",
       "acceptanceCriteria": [],
       "priority": 4,
       "passes": true,
@@ -82,8 +82,8 @@
     },
     {
       "id": "STORY-008",
-      "title": "Community Features",
-      "description": "- Community feed: list of posts with user avatar, content, image, likes, comments count - Create post (text + optional photo upload to Supabase Storage) - Like/unlike posts - Comment on posts - User profiles: display name, avatar, bio, crunchy score, total scans, tier badge - Follow/unfollow users - Basic content moderation: report button on posts/comments - Post types: general, review, tip, recipe, question",
+      "title": "Fix Profile Page",
+      "description": "- Fix name overlapping tree emoji - add proper spacing/padding - Score section should be tappable → score detail page - Tree emoji selection is a FUTURE feature (just use default tree for now, but leave room for it)",
       "acceptanceCriteria": [],
       "priority": 4,
       "passes": true,
@@ -93,8 +93,8 @@
     },
     {
       "id": "STORY-009",
-      "title": "Storefronts / User Lists",
-      "description": "- Users can create lists (like playlists but for products) - Public or private - Add scanned products to lists - Browse other users' public lists - Categories: skincare routine, grocery list, cleaning supplies, etc.",
+      "title": "Fix Settings & Legal",
+      "description": "- Privacy policy: fill in ALL blank sections with real content - Remove blank bullets/periods - Rephrase \"under 13\" section to be less suspicious: \"This app is designed for users aged 13 and older. We do not knowingly collect personal information from children under 13.\" - Add explicit statement: \"We do not sell, trade, or rent your personal data to third parties.\" - Add \"Delete Account\" button in settings that actually deletes the account (with confirmation dialog) - Add \"Edit Profile\" button in settings → edit-profile page - Make name and other details editable",
       "acceptanceCriteria": [],
       "priority": 4,
       "passes": true,
@@ -104,20 +104,20 @@
     },
     {
       "id": "STORY-010",
-      "title": "UI Polish",
-      "description": "- Ensure mobile UI isn't cluttered - Clean navigation (no multi-press back button issue) - Search should include recipes AND products - Weekly digest marked as \"Coming Soon\" in settings - Consistent design: rounded-2xl, sage/green crunchy aesthetic - Remove \"Scan Alerts\" feature if not built out",
+      "title": "Final Quality Pass",
+      "description": "- Check every screen for visual consistency - Ensure no dummy data remains anywhere - Test all navigation flows work - Ensure clean empty states everywhere - No orphaned screens or dead-end pages - Professional, polished feel throughout",
       "acceptanceCriteria": [],
       "priority": 4,
       "passes": true,
+      "completionNotes": "Completed by agent",
       "labels": [],
-      "dependsOn": [],
-      "completionNotes": "Completed by agent"
+      "dependsOn": []
     }
   ],
   "metadata": {
-    "createdAt": "2026-03-07T02:41:43.668Z",
+    "createdAt": "2026-03-07T04:01:24.925Z",
     "version": "1.0.0",
-    "sourcePrd": ".ralph/prd.md",
-    "updatedAt": "2026-03-07T03:25:38.549Z"
+    "sourcePrd": ".ralph/prd-fixes.md",
+    "updatedAt": "2026-03-07T04:33:29.343Z"
   }
 }

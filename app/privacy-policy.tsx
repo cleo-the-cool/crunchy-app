@@ -69,9 +69,9 @@ export default function PrivacyPolicyScreen() {
         </Section>
 
         <Section title="We Do Not Sell Your Data">
-          We will never sell, rent, or trade your personal information to third parties for
-          marketing or advertising purposes. Your data is used solely to provide and improve
-          the Crunchy app experience.
+          We do not sell, trade, or rent your personal data to third parties. Your information
+          is used solely to provide and improve the Crunchy app experience. We will never
+          monetize your personal data through advertising or data brokerage.
         </Section>
 
         <Section title="Data Sharing">
@@ -97,8 +97,10 @@ export default function PrivacyPolicyScreen() {
         </Section>
 
         <Section title="Children's Privacy">
-          Crunchy is not intended for children under 13 years of age. We do not knowingly
-          collect personal information from children under 13.
+          This app is designed for users aged 13 and older. We do not knowingly collect
+          personal information from children under 13. If we become aware that we have
+          collected personal information from a child under 13, we will take steps to
+          delete that information promptly.
         </Section>
 
         <Section title="Changes to This Policy">

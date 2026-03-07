@@ -1,24 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   TextInput,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useGoBack } from "@/lib/useGoBack";
 import {
   getPublicLists,
   searchLists,
-  getListOwner,
   LIST_CATEGORY_CONFIG,
   type ProductList,
   type ListCategory,
 } from "@/data/lists";
-import { getUserById } from "@/data/community";
+
+const LISTS_STORAGE_KEY = "@crunchy_user_lists";
 
 const cardShadow = {
   shadowColor: "#000",
@@ -38,6 +42,8 @@ const CATEGORY_FILTERS: { key: "all" | ListCategory; label: string }[] = [
   { key: "general", label: "General" },
 ];
 
+type TabKey = "my-lists" | "browse";
+
 export default function ListsScreen() {
   const router = useRouter();
   const goBack = useGoBack();
@@ -45,14 +51,55 @@ export default function ListsScreen() {
   const [activeCategory, setActiveCategory] = useState<"all" | ListCategory>(
     "all"
   );
+  const [activeTab, setActiveTab] = useState<TabKey>("my-lists");
+  const [myLists, setMyLists] = useState<ProductList[]>([]);
 
-  const allLists = getPublicLists();
+  const loadMyLists = useCallback(async () => {
+    try {
+      const stored = await AsyncStorage.getItem(LISTS_STORAGE_KEY);
+      if (stored) {
+        setMyLists(JSON.parse(stored));
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    loadMyLists();
+  }, [loadMyLists]);
+
+  // Reload lists when screen comes back into focus (e.g. after creating a list)
+  useFocusEffect(
+    useCallback(() => {
+      loadMyLists();
+    }, [loadMyLists])
+  );
+
+  // Browse lists come from the public data source
+  const browseLists = getPublicLists();
+
+  const baseLists = activeTab === "my-lists" ? myLists : browseLists;
 
   let filteredLists: ProductList[];
   if (searchQuery.trim()) {
-    filteredLists = searchLists(searchQuery);
+    if (activeTab === "browse") {
+      filteredLists = searchLists(searchQuery);
+    } else {
+      const q = searchQuery.toLowerCase();
+      filteredLists = baseLists.filter(
+        (l) =>
+          l.title.toLowerCase().includes(q) ||
+          l.description.toLowerCase().includes(q) ||
+          l.products.some(
+            (p) =>
+              p.name.toLowerCase().includes(q) ||
+              p.brand.toLowerCase().includes(q)
+          )
+      );
+    }
   } else {
-    filteredLists = allLists;
+    filteredLists = baseLists;
   }
 
   if (activeCategory !== "all") {
@@ -61,8 +108,26 @@ export default function ListsScreen() {
     );
   }
 
+  const emptyMessage =
+    activeTab === "my-lists"
+      ? searchQuery
+        ? "No matching lists found"
+        : "You haven't created any lists yet"
+      : searchQuery
+        ? "No matching lists found"
+        : "No public lists to browse yet";
+
+  const emptySub =
+    activeTab === "my-lists" && !searchQuery
+      ? "Create your first list to organize your favorite products!"
+      : searchQuery
+        ? "Try a different search term"
+        : "Check back later for community lists";
+
   return (
     <SafeAreaView className="flex-1 bg-cream">
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View className="flex-1">
       {/* Header */}
       <View className="flex-row items-center px-5 pt-2 pb-4">
         <TouchableOpacity onPress={goBack} hitSlop={8}>
@@ -78,6 +143,40 @@ export default function ListsScreen() {
         >
           <Ionicons name="add" size={22} color="#FFF" />
         </TouchableOpacity>
+      </View>
+
+      {/* Tab Segments */}
+      <View className="px-5 mb-3">
+        <View className="flex-row bg-white rounded-2xl p-1" style={cardShadow}>
+          <TouchableOpacity
+            onPress={() => setActiveTab("my-lists")}
+            className={`flex-1 py-2.5 rounded-xl items-center ${
+              activeTab === "my-lists" ? "bg-sage" : ""
+            }`}
+          >
+            <Text
+              className={`text-sm font-semibold ${
+                activeTab === "my-lists" ? "text-white" : "text-dark/50"
+              }`}
+            >
+              My Lists
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setActiveTab("browse")}
+            className={`flex-1 py-2.5 rounded-xl items-center ${
+              activeTab === "browse" ? "bg-sage" : ""
+            }`}
+          >
+            <Text
+              className={`text-sm font-semibold ${
+                activeTab === "browse" ? "text-white" : "text-dark/50"
+              }`}
+            >
+              Browse Lists
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Search */}
@@ -135,51 +234,43 @@ export default function ListsScreen() {
         className="flex-1"
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         {filteredLists.length === 0 ? (
           <View className="items-center py-16">
             <Text className="text-5xl mb-4">📋</Text>
             <Text className="text-lg font-bold text-dark text-center">
-              No lists found
+              {emptyMessage}
             </Text>
             <Text className="text-sm text-dark/50 text-center mt-2">
-              {searchQuery
-                ? "Try a different search term"
-                : "Be the first to create a list!"}
+              {emptySub}
             </Text>
-            <TouchableOpacity
-              onPress={() => router.push("/create-list")}
-              className="mt-4 bg-sage px-6 py-3 rounded-2xl"
-            >
-              <Text className="text-white font-semibold">Create a List</Text>
-            </TouchableOpacity>
+            {activeTab === "my-lists" && !searchQuery && (
+              <TouchableOpacity
+                onPress={() => router.push("/create-list")}
+                className="mt-4 bg-sage px-6 py-3 rounded-2xl"
+              >
+                <Text className="text-white font-semibold">Create a List</Text>
+              </TouchableOpacity>
+            )}
           </View>
         ) : (
           filteredLists.map((list) => (
-            <ListCard key={list.id} list={list} router={router} />
+            <ListCard key={list.id} list={list} />
           ))
         )}
       </ScrollView>
+      </View>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 }
 
-function ListCard({
-  list,
-  router,
-}: {
-  list: ProductList;
-  router: ReturnType<typeof useRouter>;
-}) {
-  const owner = getUserById(list.userId);
+function ListCard({ list }: { list: ProductList }) {
   const catConfig = LIST_CATEGORY_CONFIG[list.category];
 
   return (
-    <TouchableOpacity
-      onPress={() => router.push(`/list-detail?id=${list.id}`)}
-      activeOpacity={0.7}
-      className="mb-3"
-    >
+    <View className="mb-3">
       <View className="bg-white rounded-2xl p-4" style={cardShadow}>
         {/* Top row: category badge + product count */}
         <View className="flex-row items-center justify-between mb-2">
@@ -204,9 +295,11 @@ function ListCard({
         <Text className="text-base font-bold text-dark" numberOfLines={1}>
           {list.title}
         </Text>
-        <Text className="text-sm text-dark/60 mt-1" numberOfLines={2}>
-          {list.description}
-        </Text>
+        {list.description ? (
+          <Text className="text-sm text-dark/60 mt-1" numberOfLines={2}>
+            {list.description}
+          </Text>
+        ) : null}
 
         {/* Product preview row */}
         {list.products.length > 0 && (
@@ -229,16 +322,21 @@ function ListCard({
           </View>
         )}
 
-        {/* Owner */}
-        {owner && (
-          <View className="flex-row items-center mt-3 pt-2.5 border-t border-dark/5">
-            <View className="w-6 h-6 rounded-full bg-sage/20 items-center justify-center mr-2">
-              <Text className="text-xs">{owner.avatar}</Text>
-            </View>
-            <Text className="text-xs text-dark/50">{owner.username}</Text>
-          </View>
-        )}
+        {/* Visibility badge for own lists */}
+        <View className="flex-row items-center mt-3 pt-2.5 border-t border-dark/5">
+          <Ionicons
+            name={list.isPublic ? "globe-outline" : "lock-closed-outline"}
+            size={14}
+            color="#999"
+          />
+          <Text className="text-xs text-dark/40 ml-1.5">
+            {list.isPublic ? "Public" : "Private"}
+          </Text>
+          <Text className="text-xs text-dark/30 ml-auto">
+            {new Date(list.createdAt).toLocaleDateString()}
+          </Text>
+        </View>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 }

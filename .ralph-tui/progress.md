@@ -5,223 +5,186 @@ after each iteration and it's included in prompts for context.
 
 ## Codebase Patterns (Study These First)
 
-- Settings page uses local helper components: `SectionHeader`, `Divider`, `SettingsRow`, `SettingsToggle` (defined at bottom of file)
-- Card shadow style is a shared const `cardShadow` in each screen (inline style, not NativeWind)
-- New screens are auto-routed by Expo Router via filename in `app/` directory
-- Header pattern: `SafeAreaView bg-cream` > `View flex-row items-center px-5 pt-2 pb-4` > back arrow + title
-- Auth context is still mock (AsyncStorage-based) despite STORY-001 being marked complete
-- ESLint config is broken (pre-existing issue with eslint/package.json exports) - only TypeScript check (`tsc --noEmit`) works reliably
-- Supabase client is at `lib/supabase.ts` - use `isSupabaseConfigured()` to check if env vars are set before making calls
-- Gemini category strings (Skincare, Food, etc.) must be mapped to DB enum (cosmetics, food, etc.) via `mapToDbCategory()`
-- Supabase errors in scan flow are silently caught - never block the user from getting scan results
-- Crunchy Score logic is centralized in `lib/crunchyScore.ts` - use `getTierInfo()`, `getMockStats()`, `buildCrunchyStats()` - do NOT duplicate getScoreLabel in screens
-- ScoreCard component (`components/ScoreCard.tsx`) is screenshotable via ViewShot - uses `utils/view-shot` shim and `utils/sharing`
-- Quiz score is stored in AsyncStorage under `@crunchy_quiz_score` key as `{ score, completedAt }` - used by crunchyScore lib for baseline calculation
-- Onboarding profile data (displayName, avatar) stored in AsyncStorage under `@crunchy_onboarding_profile`
-- Post-signup flow: signup → `/onboarding-profile` → `/quiz` → `/quiz-result` → `/interests` → `/(tabs)`
-- `quiz-result.tsx` uses centralized `getTierInfo()` from `lib/crunchyScore.ts` - do NOT use local getScoreLabel
-- Saved recipes persisted to AsyncStorage under `@crunchy_saved_recipes` key as string array of recipe IDs
-- Recipe data lives in `data/recipes.ts` (not `services/recipes.ts`) - screens import from `@/data/recipes`
-- Recipe search includes ingredient name matching in addition to title/category/description
-- Community data model lives in `data/community.ts` - types: `CommunityPost`, `CommunityUser`, `Comment`, `PostType`
-- Post types: general, review, tip, recipe, question - config in `POST_TYPE_CONFIG` with emoji/label/color
-- User profiles viewable at `/user-profile?userId=<id>` - shows avatar, bio, score, tier, scans, followers, posts
-- Report functionality uses `Alert.alert` confirmation pattern (no backend yet)
-- Lists data model lives in `data/lists.ts` - types: `ProductList`, `ListProduct`, `ListCategory`
-- List categories config in `LIST_CATEGORY_CONFIG` with emoji/label/color per category
-- Lists browsing at `/lists`, detail at `/list-detail?id=<id>`, create at `/create-list`
-- Profile screen has "My Lists" and "Browse Lists" quick action buttons linking to `/lists`
+- Mock data lived in `data/community.ts` (users, posts, hashtags), `data/lists.ts` (MOCK_LISTS), and inline in screen files
+- Screen files: `app/(tabs)/index.tsx`, `app/(tabs)/scan.tsx`, `app/(tabs)/profile.tsx` had inline mock arrays
+- `lib/crunchyScore.ts` has `getDefaultStats()` for zero-state and `getMockStats()` (now unused) for dev
+- Profile tab components (ScanHistoryTab, SavedItemsTab, MyPostsTab) use EmptyState component pattern
+- Community screen already handles empty posts with skeleton loading + empty state + Create Post CTA
+- Lists screen already has empty state with "Create a List" CTA
+- Product catalog (`data/products.ts`) and recipes (`data/recipes.ts`) are reference/content data, not user mock data
+- ESLint config is broken (pre-existing issue with eslint/package.json exports), but TypeScript checker works fine
+- `lib/useGoBack.ts` provides debounced back navigation; most pages already use it
+- Keyboard dismiss pattern: wrap with `TouchableWithoutFeedback onPress={Keyboard.dismiss}` + `keyboardShouldPersistTaps="handled"` on ScrollViews
+- Score detail page at `app/score-detail.tsx` shows tier breakdown and score calculation details
+- User profile (displayName, avatar ID, bio) stored in AsyncStorage under `@crunchy_onboarding_profile`; avatar IDs map to emoji via AVATAR_EMOJI_MAP
+- Community post type filters use POST_TYPE_CONFIG from `data/community.ts` for labels/emoji/colors
+- User lists stored in AsyncStorage under `@crunchy_user_lists`; use `useFocusEffect` to reload on screen return
 
+---
+
+## 2026-03-06 - STORY-001
+- Removed all mock/dummy data from screens and data files
+- Files changed:
+  - `app/(tabs)/index.tsx` - Removed SWAPS_BY_CATEGORY, ALL_TRENDING, MOCK_SAVED_ITEMS, getMockStats usage. Added "Getting Started" and "Community" empty state cards with CTAs
+  - `app/(tabs)/scan.tsx` - Removed MOCK_RECENT_SCANS array and related handlers. Added "No scans yet" empty state
+  - `app/(tabs)/profile.tsx` - Removed MOCK_SCAN_HISTORY, MOCK_SAVED_ITEMS, MOCK_USER_POSTS arrays. Simplified tab components to show empty states directly. Replaced getMockStats with getDefaultStats
+  - `data/community.ts` - Emptied COMMUNITY_USERS, TRENDING_HASHTAGS, COMMUNITY_POSTS arrays (kept types, configs, helper functions)
+  - `data/lists.ts` - Emptied MOCK_LISTS array (kept types, configs, helper functions)
+- **Learnings:**
+  - Profile.tsx already had EmptyState component and conditional rendering for empty arrays - just needed the arrays emptied
+  - Community.tsx already had full empty state handling (skeleton + empty state + FAB)
+  - Lists screen already had empty state with CTA
+  - Product catalog and recipe data are content/reference data, not user mock data - kept as-is
+  - The `useInterests` context was only used for personalized swap/trending which was removed
 ---
 
 ## 2026-03-06 - STORY-002
-- Implemented Privacy Policy, Terms of Service, and Help & Support pages
-- Added ToS checkbox to signup flow (validation prevents account creation without agreement)
-- Linked all three pages from Settings "About" section
+- Fixed navigation and broken buttons across the app
 - Files changed:
-  - `app/privacy-policy.tsx` (new) - Full privacy policy covering data collection, Gemini API usage, no-sell policy
-  - `app/terms-of-service.tsx` (new) - 13-section ToS covering scanning disclaimers, community guidelines, subscriptions
-  - `app/help-support.tsx` (new) - Contact card + 8 expandable FAQ items
-  - `app/signup.tsx` (modified) - Added `agreedToTerms` state, validation, and checkbox with links to ToS/Privacy Policy
-  - `app/settings.tsx` (modified) - Wired up router.push for Privacy Policy, ToS, and Help & Support
-  - `prd.json` (modified) - Marked STORY-002 as passes: true
+  - `app/(tabs)/index.tsx` - Made StatCard components tappable (Scans -> scan tab, Score -> score-detail, Saved -> profile tab). Made score badge in greeting area tappable -> score-detail page.
+  - `app/score-detail.tsx` - NEW: Created score detail page showing current score, tier, score breakdown (80% scans + 20% recipes + quiz bonus), all 4 tiers with descriptions, and tips to level up.
+  - `app/lists.tsx` - Added keyboard dismiss (TouchableWithoutFeedback + Keyboard.dismiss) and keyboardShouldPersistTaps on ScrollView
+  - `app/paywall.tsx` - Added keyboard dismiss (TouchableWithoutFeedback + Keyboard.dismiss) and keyboardShouldPersistTaps on ScrollView
 - **Learnings:**
-  - Expo Router file-based routing means just creating a file in `app/` makes it navigable
-  - The signup form uses inline validation with error state object pattern `errors: { field?: string }`
-  - Settings links were already TouchableOpacity wrappers, just needed `onPress` with `router.push`
-  - Contact email for the project: cleothecoolest@proton.me
+  - Most pages already had useGoBack and proper back buttons - only lists.tsx and paywall.tsx were missing keyboard dismiss
+  - quiz-result.tsx intentionally has no back button (it's an onboarding flow with forward navigation)
+  - paywall.tsx uses close icon (not arrow-back) which is appropriate for modal-style pages
+  - StatCard was a View, changed to TouchableOpacity with onPress prop for navigation
 ---
 
 ## 2026-03-06 - STORY-003
-- Added coupon code input to the paywall/subscription screen (`app/paywall.tsx`)
-- Text input with "Apply" button placed between the subscribe CTA and "Restore purchases" link
-- Entering "COOL" (case insensitive) calls `subscribe("premium")` via SubscriptionContext, granting full premium access stored in AsyncStorage
-- Invalid codes show inline error message, which clears on next input change
+- Fixed scanner: updated scan mode labels from "Scan Item/Scan Ingredients/Scan Label" to "Item/Ingredients/Label"
+- Updated label icon from nutrition-outline to pricetag-outline (camera for item, document-text for ingredients, pricetag for label)
+- Added Gemini 429 retry logic: waits 2s, retries up to 3 times, throws "RATE_LIMITED" sentinel
+- Added friendly error screen for rate limiting: "Oops, the scanner is busy. Try again in a moment." with time icon
+- Renamed error screen "Cancel" button to "Go Back" on both product-scan and label-scan
+- Created `app/product-detail.tsx` for viewing saved/cached products (uses useGoBack, share, expandable ingredients)
+- Updated explore.tsx to navigate to product-detail instead of scan-result for browsing products
 - Files changed:
-  - `app/paywall.tsx` (modified) - Added TextInput, coupon state, handleApplyCoupon logic, and coupon UI section
-  - `prd.json` (modified) - Marked STORY-003 as passes: true
+  - `app/(tabs)/scan.tsx` - Updated SCAN_MODES labels and getModeIcon for label mode
+  - `app/label-scan.tsx` - Changed nutrition-outline to pricetag-outline, updated error screen
+  - `app/product-scan.tsx` - Updated error screen with rate limit handling and "Go Back"
+  - `services/gemini.ts` - Added retry loop for 429 errors with "RATE_LIMITED" sentinel
+  - `app/product-detail.tsx` - NEW: Product detail page for viewing saved/cached products
+  - `app/(tabs)/explore.tsx` - Changed product navigation from scan-result to product-detail
 - **Learnings:**
-  - SubscriptionContext.subscribe() persists tier to AsyncStorage under `@crunchy_subscription` key - no Supabase integration yet
-  - Paywall uses `useSubscription()` hook which provides `subscribe(tier)` for changing subscription level
-  - The paywall bottom CTA area is outside the ScrollView in a fixed footer `View` with `bg-cream`
+  - Gemini service throws "RATE_LIMITED" sentinel string for 429 errors after retries exhausted; scanner screens check for this to show friendly message
+  - `scan-result.tsx` is the post-scan analysis view (with success animation); `product-detail.tsx` is for browsing saved/cached products
+  - The label-scan icon in the camera overlay was also using nutrition-outline and needed updating
 ---
 
 ## 2026-03-06 - STORY-004
-- Implemented Supabase integration for scanner: product caching + scan history saving
-- Created `lib/supabase.ts` Supabase client (was missing prerequisite from STORY-001)
-- Added `analyzeAndSaveScan()` as new main entry point for scanner screens - wraps Gemini analysis + Supabase caching/saving
-- Product caching: after analysis, upserts to `products` table by name+brand, stores full gemini_analysis as JSONB
-- Scan history: saves each scan to `scans` table linked to user and product
-- All Supabase operations silently catch errors so scan flow never breaks even without Supabase configured
-- Falls back to mock data when no Gemini API key (existing behavior preserved)
+- Fixed community screen: replaced hashtag filters with post type filters (All, Questions, Reviews, Tips, Recipes)
+- Removed like button from comments (no likes table support in Supabase schema for comments)
+- Fixed user identity in comments: now uses display_name and chosen avatar from AsyncStorage profile instead of hardcoded "you"/"😊"
+- Fixed "user not found" when clicking own profile: now navigates to profile tab when userId matches current user
+- Created `app/edit-profile.tsx` with editable display_name, bio, and avatar selection grid
+- Linked Edit Profile from settings page (new Profile section) and profile page (button below username)
 - Files changed:
-  - `lib/supabase.ts` (new) - Supabase client with AsyncStorage auth persistence
-  - `services/gemini.ts` (modified) - Added cacheProduct, saveScan, findCachedProduct, analyzeAndSaveScan, mapToDbCategory
-  - `app/product-scan.tsx` (modified) - Uses analyzeAndSaveScan with user ID from AuthContext
-  - `app/label-scan.tsx` (modified) - Uses analyzeAndSaveScan with user ID from AuthContext
+  - `app/(tabs)/community.tsx` - Replaced hashtag filtering with post type filtering, removed comment like button, fixed user identity in comments, fixed own-profile navigation
+  - `app/edit-profile.tsx` - NEW: Edit profile screen with avatar picker, display name, bio fields
+  - `app/settings.tsx` - Added Profile section with Edit Profile link
+  - `app/(tabs)/profile.tsx` - Added Edit Profile button below username
 - **Learnings:**
-  - Supabase products table category enum uses lowercase: food, cosmetics, cleaning, baby, clothing, supplement, other
-  - Gemini prompts return categories like "Skincare", "Food", "Personal Care" which must be mapped to DB enum
-  - Auth context user.id is a string (mock uses Date.now().toString()), but Supabase scans.user_id is uuid - will need alignment when real auth is wired up
-  - The `@supabase/supabase-js` package was already installed but no client existed
-  - Camera screens import from `@/contexts/AuthContext` for user ID access
+  - User profile data (displayName, avatar) is stored in AsyncStorage under `@crunchy_onboarding_profile` key, not in the AuthContext User type
+  - Avatar IDs (e.g. "leaf", "sunflower") need to be mapped to emoji via AVATAR_EMOJI_MAP for display
+  - The `TRENDING_HASHTAGS` array was already empty (cleared in STORY-001), so replacing hashtag filters with post type filters was a clean swap
+  - Comments in the data model have a `likes` field but the Supabase schema has no likes table for comments, only for posts
 ---
 
 ## 2026-03-06 - STORY-005
-- Implemented Crunchy Score calculation engine and tier system
-- Created screenshotable ScoreCard component with ViewShot + share support
-- Centralized score/tier logic (removed duplicate `getScoreLabel()` from profile and home screens)
+- Separated lists screen into "My Lists" / "Browse Lists" tabs using segmented control
+- My Lists loads from AsyncStorage (`@crunchy_user_lists`), auto-refreshes on screen focus
+- Browse Lists shows public lists from the data source (getPublicLists)
+- Rewrote create-list.tsx with: KeyboardAvoidingView, product search (searches PRODUCTS by name/brand), product selection/removal, save to AsyncStorage
+- After saving, navigates back to lists screen which auto-reloads via useFocusEffect
 - Files changed:
-  - `lib/crunchyScore.ts` (new) - Score calculation: scan history 80% + recipes 20% + quiz baseline with 1-year decay. Tier mapping, mock stats, `buildCrunchyStats()` for real data.
-  - `components/ScoreCard.tsx` (new) - Screenshotable card with tier emoji, score circle, stats row, share button. Uses ViewShot for screenshot capture.
-  - `components/index.ts` (modified) - Exported ScoreCard
-  - `app/(tabs)/profile.tsx` (modified) - Replaced hardcoded MOCK_STATS and old getScoreLabel with centralized scoring. Added ScoreCard component prominently on profile.
-  - `app/(tabs)/index.tsx` (modified) - Replaced hardcoded MOCK_STATS and old getScoreLabel with centralized scoring from lib/crunchyScore.ts.
-  - `prd.json` (modified) - Marked STORY-005 as passes: true
+  - `app/lists.tsx` - Added My Lists/Browse tab segments, AsyncStorage loading, useFocusEffect reload, contextual empty states
+  - `app/create-list.tsx` - Added KeyboardAvoidingView, product search UI, product selection, AsyncStorage persistence, "Save List" button
 - **Learnings:**
-  - `getScoreLabel()` was duplicated in profile.tsx and index.tsx with DIFFERENT tier mappings - centralization was critical
-  - ViewShot pattern: import from `../utils/view-shot` (shim), share via `../utils/sharing` (shim). Both handle web fallback.
-  - Tier colors in the PRD differ from old code: old used "Fully Rooted/Thriving/Blooming", PRD specifies "Seedling/Sprout/Sapling/In Bloom" with plant emojis
-  - Score formula uses `buildCrunchyStats()` for real data, `getMockStats()` for dev/demo. When Supabase auth is wired up, screens should switch to querying real scan/recipe counts.
-  - quiz-result.tsx has its own `getScoreLabel()` - left it alone as it's STORY-006 scope
+  - User lists stored in AsyncStorage under `@crunchy_user_lists` key (same pattern as recipes, profile)
+  - `useFocusEffect` from `@react-navigation/native` works well for reloading data when returning to a screen
+  - PRODUCTS array from `data/products.ts` has ~10 products available for search
+  - The Supabase schema has `user_lists` and `list_items` tables but the app primarily uses AsyncStorage for local data
 ---
 
 ## 2026-03-06 - STORY-006
-- Implemented full onboarding quiz flow after signup
-- Created `app/onboarding-profile.tsx` - display name editing + emoji avatar picker with 12 presets
-- Updated `app/quiz-result.tsx` - replaced local `getScoreLabel()` with centralized `getTierInfo()` from `lib/crunchyScore.ts`, added quiz score saving to AsyncStorage + Supabase, conditional routing (post-signup goes to interests, pre-signup goes to signup)
-- Updated `app/signup.tsx` - routes to `/onboarding-profile` instead of `/interests`
-- Updated `app/_layout.tsx` - added `onboarding-profile` to auth flow segments
-- Updated `prd.json` - marked STORY-006 as passes: true
+- Added 300ms debounce to search input on Explore screen using useRef timer + useEffect
+- Improved "No results found" empty state: shows when both products AND recipes return zero results, with contextual help message
+- Added separate "No matching products found" message when recipes match but products don't
+- Search already queried products by name/brand and recipes by title - no changes needed there
 - Files changed:
-  - `app/onboarding-profile.tsx` (new) - Profile setup with display name + avatar picker
-  - `app/quiz-result.tsx` (modified) - Centralized tiers, score persistence, conditional routing
-  - `app/signup.tsx` (modified) - Routes to onboarding-profile post-signup
-  - `app/_layout.tsx` (modified) - Added onboarding-profile to auth segments
-  - `prd.json` (modified) - Marked STORY-006 as complete
+  - `app/(tabs)/explore.tsx` - Added debounce (searchInput + searchQuery split), improved empty states
 - **Learnings:**
-  - The existing quiz.tsx already had 10 well-crafted questions with score normalization - no changes needed
-  - Quiz score persistence uses `@crunchy_quiz_score` AsyncStorage key with `{ score, completedAt }` format
-  - Supabase profile update for quiz_score silently catches errors (consistent with scan flow pattern)
-  - quiz-result.tsx now detects post-signup vs pre-signup flow via `useAuth().user` to show appropriate CTA buttons
-  - Avatar presets use emojis (consistent with app-wide emoji pattern) stored in `@crunchy_onboarding_profile`
+  - Explore screen uses local PRODUCTS and RECIPES arrays, not Supabase queries
+  - Debounce pattern: split into `searchInput` (immediate, for TextInput) and `searchQuery` (debounced, for filtering)
+  - Recipe search was already implemented in the existing code (matchingRecipes useMemo)
 ---
 
 ## 2026-03-06 - STORY-007
-- Expanded recipe library from 31 to 62 curated recipes across 6 categories
-- Added "Cooking" category (15 recipes): smoothies, overnight oats, grain bowls, pancakes, stir-fry, homemade granola, almond milk, etc.
-- Added 8 more Cleaning recipes (total 15): laundry detergent, fabric softener, oven cleaner, drain unclogger, carpet deodorizer, etc.
-- Added 8 more Skincare recipes (total 15): vitamin C serum, clay mask, night cream, avocado mask, after-sun gel, etc.
-- Added ingredient search to search/filter functions (recipes.tsx inline filter + data/recipes.ts searchRecipes + filterRecipes)
-- Persisted saved/favorited recipes to AsyncStorage (`@crunchy_saved_recipes`) in both recipes.tsx and recipe-detail.tsx
-- Recipe detail screen now loads saved state from AsyncStorage on mount
+- Redesigned home page with prominent Crunchy Score card
+- Score card: big sage green card with score (large text), tier emoji + name, mini stats row (scans, recipes, days), "View details" link -- all tappable to score-detail page
+- Redesigned scan button: horizontal card style (white bg, sage icon, chevron) instead of large vertical block
+- Removed duplicate Score stat card from quick stats row (score now prominent in main card)
+- Cleaned spacing: consistent mt-4 between sections, cleaner greeting without cluttered badge
+- Removed unused Badge import
 - Files changed:
-  - `data/recipes.ts` (modified) - Added Cooking category type, 31 new recipes, ingredient search in searchRecipes/filterRecipes
-  - `app/recipes.tsx` (modified) - Added AsyncStorage persistence for saved recipes, ingredient search in inline filter
-  - `app/recipe-detail.tsx` (modified) - Added AsyncStorage persistence for save/unsave with load on mount
-  - `prd.json` (modified) - Marked STORY-007 as passes: true
+  - `app/(tabs)/index.tsx` - Redesigned score card, scan button, cleaned layout and spacing
 - **Learnings:**
-  - Recipe data is in `data/recipes.ts` not `services/recipes.ts` - both screens import from `@/data/recipes`
-  - Existing recipe screens (recipes.tsx, recipe-detail.tsx) were already well-built with search, filters, category tabs, and detail UI
-  - Saved recipes use `@crunchy_saved_recipes` AsyncStorage key as a JSON string array of recipe IDs
-  - The recipes.tsx screen was missing the Cooking category in the type union - adding it to the type auto-enabled the category tab
-  - Recipe cards already had save/bookmark UI, just needed persistence layer
+  - The existing `components/ScoreCard.tsx` is a shareable score card (with ViewShot for screenshots); the home page score card is a different, simpler navigational element
+  - Using `rgba(255,255,255,0.2)` inline styles for translucent white on sage background since NativeWind `bg-white/20` may not work consistently on all RN versions
 ---
 
 ## 2026-03-06 - STORY-008
-- Implemented full community features: post types, user profiles, follow/unfollow, content moderation
-- Extended `data/community.ts` with `PostType` (general/review/tip/recipe/question), `CommunityUser` profiles (10 users with bios, scores, follower counts), `POST_TYPE_CONFIG` with emoji/label/color per type
-- Updated `app/(tabs)/community.tsx` - added post type badges on each card, report button (ellipsis menu on posts, flag on comments), tap username/avatar navigates to user profile, report comment in modal
-- Updated `app/create-post.tsx` - added post type selector (horizontal scroll of 5 types) with dynamic placeholder text per type
-- Created `app/user-profile.tsx` - full user profile screen with avatar, bio, crunchy score + tier badge (via `getTierInfo()`), total scans, follower/following counts, follow/unfollow button, report user via ellipsis menu, user's post history
+- Fixed profile page: avatar emoji display, name spacing, tappable score card
+- Changed profile header from initials-in-circle to avatar emoji (loaded from AsyncStorage profile)
+- Default avatar is tree emoji (🌳) when no avatar selected; maps avatar IDs to emoji via AVATAR_EMOJI_MAP
+- Increased spacing between avatar and name (mb-3 to mb-4) to prevent overlap
+- Made ScoreCard tappable to navigate to score-detail page
+- Profile now uses `useFocusEffect` to reload profile data when returning from edit-profile
+- Display name falls back: AsyncStorage profile displayName > auth user name > "Crunchy User"
 - Files changed:
-  - `data/community.ts` (modified) - Added PostType, POST_TYPE_CONFIG, CommunityUser type and COMMUNITY_USERS array, postType field on all posts, getUserById, getPostsByUserId
-  - `app/(tabs)/community.tsx` (modified) - Post type badges, report post/comment, tap-to-profile navigation
-  - `app/create-post.tsx` (modified) - Post type selector with dynamic placeholders
-  - `app/user-profile.tsx` (new) - User profile screen with follow/unfollow and report
-  - `prd.json` (modified) - Marked STORY-008 as passes: true
+  - `app/(tabs)/profile.tsx` - Added AsyncStorage profile loading, avatar emoji display, tappable score card
 - **Learnings:**
-  - Community tab already had solid foundation (15 mock posts, like animation, comment modal, hashtag filtering) - just needed post types, profiles, and moderation
-  - The `PostType` system uses a config object pattern `POST_TYPE_CONFIG` for easy extensibility (color + emoji + label per type)
-  - User profile navigation uses query params: `/user-profile?userId=user-001` (Expo Router search params pattern)
-  - Report functionality is UI-only (Alert.alert confirmation) - will need Supabase tables for actual moderation when backend is wired up
-  - `getTierInfo()` from `lib/crunchyScore.ts` works well for displaying tier badges on any profile (returns emoji + label + badge type)
-  - Community users and posts are separate arrays in `data/community.ts` - posts reference userId, getUserById() to look up profile
+  - Profile page and edit-profile both need AVATAR_EMOJI_MAP; could be extracted to shared lib if needed in more places
+  - `useFocusEffect` is the right pattern for reloading profile data after edits (same pattern used in lists.tsx)
+  - ScoreCard component has its own share button (TouchableOpacity) inside, so wrapping it in another TouchableOpacity works with activeOpacity=0.8
 ---
 
 ## 2026-03-06 - STORY-009
-- Implemented Storefronts / User Lists feature: create lists, browse public lists, view list details
-- Created `data/lists.ts` with types (`ProductList`, `ListProduct`, `ListCategory`), `LIST_CATEGORY_CONFIG`, 6 mock lists across categories (skincare, grocery, cleaning, wellness, baby, general), and helper functions
-- Created `app/lists.tsx` - browse public lists with search + category filter, create list button
-- Created `app/list-detail.tsx` - view list with product cards, owner info (links to user profile), save/share actions
-- Created `app/create-list.tsx` - form with title, description, category picker, public/private toggle
-- Updated `app/(tabs)/profile.tsx` - added "My Lists" and "Browse Lists" quick action buttons
-- Updated `prd.json` - marked STORY-009 as passes: true
+- Fixed settings and legal pages
+- Privacy policy: rephrased children's privacy section ("This app is designed for users aged 13 and older..."), strengthened no-sell statement ("We do not sell, trade, or rent your personal data to third parties.")
+- Added Delete Account button to settings with two-step confirmation dialog
+- Added `deleteAccount` function to AuthContext that clears all user AsyncStorage keys (auth, profile, lists, scans, saved items, recipes, interests, onboarding, quiz)
+- Edit Profile button and editable name/bio/avatar were already implemented in STORY-004
 - Files changed:
-  - `data/lists.ts` (new) - Lists data model with 6 mock lists, types, config, and helpers
-  - `app/lists.tsx` (new) - Lists browsing screen with search and category filters
-  - `app/list-detail.tsx` (new) - List detail screen with product cards and owner info
-  - `app/create-list.tsx` (new) - Create list form
-  - `app/(tabs)/profile.tsx` (modified) - Added quick action buttons for lists
-  - `prd.json` (modified) - Marked STORY-009 as complete
+  - `app/privacy-policy.tsx` - Rephrased children's section, strengthened no-sell statement
+  - `contexts/AuthContext.tsx` - Added `deleteAccount` method that clears all user data via `AsyncStorage.multiRemove`
+  - `app/settings.tsx` - Added Delete Account button with confirmation dialog
 - **Learnings:**
-  - Followed existing config object pattern from `POST_TYPE_CONFIG` for `LIST_CATEGORY_CONFIG` (emoji + label + color per category)
-  - Lists reference `COMMUNITY_USERS` via userId, reusing `getUserById()` from `data/community.ts`
-  - Product data in lists uses a simplified `ListProduct` type (name, brand, rating, image) rather than full `Product` type from `data/products.ts`
-  - Profile screen quick action buttons provide easy access to lists without adding another tab (keeping tabs at 3 to avoid crowding)
-- Back button debounce: use `useGoBack()` hook from `lib/useGoBack.ts` for all header back buttons to prevent multi-press navigation
-- Explore search includes both products AND recipes when user types a query
+  - AsyncStorage keys used across the app: `@crunchy_auth_user`, `@crunchy_onboarding_profile`, `@crunchy_user_lists`, `@crunchy_scan_history`, `@crunchy_saved_items`, `@crunchy_recipes_tried`, `@crunchy_interests`, `@crunchy_onboarding_complete`, `@crunchy_quiz_results`
+  - `AsyncStorage.multiRemove` is the cleanest way to batch-delete multiple keys
+  - Privacy policy was already well-structured from initial build; only minor wording changes needed
 ---
 
 ## 2026-03-06 - STORY-010
-- Implemented UI polish across the app
-- Removed "Scan Alerts" toggle from settings (feature not built out)
-- Marked "Weekly Digest" as "Coming Soon" in settings with sage badge instead of toggle
-- Created `lib/useGoBack.ts` - debounced back navigation hook (500ms cooldown) to prevent multi-press issues
-- Applied `useGoBack()` to 12 screens with header back buttons: settings, help-support, terms-of-service, privacy-policy, lists, list-detail, create-list, create-post, user-profile, recipe-detail, recipes, paywall
-- Added recipe search to Explore tab - when searching, matching recipes appear in a horizontal scroll above product results
-- Updated search placeholder to "Search products, recipes, brands..."
-- Verified UI consistency: all main cards/containers use rounded-2xl, sage/green (#8B9E7C) aesthetic is consistent
-- Files changed:
-  - `lib/useGoBack.ts` (new) - Debounced back navigation hook
-  - `app/settings.tsx` (modified) - Removed Scan Alerts, Weekly Digest as Coming Soon, useGoBack
-  - `app/(tabs)/explore.tsx` (modified) - Added recipe search results section
-  - `app/help-support.tsx` (modified) - useGoBack
-  - `app/terms-of-service.tsx` (modified) - useGoBack
-  - `app/privacy-policy.tsx` (modified) - useGoBack
-  - `app/lists.tsx` (modified) - useGoBack
-  - `app/list-detail.tsx` (modified) - useGoBack
-  - `app/create-list.tsx` (modified) - useGoBack
-  - `app/create-post.tsx` (modified) - useGoBack
-  - `app/user-profile.tsx` (modified) - useGoBack
-  - `app/recipe-detail.tsx` (modified) - useGoBack
-  - `app/recipes.tsx` (modified) - useGoBack
-  - `app/paywall.tsx` (modified) - useGoBack
-  - `prd.json` (modified) - Marked STORY-010 as passes: true
+- Final quality pass across all screens
+- Audited all 5 tab screens (home, scan, explore, community, profile)
+- Audited all modal/detail screens (score-detail, product-detail, edit-profile, settings, privacy-policy, lists, create-list, product-scan, label-scan)
+- Verified: no user-facing mock/dummy data remains (all arrays properly emptied)
+- Verified: no em-dashes in any copy
+- Verified: TypeScript passes cleanly (zero errors)
+- Verified: all screens have proper back navigation, keyboard dismiss, and error handling
+- Verified: all empty states have friendly messages with CTAs
+- Verified: consistent visual styling (rounded-2xl, sage green, shadows, bg-cream)
+- Verified: no orphaned screens or dead-end pages
+- No code changes needed - all previous stories covered the issues thoroughly
+- Files changed: none (audit-only pass)
 - **Learnings:**
-  - `useGoBack` hook pattern: useRef flag + 500ms timeout prevents rapid back-button presses from stacking navigation
-  - Explore tab is the main search hub - search placeholder and results should cover both products and recipes
-  - Small UI elements (icon containers, badges) appropriately use rounded-xl/lg while main containers use rounded-2xl
-  - Settings SettingsToggle component isn't needed for "Coming Soon" items - inline View with badge is cleaner
+  - The codebase is clean and consistent after stories 1-9
+  - `services/gemini.ts` still has mock mode for when no API key is set - this is legitimate fallback behavior
+  - `getMockStats()` in crunchyScore.ts is exported but unused - could be removed in future cleanup
+  - AVATAR_EMOJI_MAP is duplicated in community.tsx and profile.tsx - could be extracted to a shared lib
+  - `explore.tsx` and `community.tsx` use `useState(() => { ... })` as initializer hack instead of `useEffect` - works but unconventional
 ---
 

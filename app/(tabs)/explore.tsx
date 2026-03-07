@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -32,6 +32,7 @@ const FILTER_OPTIONS: { label: string; value: FilterRating }[] = [
 
 export default function ExploreScreen() {
   const router = useRouter();
+  const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] =
     useState<ProductCategory | null>(null);
@@ -39,6 +40,18 @@ export default function ExploreScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [savedItems, setSavedItems] = useState<Set<string>>(new Set());
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debounce search input by 300ms
+  useEffect(() => {
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      setSearchQuery(searchInput);
+    }, 300);
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, [searchInput]);
 
   // Simulate initial load
   useState(() => {
@@ -94,7 +107,7 @@ export default function ExploreScreen() {
 
   const handleProductPress = (product: Product) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push(`/scan-result?barcode=${product.barcode}`);
+    router.push(`/product-detail?barcode=${product.barcode}`);
   };
 
   const handleSaveToggle = (productId: string) => {
@@ -111,13 +124,14 @@ export default function ExploreScreen() {
   };
 
   const clearFilters = () => {
+    setSearchInput("");
     setSearchQuery("");
     setSelectedCategory(null);
     setFilterRating("all");
   };
 
   const hasActiveFilters =
-    searchQuery.trim() !== "" ||
+    searchInput.trim() !== "" ||
     selectedCategory !== null ||
     filterRating !== "all";
 
@@ -148,12 +162,12 @@ export default function ExploreScreen() {
             className="flex-1 ml-3 text-base text-dark"
             placeholder="Search products, recipes, brands..."
             placeholderTextColor="#999"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
+            value={searchInput}
+            onChangeText={setSearchInput}
             returnKeyType="search"
           />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery("")}>
+          {searchInput.length > 0 && (
+            <TouchableOpacity onPress={() => { setSearchInput(""); setSearchQuery(""); }}>
               <Ionicons name="close-circle" size={20} color="#999" />
             </TouchableOpacity>
           )}
@@ -317,14 +331,16 @@ export default function ExploreScreen() {
             <ProductCardSkeleton />
             <ProductCardSkeleton />
           </View>
-        ) : filteredProducts.length === 0 ? (
+        ) : filteredProducts.length === 0 && matchingRecipes.length === 0 ? (
           <View className="items-center px-5 mt-12">
             <Text className="text-5xl mb-4">🔍</Text>
             <Text className="text-lg font-bold text-dark text-center">
-              No products found
+              No results found
             </Text>
             <Text className="text-sm text-dark/50 text-center mt-2">
-              Try a different search term or adjust your filters
+              {searchQuery.trim()
+                ? "Try a different search term or adjust your filters"
+                : "Try adjusting your filters to see more products"}
             </Text>
             {hasActiveFilters && (
               <TouchableOpacity
@@ -334,6 +350,12 @@ export default function ExploreScreen() {
                 <Text className="text-white font-semibold">Clear Filters</Text>
               </TouchableOpacity>
             )}
+          </View>
+        ) : filteredProducts.length === 0 ? (
+          <View className="px-5 mt-4">
+            <Text className="text-sm text-dark/50">
+              No matching products found
+            </Text>
           </View>
         ) : (
           <View className="px-5" style={{ gap: 12 }}>

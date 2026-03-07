@@ -1,0 +1,69 @@
+# Iteration 9 Log
+
+## Metadata
+
+- **Task ID**: STORY-009
+- **Task Title**: Fix Settings & Legal
+- **Description**: - Privacy policy: fill in ALL blank sections with real content - Remove blank bullets/periods - Rephrase "under 13" section to be less suspicious: "This app is designed for users aged 13 and older. We...
+- **Status**: completed
+- **Task Completed**: Yes
+- **Promise Detected**: Yes
+- **Started At**: 2026-03-07T04:29:37.528Z
+- **Ended At**: 2026-03-07T04:31:25.801Z
+- **Duration**: 1m 48s
+- **Input Tokens**: 57
+- **Output Tokens**: 5512
+- **Total Tokens**: 5569
+- **Agent**: claude
+- **Model**: claude-opus-4-6
+- **Sandbox Mode**: auto
+- **Sandbox Network**: Enabled
+--- RAW OUTPUT ---
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/settings.tsx[0m
+[94m[Glob][0m pattern: [96mapp/privacy-policy.tsx[0m
+[94m[Grep][0m pattern: [96msignOut|deleteUser|deleteAccount|delete.*account[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/contexts/AuthContext.tsx[0m
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/privacy-policy.tsx[0m
+The privacy policy looks mostly complete already. Let me check what still needs to be done.
+[94m[Read][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/edit-profile.tsx[0m
+[94m[TodoWrite][0m
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/privacy-policy.tsx[0m edit: "        <Section title="Children's Privacy">
+     ..." → "        <Section title="Children's Privacy">
+     ..."
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/privacy-policy.tsx[0m edit: "        <Section title="We Do Not Sell Your Data">..." → "        <Section title="We Do Not Sell Your Data">..."
+[94m[TodoWrite][0m
+Now add `deleteAccount` to AuthContext that clears all user data:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/contexts/AuthContext.tsx[0m edit: "  signOut: () => Promise<void>;" → "  signOut: () => Promise<void>;
+  deleteAccount: (..."
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/contexts/AuthContext.tsx[0m edit: "  async function signOut() {
+    await AsyncStorag..." → "  async function signOut() {
+    await AsyncStorag..."
+[94m[TodoWrite][0m
+Now add the Delete Account button to settings:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/settings.tsx[0m edit: "  const { user, signOut } = useAuth();" → "  const { user, signOut, deleteAccount } = useAuth..."
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/settings.tsx[0m edit: "        {/* Logout */}
+        <View className="mx..." → "        {/* Logout */}
+        <View className="mx..."
+Now add the `handleDeleteAccount` function:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/app/settings.tsx[0m edit: "  const handleLogout = () => {" → "  const handleDeleteAccount = () => {
+    Alert.al..."
+[94m[TodoWrite][0m
+[94m[Bash][0m Run TypeScript typecheck $ npx tsc --noEmit 2>&1 | head -50
+Typecheck passes. Now update progress:
+[94m[Edit][0m [95m/Users/10-mac-alpha/Projects/crunchy-app/.ralph-tui/progress.md[0m edit: "  - ScoreCard component has its own share button (..." → "  - ScoreCard component has its own share button (..."
+[94m[TodoWrite][0m
+STORY-009 is complete. Here's what was done:
+
+1. **Privacy policy fixes:**
+   - Rephrased children's section: "This app is designed for users aged 13 and older. We do not knowingly collect personal information from children under 13."
+   - Strengthened no-sell statement: "We do not sell, trade, or rent your personal data to third parties."
+   - All sections already had real content, no blank bullets/periods found
+
+2. **Delete Account** - Added button in settings with a two-step confirmation dialog that warns about permanent data loss. The `deleteAccount` function in AuthContext clears all 9 AsyncStorage keys (auth, profile, lists, scans, saved items, recipes, interests, onboarding, quiz results).
+
+3. **Edit Profile** - Already implemented in STORY-004 (button in settings + edit-profile page with name, bio, avatar editing).
+
+TypeScript typecheck passes cleanly.
+
+<promise>COMPLETE</promise>

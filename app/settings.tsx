@@ -14,10 +14,28 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useGoBack } from "@/lib/useGoBack";
 
 export default function SettingsScreen() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, deleteAccount } = useAuth();
   const router = useRouter();
   const goBack = useGoBack();
   const [communityNotifications, setCommunityNotifications] = useState(true);
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "Delete Account",
+      "Are you sure you want to delete your account? This will permanently remove all your data, including scans, lists, and profile information. This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete Account",
+          style: "destructive",
+          onPress: async () => {
+            await deleteAccount();
+            router.replace("/welcome");
+          },
+        },
+      ]
+    );
+  };
 
   const handleLogout = () => {
     Alert.alert("Log Out", "Are you sure you want to log out?", [
@@ -69,6 +87,14 @@ export default function SettingsScreen() {
             value="Free Plan"
             valueColor="#8B9E7C"
           />
+        </View>
+
+        {/* Profile Section */}
+        <SectionHeader title="Profile" />
+        <View className="mx-5 bg-white rounded-2xl overflow-hidden" style={cardShadow}>
+          <TouchableOpacity onPress={() => router.push("/edit-profile")}>
+            <SettingsRow icon="create-outline" label="Edit Profile" value="Edit" chevron />
+          </TouchableOpacity>
         </View>
 
         {/* Personalization Section */}
@@ -133,6 +159,22 @@ export default function SettingsScreen() {
               <Ionicons name="log-out-outline" size={20} color="#F44336" />
               <Text className="text-base font-semibold text-rating-avoid ml-2">
                 Log Out
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        {/* Delete Account */}
+        <View className="mx-5 mt-3 mb-4">
+          <TouchableOpacity
+            onPress={handleDeleteAccount}
+            className="bg-white rounded-2xl py-4 items-center"
+            style={cardShadow}
+          >
+            <View className="flex-row items-center">
+              <Ionicons name="trash-outline" size={20} color="#F44336" />
+              <Text className="text-base font-semibold text-rating-avoid ml-2">
+                Delete Account
               </Text>
             </View>
           </TouchableOpacity>

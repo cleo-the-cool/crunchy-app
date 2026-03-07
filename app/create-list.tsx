@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -7,15 +7,25 @@ import {
   TextInput,
   Switch,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useGoBack } from "@/lib/useGoBack";
 import {
   LIST_CATEGORY_CONFIG,
   type ListCategory,
+  type ProductList,
+  type ListProduct,
 } from "@/data/lists";
+import { PRODUCTS, type Product } from "@/data/products";
+
+const LISTS_STORAGE_KEY = "@crunchy_user_lists";
 
 const cardShadow = {
   shadowColor: "#000",
@@ -38,8 +48,42 @@ export default function CreateListScreen() {
   const [category, setCategory] = useState<ListCategory>("general");
   const [isPublic, setIsPublic] = useState(true);
   const [errors, setErrors] = useState<{ title?: string }>({});
+  const [saving, setSaving] = useState(false);
 
-  const handleCreate = () => {
+  // Product search + selection
+  const [productSearch, setProductSearch] = useState("");
+  const [selectedProducts, setSelectedProducts] = useState<ListProduct[]>([]);
+  const [showProductSearch, setShowProductSearch] = useState(false);
+
+  const searchResults = useMemo(() => {
+    if (!productSearch.trim()) return [];
+    const q = productSearch.toLowerCase();
+    return PRODUCTS.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.brand.toLowerCase().includes(q)
+    ).slice(0, 10);
+  }, [productSearch]);
+
+  const addProduct = (product: Product) => {
+    if (selectedProducts.some((p) => p.id === product.id)) return;
+    const listProduct: ListProduct = {
+      id: product.id,
+      name: product.name,
+      brand: product.brand,
+      rating: product.rating,
+      image: product.image,
+      addedAt: new Date().toISOString(),
+    };
+    setSelectedProducts((prev) => [...prev, listProduct]);
+    setProductSearch("");
+  };
+
+  const removeProduct = (productId: string) => {
+    setSelectedProducts((prev) => prev.filter((p) => p.id !== productId));
+  };
+
+  const handleCreate = async () => {
     const newErrors: { title?: string } = {};
     if (!title.trim()) {
       newErrors.title = "Please enter a list name";
@@ -49,17 +93,43 @@ export default function CreateListScreen() {
       return;
     }
 
-    // In a real app this would save to Supabase
-    Alert.alert("List Created!", `"${title}" has been created.`, [
-      {
-        text: "OK",
-        onPress: () => router.back(),
-      },
-    ]);
+    setSaving(true);
+    try {
+      const newList: ProductList = {
+        id: `list_${Date.now()}`,
+        userId: "local",
+        title: title.trim(),
+        description: description.trim(),
+        category,
+        isPublic,
+        products: selectedProducts,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      // Load existing lists and append
+      const stored = await AsyncStorage.getItem(LISTS_STORAGE_KEY);
+      const existingLists: ProductList[] = stored ? JSON.parse(stored) : [];
+      existingLists.unshift(newList);
+      await AsyncStorage.setItem(LISTS_STORAGE_KEY, JSON.stringify(existingLists));
+
+      // Navigate back to lists
+      router.back();
+    } catch {
+      Alert.alert("Error", "Failed to save list. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <SafeAreaView className="flex-1 bg-cream">
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View className="flex-1">
       {/* Header */}
       <View className="flex-row items-center px-5 pt-2 pb-4">
         <TouchableOpacity onPress={goBack} hitSlop={8}>
@@ -159,7 +229,7 @@ export default function CreateListScreen() {
         </View>
 
         {/* Visibility */}
-        <View className="px-5 mb-6">
+        <View className="px-5 mb-5">
           <View
             className="bg-white rounded-2xl px-4 py-4 flex-row items-center justify-between"
             style={cardShadow}
@@ -190,17 +260,122 @@ export default function CreateListScreen() {
           </View>
         </View>
 
-        {/* Info about adding products */}
-        <View className="px-5 mb-6">
-          <View
-            className="bg-sage/10 rounded-2xl p-4 flex-row"
-          >
-            <Ionicons name="information-circle-outline" size={20} color="#8B9E7C" />
-            <Text className="text-sm text-dark/60 ml-2.5 flex-1 leading-5">
-              After creating your list, you can add products by scanning them or
-              browsing your scan history.
+        {/* Add Products */}
+        <View className="px-5 mb-5">
+          <View className="flex-row items-center justify-between mb-2">
+            <Text className="text-sm font-semibold text-dark">
+              Products ({selectedProducts.length})
             </Text>
+            <TouchableOpacity
+              onPress={() => setShowProductSearch(!showProductSearch)}
+              className="flex-row items-center"
+            >
+              <Ionicons name="add-circle-outline" size={18} color="#8B9E7C" />
+              <Text className="text-sm text-sage font-medium ml-1">
+                Add Products
+              </Text>
+            </TouchableOpacity>
           </View>
+
+          {/* Product Search */}
+          {showProductSearch && (
+            <View className="mb-3">
+              <View
+                className="bg-white rounded-2xl px-4 py-3 flex-row items-center"
+                style={cardShadow}
+              >
+                <Ionicons name="search" size={16} color="#999" />
+                <TextInput
+                  className="flex-1 ml-2 text-dark text-sm"
+                  placeholder="Search products by name or brand..."
+                  placeholderTextColor="#999"
+                  value={productSearch}
+                  onChangeText={setProductSearch}
+                  autoFocus
+                />
+                {productSearch.length > 0 && (
+                  <TouchableOpacity onPress={() => setProductSearch("")}>
+                    <Ionicons name="close-circle" size={16} color="#CCC" />
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {/* Search Results */}
+              {searchResults.length > 0 && (
+                <View className="mt-2 bg-white rounded-2xl overflow-hidden" style={cardShadow}>
+                  {searchResults.map((product, idx) => {
+                    const alreadyAdded = selectedProducts.some((p) => p.id === product.id);
+                    return (
+                      <TouchableOpacity
+                        key={product.id}
+                        onPress={() => !alreadyAdded && addProduct(product)}
+                        className={`flex-row items-center px-4 py-3 ${
+                          idx < searchResults.length - 1 ? "border-b border-dark/5" : ""
+                        }`}
+                        disabled={alreadyAdded}
+                      >
+                        <Text className="text-lg mr-3">{product.image}</Text>
+                        <View className="flex-1">
+                          <Text className="text-sm font-medium text-dark" numberOfLines={1}>
+                            {product.name}
+                          </Text>
+                          <Text className="text-xs text-dark/50">{product.brand}</Text>
+                        </View>
+                        {alreadyAdded ? (
+                          <Ionicons name="checkmark-circle" size={20} color="#8B9E7C" />
+                        ) : (
+                          <Ionicons name="add-circle-outline" size={20} color="#8B9E7C" />
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              )}
+
+              {productSearch.trim().length > 0 && searchResults.length === 0 && (
+                <View className="mt-2 items-center py-4">
+                  <Text className="text-sm text-dark/50">No products found</Text>
+                </View>
+              )}
+            </View>
+          )}
+
+          {/* Selected Products */}
+          {selectedProducts.length > 0 && (
+            <View className="bg-white rounded-2xl overflow-hidden" style={cardShadow}>
+              {selectedProducts.map((product, idx) => (
+                <View
+                  key={product.id}
+                  className={`flex-row items-center px-4 py-3 ${
+                    idx < selectedProducts.length - 1 ? "border-b border-dark/5" : ""
+                  }`}
+                >
+                  <Text className="text-lg mr-3">{product.image}</Text>
+                  <View className="flex-1">
+                    <Text className="text-sm font-medium text-dark" numberOfLines={1}>
+                      {product.name}
+                    </Text>
+                    <Text className="text-xs text-dark/50">{product.brand}</Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => removeProduct(product.id)}
+                    hitSlop={8}
+                  >
+                    <Ionicons name="close-circle" size={20} color="#E57373" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {selectedProducts.length === 0 && !showProductSearch && (
+            <View className="bg-sage/10 rounded-2xl p-4 flex-row">
+              <Ionicons name="information-circle-outline" size={20} color="#8B9E7C" />
+              <Text className="text-sm text-dark/60 ml-2.5 flex-1 leading-5">
+                Tap "Add Products" above to search and add products to your list.
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
 
@@ -208,7 +383,8 @@ export default function CreateListScreen() {
       <View className="px-5 pb-5 pt-3 bg-cream">
         <TouchableOpacity
           onPress={handleCreate}
-          className="bg-sage py-4 rounded-2xl items-center"
+          disabled={saving}
+          className={`py-4 rounded-2xl items-center ${saving ? "bg-sage/50" : "bg-sage"}`}
           style={{
             shadowColor: "#8B9E7C",
             shadowOffset: { width: 0, height: 4 },
@@ -217,9 +393,14 @@ export default function CreateListScreen() {
             elevation: 4,
           }}
         >
-          <Text className="text-white font-bold text-base">Create List</Text>
+          <Text className="text-white font-bold text-base">
+            {saving ? "Saving..." : "Save List"}
+          </Text>
         </TouchableOpacity>
       </View>
+      </View>
+      </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

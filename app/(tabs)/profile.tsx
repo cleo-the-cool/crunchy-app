@@ -9,71 +9,68 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
 import * as Haptics from "../../utils/haptics";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, Badge, ScoreCard } from "@/components";
-import { getMockStats, type CrunchyStats } from "@/lib/crunchyScore";
+import { ScoreCard } from "@/components";
+import { getDefaultStats, type CrunchyStats } from "@/lib/crunchyScore";
+
+const AVATAR_EMOJI_MAP: Record<string, string> = {
+  leaf: "🌿",
+  sunflower: "🌻",
+  mushroom: "🍄",
+  avocado: "🥑",
+  butterfly: "🦋",
+  bee: "🐝",
+  cherry: "🍒",
+  rainbow: "🌈",
+  star: "⭐",
+  cactus: "🌵",
+  peach: "🍑",
+  herb: "🌱",
+};
+
+const DEFAULT_AVATAR_EMOJI = "🌳";
+const PROFILE_STORAGE_KEY = "@crunchy_onboarding_profile";
 
 type TabKey = "history" | "saved" | "posts";
-
-const MOCK_SCAN_HISTORY = [
-  { id: "s1", productName: "Gentle Skin Cleanser", brand: "Cetaphil", date: "2026-03-04", rating: "caution" as const, barcode: "3574661014647" },
-  { id: "s2", productName: "All-Purpose Cleaner", brand: "Method", date: "2026-03-03", rating: "clean" as const, barcode: "0817939011690" },
-  { id: "s3", productName: "Classic Shampoo", brand: "Head & Shoulders", date: "2026-03-03", rating: "avoid" as const, barcode: "0037000711148" },
-  { id: "s4", productName: "Hydrating Facial Cream", brand: "CeraVe", date: "2026-03-02", rating: "clean" as const, barcode: "3606000537538" },
-  { id: "s5", productName: "Fabuloso Multi-Purpose", brand: "Fabuloso", date: "2026-03-01", rating: "avoid" as const, barcode: "0035000458124" },
-  { id: "s6", productName: "Natural Deodorant", brand: "Native", date: "2026-02-28", rating: "clean" as const, barcode: "0850012345001" },
-  { id: "s7", productName: "Dish Soap", brand: "Dawn", date: "2026-02-27", rating: "caution" as const, barcode: "0037000973263" },
-];
-
-const MOCK_SAVED_ITEMS = [
-  { id: "sv1", name: "Gentle Cleanser", brand: "CeraVe", type: "product" as const, image: "🧼", rating: "clean" as const, barcode: "3606000537538" },
-  { id: "sv2", name: "All-Purpose Citrus Cleaner", type: "recipe" as const, image: "🍊", recipeId: "recipe-001" },
-  { id: "sv3", name: "Calendula Cleanser", brand: "Weleda", type: "product" as const, image: "🌿", rating: "clean" as const, barcode: "4001638088602" },
-  { id: "sv4", name: "Honey Oat Face Mask", type: "recipe" as const, image: "🍯", recipeId: "recipe-007" },
-  { id: "sv5", name: "Natural Deodorant", brand: "Native", type: "product" as const, image: "🌱", rating: "clean" as const, barcode: "0850012345001" },
-  { id: "sv6", name: "Lavender Linen Spray", type: "recipe" as const, image: "💜", recipeId: "recipe-022" },
-];
-
-const MOCK_USER_POSTS = [
-  { id: "up1", content: "Just discovered that my 'natural' shampoo has sulfates! Switching to a truly clean option today.", timestamp: "2026-03-04T09:15:00Z", likes: 18, comments: 4, hashtags: ["#CleanSwap", "#ToxinFree"] },
-  { id: "up2", content: "Made the all-purpose citrus cleaner recipe from the app and it works amazingly! My kitchen smells like a dream.", timestamp: "2026-03-02T14:30:00Z", likes: 35, comments: 8, hashtags: ["#DIYCleaner", "#CleanLiving"] },
-  { id: "up3", content: "Day 23 of my clean living journey. Small swaps add up! Already replaced 7 products with cleaner alternatives.", timestamp: "2026-02-28T11:00:00Z", likes: 52, comments: 12, hashtags: ["#CrunchyLife", "#CleanLiving"] },
-];
-
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return "Today";
-  if (diffDays === 1) return "Yesterday";
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
 
 export default function ProfileScreen() {
   const { user } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabKey>("history");
   const [refreshing, setRefreshing] = useState(false);
+  const [profileName, setProfileName] = useState<string | null>(null);
+  const [avatarEmoji, setAvatarEmoji] = useState<string>(DEFAULT_AVATAR_EMOJI);
 
-  // TODO: Replace with real Supabase data when auth is wired up
-  const stats: CrunchyStats = getMockStats();
+  const stats: CrunchyStats = getDefaultStats();
+
+  // Load profile from AsyncStorage (reload on screen focus to pick up edits)
+  useFocusEffect(
+    useCallback(() => {
+      async function loadProfile() {
+        const stored = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
+        if (stored) {
+          const profile = JSON.parse(stored);
+          if (profile.displayName) setProfileName(profile.displayName);
+          if (profile.avatar && AVATAR_EMOJI_MAP[profile.avatar]) {
+            setAvatarEmoji(AVATAR_EMOJI_MAP[profile.avatar]);
+          } else {
+            setAvatarEmoji(DEFAULT_AVATAR_EMOJI);
+          }
+        }
+      }
+      loadProfile();
+    }, [])
+  );
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     setTimeout(() => setRefreshing(false), 1500);
   }, []);
 
-  const initials = user?.name
-    ? user.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2)
-    : "CR";
+  const displayName = profileName ?? user?.name ?? "Crunchy User";
 
   return (
     <SafeAreaView className="flex-1 bg-cream">
@@ -103,25 +100,35 @@ export default function ProfileScreen() {
         {/* Profile Header */}
         <View className="items-center px-5 pt-4 pb-2">
           <View
-            className="w-20 h-20 rounded-full bg-sage items-center justify-center mb-3"
+            className="w-20 h-20 rounded-full bg-sage/15 items-center justify-center mb-4"
             style={{
               shadowColor: "#8B9E7C",
               shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
+              shadowOpacity: 0.2,
               shadowRadius: 8,
               elevation: 4,
             }}
           >
-            <Text className="text-2xl font-bold text-white">{initials}</Text>
+            <Text className="text-4xl">{avatarEmoji}</Text>
           </View>
-          <Text className="text-xl font-bold text-dark">{user?.name ?? "Crunchy User"}</Text>
-          <Text className="text-sm text-dark/50 mt-0.5">@{user?.email?.split("@")[0] ?? "user"}</Text>
+          <Text className="text-xl font-bold text-dark">{displayName}</Text>
+          <Text className="text-sm text-dark/50 mt-1">@{user?.email?.split("@")[0] ?? "user"}</Text>
+          <TouchableOpacity
+            onPress={() => router.push("/edit-profile")}
+            className="mt-3 bg-white border border-sage rounded-2xl px-5 py-2"
+          >
+            <Text className="text-sm font-semibold text-sage">Edit Profile</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* Screenshotable Score Card */}
-        <View className="mt-3">
-          <ScoreCard stats={stats} userName={user?.name} />
-        </View>
+        {/* Screenshotable Score Card - tappable to score detail */}
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => router.push("/score-detail")}
+          className="mt-3"
+        >
+          <ScoreCard stats={stats} userName={displayName} />
+        </TouchableOpacity>
 
         {/* Quick Actions */}
         <View className="flex-row px-5 mt-4" style={{ gap: 10 }}>
@@ -199,33 +206,6 @@ export default function ProfileScreen() {
   );
 }
 
-function StatCard({
-  icon,
-  value,
-  label,
-}: {
-  icon: keyof typeof Ionicons.glyphMap;
-  value: number;
-  label: string;
-}) {
-  return (
-    <View
-      className="flex-1 bg-white rounded-2xl py-4 items-center"
-      style={{
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 6,
-        elevation: 2,
-      }}
-    >
-      <Ionicons name={icon} size={22} color="#8B9E7C" />
-      <Text className="text-xl font-bold text-dark mt-1">{value}</Text>
-      <Text className="text-xs text-dark/50">{label}</Text>
-    </View>
-  );
-}
-
 function EmptyState({ icon, title, message, ctaLabel, onCta }: { icon: string; title: string; message: string; ctaLabel?: string; onCta?: () => void }) {
   return (
     <View className="items-center py-12">
@@ -242,180 +222,38 @@ function EmptyState({ icon, title, message, ctaLabel, onCta }: { icon: string; t
 }
 
 function ScanHistoryTab({ router }: { router: ReturnType<typeof useRouter> }) {
-  if (MOCK_SCAN_HISTORY.length === 0) {
-    return (
-      <EmptyState
-        icon="📷"
-        title="No scans yet"
-        message="Start your clean living journey by scanning your first product!"
-        ctaLabel="Scan a Product"
-        onCta={() => router.push("/(tabs)/scan")}
-      />
-    );
-  }
   return (
-    <View>
-      {MOCK_SCAN_HISTORY.map((scan) => (
-        <TouchableOpacity
-          key={scan.id}
-          onPress={() => router.push(`/scan-result?barcode=${scan.barcode}`)}
-          activeOpacity={0.7}
-        >
-          <Card className="mb-3">
-            <View className="flex-row items-center">
-              <View
-                className="w-10 h-10 rounded-xl items-center justify-center mr-3"
-                style={{
-                  backgroundColor:
-                    scan.rating === "clean"
-                      ? "#4CAF50" + "15"
-                      : scan.rating === "caution"
-                      ? "#FFC107" + "15"
-                      : "#F44336" + "15",
-                }}
-              >
-                <Ionicons
-                  name={
-                    scan.rating === "clean"
-                      ? "checkmark-circle"
-                      : scan.rating === "caution"
-                      ? "alert-circle"
-                      : "close-circle"
-                  }
-                  size={20}
-                  color={
-                    scan.rating === "clean"
-                      ? "#4CAF50"
-                      : scan.rating === "caution"
-                      ? "#FFC107"
-                      : "#F44336"
-                  }
-                />
-              </View>
-              <View className="flex-1">
-                <Text className="text-sm font-semibold text-dark">
-                  {scan.productName}
-                </Text>
-                <Text className="text-xs text-dark/50">{scan.brand}</Text>
-              </View>
-              <View className="items-end">
-                <Badge rating={scan.rating} size="sm" />
-                <Text className="text-xs text-dark/40 mt-1">
-                  {formatDate(scan.date)}
-                </Text>
-              </View>
-            </View>
-          </Card>
-        </TouchableOpacity>
-      ))}
-    </View>
+    <EmptyState
+      icon="📷"
+      title="No scans yet"
+      message="Start your clean living journey by scanning your first product!"
+      ctaLabel="Scan a Product"
+      onCta={() => router.push("/(tabs)/scan")}
+    />
   );
 }
 
 function SavedItemsTab({ router }: { router: ReturnType<typeof useRouter> }) {
-  if (MOCK_SAVED_ITEMS.length === 0) {
-    return (
-      <EmptyState
-        icon="🔖"
-        title="No saved items"
-        message="Save products and recipes you love to find them easily later!"
-        ctaLabel="Explore Products"
-        onCta={() => router.push("/(tabs)/explore")}
-      />
-    );
-  }
   return (
-    <View className="flex-row flex-wrap" style={{ gap: 12 }}>
-      {MOCK_SAVED_ITEMS.map((item) => (
-        <TouchableOpacity
-          key={item.id}
-          onPress={() => {
-            if (item.type === "product" && item.barcode) {
-              router.push(`/scan-result?barcode=${item.barcode}`);
-            } else if (item.type === "recipe" && item.recipeId) {
-              router.push(`/recipe-detail?id=${item.recipeId}`);
-            }
-          }}
-          activeOpacity={0.7}
-          style={{ width: "47%" }}
-        >
-          <View
-            className="bg-white rounded-2xl p-3 items-center"
-            style={{
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.06,
-              shadowRadius: 6,
-              elevation: 2,
-            }}
-          >
-            <View className="w-14 h-14 rounded-2xl bg-sage/10 items-center justify-center mb-2">
-              <Text className="text-2xl">{item.image}</Text>
-            </View>
-            <Text className="text-sm font-semibold text-dark text-center" numberOfLines={2}>
-              {item.name}
-            </Text>
-            {item.type === "product" && item.brand && (
-              <Text className="text-xs text-dark/50 mt-0.5">{item.brand}</Text>
-            )}
-            <View className="mt-1.5">
-              {item.type === "product" && item.rating ? (
-                <Badge rating={item.rating} size="sm" />
-              ) : (
-                <View className="bg-peach/20 px-2 py-0.5 rounded-full">
-                  <Text className="text-xs text-peach font-medium">Recipe</Text>
-                </View>
-              )}
-            </View>
-          </View>
-        </TouchableOpacity>
-      ))}
-    </View>
+    <EmptyState
+      icon="🔖"
+      title="No saved items"
+      message="Save products and recipes you love to find them easily later!"
+      ctaLabel="Explore Products"
+      onCta={() => router.push("/(tabs)/explore")}
+    />
   );
 }
 
 function MyPostsTab() {
   const router = useRouter();
-  if (MOCK_USER_POSTS.length === 0) {
-    return (
-      <EmptyState
-        icon="✍️"
-        title="No posts yet"
-        message="Share your clean living tips and connect with the community!"
-        ctaLabel="Create Post"
-        onCta={() => router.push("/create-post")}
-      />
-    );
-  }
   return (
-    <View>
-      {MOCK_USER_POSTS.map((post) => (
-        <Card key={post.id} className="mb-3">
-          <Text className="text-sm text-dark/80 leading-5">{post.content}</Text>
-          {post.hashtags.length > 0 && (
-            <View className="flex-row flex-wrap mt-1.5 gap-1">
-              {post.hashtags.map((tag) => (
-                <Text key={tag} className="text-sm text-sage font-medium">
-                  {tag}
-                </Text>
-              ))}
-            </View>
-          )}
-          <View className="flex-row items-center mt-2.5 pt-2 border-t border-dark/5">
-            <View className="flex-row items-center mr-4">
-              <Ionicons name="heart" size={14} color="#F4A574" />
-              <Text className="text-xs text-dark/50 ml-1">{post.likes}</Text>
-            </View>
-            <View className="flex-row items-center mr-4">
-              <Ionicons name="chatbubble-outline" size={13} color="#999" />
-              <Text className="text-xs text-dark/50 ml-1">{post.comments}</Text>
-            </View>
-            <Text className="text-xs text-dark/30 ml-auto">
-              {formatDate(post.timestamp)}
-            </Text>
-          </View>
-        </Card>
-      ))}
-    </View>
+    <EmptyState
+      icon="✍️"
+      title="No posts yet"
+      message="Share your clean living tips and connect with the community!"
+      ctaLabel="Create Post"
+      onCta={() => router.push("/create-post")}
+    />
   );
 }

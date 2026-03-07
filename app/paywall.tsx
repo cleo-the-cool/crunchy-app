@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   Alert,
   TextInput,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -152,6 +154,8 @@ export default function PaywallScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-cream">
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View className="flex-1">
       {/* Close Button */}
       <View className="flex-row justify-end px-5 pt-2">
         <TouchableOpacity
@@ -167,6 +171,7 @@ export default function PaywallScreen() {
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         {/* Header */}
         <View className="px-6 pt-2 pb-4 items-center">
@@ -398,6 +403,8 @@ export default function PaywallScreen() {
           <Text className="text-sm text-dark/40">Restore purchases</Text>
         </TouchableOpacity>
       </View>
+      </View>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 }

@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  Alert,
   RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -15,37 +14,11 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 import type { ScanMode } from "@/services/gemini";
 
 const SCAN_MODES: { key: ScanMode; label: string; icon: keyof typeof Ionicons.glyphMap; description: string }[] = [
-  { key: "item", label: "Scan Item", icon: "camera-outline", description: "Take a photo of the product itself" },
-  { key: "ingredients", label: "Scan Ingredients", icon: "document-text-outline", description: "Take a photo of the ingredients list" },
-  { key: "label", label: "Scan Label", icon: "nutrition-outline", description: "Take a photo of the nutrition/claims label" },
+  { key: "item", label: "Item", icon: "camera-outline", description: "Take a photo of the product itself" },
+  { key: "ingredients", label: "Ingredients", icon: "document-text-outline", description: "Take a photo of the ingredients list" },
+  { key: "label", label: "Label", icon: "pricetag-outline", description: "Take a photo of the nutrition/claims label" },
 ];
 
-const MOCK_RECENT_SCANS = [
-  {
-    id: "1",
-    name: "Cetaphil Gentle Cleanser",
-    brand: "Cetaphil",
-    rating: "caution" as const,
-    date: "Today",
-    barcode: "3574661014647",
-  },
-  {
-    id: "2",
-    name: "Dr. Bronner's Soap",
-    brand: "Dr. Bronner's",
-    rating: "clean" as const,
-    date: "Yesterday",
-    barcode: "0018787764015",
-  },
-  {
-    id: "3",
-    name: "Tide Original Detergent",
-    brand: "Tide",
-    rating: "avoid" as const,
-    date: "2 days ago",
-    barcode: "0037000849629",
-  },
-];
 
 export default function ScanScreen() {
   const router = useRouter();
@@ -74,36 +47,6 @@ export default function ScanScreen() {
     }
   };
 
-  const handleRecentScanPress = (scan: (typeof MOCK_RECENT_SCANS)[0]) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push({
-      pathname: "/scan-result",
-      params: { barcode: scan.barcode },
-    });
-  };
-
-  const getRatingColor = (rating: "clean" | "caution" | "avoid") => {
-    switch (rating) {
-      case "clean":
-        return "#4CAF50";
-      case "caution":
-        return "#FFC107";
-      case "avoid":
-        return "#F44336";
-    }
-  };
-
-  const getRatingBg = (rating: "clean" | "caution" | "avoid") => {
-    switch (rating) {
-      case "clean":
-        return "bg-rating-clean/10";
-      case "caution":
-        return "bg-rating-caution/10";
-      case "avoid":
-        return "bg-rating-avoid/10";
-    }
-  };
-
   const getModeIcon = (mode: ScanMode): keyof typeof Ionicons.glyphMap => {
     switch (mode) {
       case "item":
@@ -111,7 +54,7 @@ export default function ScanScreen() {
       case "ingredients":
         return "document-text";
       case "label":
-        return "nutrition";
+        return "pricetag";
     }
   };
 
@@ -245,46 +188,15 @@ export default function ScanScreen() {
           <Text className="text-lg font-bold text-dark mb-3">
             Recent Scans
           </Text>
-          {MOCK_RECENT_SCANS.map((scan) => (
-            <TouchableOpacity
-              key={scan.id}
-              onPress={() => handleRecentScanPress(scan)}
-              activeOpacity={0.7}
-              className="bg-white rounded-2xl p-4 mb-3 flex-row items-center"
-              style={{
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.06,
-                shadowRadius: 6,
-                elevation: 2,
-              }}
-            >
-              <View
-                className={`${getRatingBg(scan.rating)} rounded-2xl w-12 h-12 items-center justify-center mr-3`}
-              >
-                <Ionicons
-                  name={
-                    scan.rating === "clean"
-                      ? "checkmark-circle"
-                      : scan.rating === "caution"
-                      ? "alert-circle"
-                      : "warning"
-                  }
-                  size={22}
-                  color={getRatingColor(scan.rating)}
-                />
-              </View>
-              <View className="flex-1">
-                <Text className="text-base font-semibold text-dark">
-                  {scan.name}
-                </Text>
-                <Text className="text-xs text-dark/50">
-                  {scan.brand} · {scan.date}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color="#999" />
-            </TouchableOpacity>
-          ))}
+          <View className="items-center py-8">
+            <Text className="text-4xl mb-3">📷</Text>
+            <Text className="text-base font-bold text-dark text-center">
+              No scans yet
+            </Text>
+            <Text className="text-sm text-dark/50 text-center mt-2 px-4">
+              Scan your first product to see it here!
+            </Text>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>

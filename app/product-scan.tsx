@@ -375,6 +375,7 @@ export default function ProductScanScreen() {
 
   // Error state
   if (state === "error") {
+    const isRateLimited = errorMessage === "RATE_LIMITED";
     return (
       <SafeAreaView className="flex-1 bg-cream">
         <View className="flex-1 items-center justify-center px-8">
@@ -389,13 +390,15 @@ export default function ProductScanScreen() {
             }}
           >
             <View className="bg-peach/10 rounded-full w-20 h-20 items-center justify-center mb-5">
-              <Ionicons name="alert-circle" size={36} color="#F4A574" />
+              <Ionicons name={isRateLimited ? "time-outline" : "alert-circle"} size={36} color="#F4A574" />
             </View>
             <Text className="text-xl font-bold text-dark mb-2">
-              {"Couldn't Identify Product"}
+              {isRateLimited ? "Oops, the scanner is busy" : "Couldn't Identify Product"}
             </Text>
             <Text className="text-sm text-dark/50 text-center mb-6 leading-5">
-              {errorMessage || "Try again with a clearer view of the product."}
+              {isRateLimited
+                ? "Try again in a moment."
+                : "Try again with a clearer view of the product."}
             </Text>
             <TouchableOpacity
               onPress={handleRetry}
@@ -407,7 +410,7 @@ export default function ProductScanScreen() {
               </Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={handleClose} className="py-2">
-              <Text className="text-dark/40 text-sm">Cancel</Text>
+              <Text className="text-dark/40 text-sm">Go Back</Text>
             </TouchableOpacity>
           </View>
         </View>

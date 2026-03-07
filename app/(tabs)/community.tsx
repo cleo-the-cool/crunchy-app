@@ -24,13 +24,29 @@ import Animated, {
 } from "react-native-reanimated";
 import {
   COMMUNITY_POSTS,
-  TRENDING_HASHTAGS,
   POST_TYPE_CONFIG,
   type CommunityPost,
   type Comment,
   type PostType,
 } from "@/data/community";
+import { useAuth } from "@/contexts/AuthContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { CardSkeleton } from "@/components";
+
+const AVATAR_EMOJI_MAP: Record<string, string> = {
+  leaf: "🌿",
+  sunflower: "🌻",
+  mushroom: "🍄",
+  avocado: "🥑",
+  butterfly: "🦋",
+  bee: "🐝",
+  cherry: "🍒",
+  rainbow: "🌈",
+  star: "⭐",
+  cactus: "🌵",
+  peach: "🍑",
+  herb: "🌱",
+};
 
 function formatTimeAgo(timestamp: string): string {
   const now = new Date();
@@ -46,8 +62,17 @@ function formatTimeAgo(timestamp: string): string {
   return date.toLocaleDateString();
 }
 
+const POST_TYPE_FILTERS: { label: string; value: PostType | "all" }[] = [
+  { label: "All", value: "all" },
+  { label: "Questions", value: "question" },
+  { label: "Reviews", value: "review" },
+  { label: "Tips", value: "tip" },
+  { label: "Recipes", value: "recipe" },
+];
+
 export default function CommunityScreen() {
   const router = useRouter();
+  const { user } = useAuth();
   const [posts, setPosts] = useState(COMMUNITY_POSTS);
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
   const [refreshing, setRefreshing] = useState(false);
@@ -56,11 +81,17 @@ export default function CommunityScreen() {
     null
   );
   const [newComment, setNewComment] = useState("");
-  const [selectedHashtag, setSelectedHashtag] = useState<string | null>(null);
+  const [selectedPostType, setSelectedPostType] = useState<PostType | "all">("all");
+  const [userProfile, setUserProfile] = useState<{ displayName: string; avatar: string } | null>(null);
 
-  // Simulate initial load
+  // Load user profile from AsyncStorage
   useState(() => {
     setTimeout(() => setIsLoading(false), 800);
+    AsyncStorage.getItem("@crunchy_onboarding_profile").then((stored) => {
+      if (stored) {
+        setUserProfile(JSON.parse(stored));
+      }
+    });
   });
 
   const onRefresh = useCallback(() => {
@@ -96,11 +127,14 @@ export default function CommunityScreen() {
   const handleAddComment = () => {
     if (!newComment.trim() || !commentSheetPostId) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const avatarEmoji = userProfile?.avatar
+      ? AVATAR_EMOJI_MAP[userProfile.avatar] ?? "🌿"
+      : "🌿";
     const comment: Comment = {
       id: `comment-new-${Date.now()}`,
-      userId: "user-me",
-      username: "you",
-      avatar: "😊",
+      userId: user?.id ?? "user-me",
+      username: userProfile?.displayName ?? user?.name ?? "You",
+      avatar: avatarEmoji,
       content: newComment.trim(),
       timestamp: new Date().toISOString(),
       likes: 0,
@@ -115,9 +149,9 @@ export default function CommunityScreen() {
     setNewComment("");
   };
 
-  const handleHashtagPress = (hashtag: string) => {
+  const handlePostTypeFilter = (type: PostType | "all") => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setSelectedHashtag(selectedHashtag === hashtag ? null : hashtag);
+    setSelectedPostType(type);
   };
 
   const handleReportPost = (postId: string) => {
@@ -162,17 +196,17 @@ export default function CommunityScreen() {
 
   const handleUserPress = (userId: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push(`/user-profile?userId=${userId}`);
+    if (userId === user?.id) {
+      router.push("/(tabs)/profile");
+    } else {
+      router.push(`/user-profile?userId=${userId}`);
+    }
   };
 
   const filteredPosts = useMemo(() => {
-    if (!selectedHashtag) return posts;
-    return posts.filter((p) =>
-      p.hashtags.some(
-        (h) => h.toLowerCase() === selectedHashtag.toLowerCase()
-      )
-    );
-  }, [posts, selectedHashtag]);
+    if (selectedPostType === "all") return posts;
+    return posts.filter((p) => p.postType === selectedPostType);
+  }, [posts, selectedPostType]);
 
   const commentSheetPost = commentSheetPostId
     ? posts.find((p) => p.id === commentSheetPostId)
@@ -188,19 +222,19 @@ export default function CommunityScreen() {
         </Text>
       </View>
 
-      {/* Trending Hashtags */}
+      {/* Post Type Filters */}
       <View className="mt-2">
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}
         >
-          {TRENDING_HASHTAGS.map((tag) => {
-            const isActive = selectedHashtag === tag;
+          {POST_TYPE_FILTERS.map((filter) => {
+            const isActive = selectedPostType === filter.value;
             return (
               <TouchableOpacity
-                key={tag}
-                onPress={() => handleHashtagPress(tag)}
+                key={filter.value}
+                onPress={() => handlePostTypeFilter(filter.value)}
                 className={`px-4 py-2 rounded-full ${
                   isActive ? "bg-sage" : "bg-white"
                 }`}
@@ -217,7 +251,7 @@ export default function CommunityScreen() {
                     isActive ? "text-white" : "text-sage"
                   }`}
                 >
-                  {tag}
+                  {filter.label}
                 </Text>
               </TouchableOpacity>
             );
@@ -269,7 +303,6 @@ export default function CommunityScreen() {
                 isLiked={likedPosts.has(post.id)}
                 onLike={() => handleLike(post.id)}
                 onComment={() => handleOpenComments(post.id)}
-                onHashtagPress={handleHashtagPress}
                 onUserPress={handleUserPress}
                 onReport={() => handleReportPost(post.id)}
               />
@@ -359,10 +392,6 @@ export default function CommunityScreen() {
                     {item.content}
                   </Text>
                   <View className="flex-row items-center mt-2 gap-3">
-                    <View className="flex-row items-center gap-1">
-                      <Ionicons name="heart-outline" size={14} color="#999" />
-                      <Text className="text-xs text-dark/40">{item.likes}</Text>
-                    </View>
                     <TouchableOpacity
                       onPress={() => handleReportComment(item.id)}
                       hitSlop={8}
@@ -448,7 +477,6 @@ function PostCard({
   isLiked,
   onLike,
   onComment,
-  onHashtagPress,
   onUserPress,
   onReport,
 }: {
@@ -456,7 +484,6 @@ function PostCard({
   isLiked: boolean;
   onLike: () => void;
   onComment: () => void;
-  onHashtagPress: (tag: string) => void;
   onUserPress: (userId: string) => void;
   onReport: () => void;
 }) {
@@ -526,9 +553,7 @@ function PostCard({
       {post.hashtags.length > 0 && (
         <View className="flex-row flex-wrap mt-3" style={{ gap: 6 }}>
           {post.hashtags.map((tag) => (
-            <TouchableOpacity key={tag} onPress={() => onHashtagPress(tag)}>
-              <Text className="text-xs font-medium text-sage">{tag}</Text>
-            </TouchableOpacity>
+            <Text key={tag} className="text-xs font-medium text-sage">{tag}</Text>
           ))}
         </View>
       )}
