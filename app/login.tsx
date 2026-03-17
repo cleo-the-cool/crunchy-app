@@ -11,12 +11,13 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import * as AppleAuthentication from "expo-apple-authentication";
 import { SafeAreaWrapper, Button } from "@/components";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { signIn } = useAuth();
+  const { signIn, appleSignIn } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -42,6 +43,22 @@ export default function LoginScreen() {
       router.replace("/(tabs)");
     } catch (err: any) {
       Alert.alert("Login Failed", err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleAppleSignIn() {
+    setLoading(true);
+    try {
+      await appleSignIn();
+      router.replace("/(tabs)");
+    } catch (err: any) {
+      if (err.code === "ERR_REQUEST_CANCELED") {
+        // User cancelled - do nothing
+      } else {
+        Alert.alert("Apple Sign In Failed", err.message || "Something went wrong");
+      }
     } finally {
       setLoading(false);
     }
@@ -84,16 +101,18 @@ export default function LoginScreen() {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => handleOAuthMock("Apple")}
-              activeOpacity={0.8}
-              className="flex-row items-center justify-center py-4 rounded-3xl border-2 border-sage/15 bg-cream"
-            >
-              <Ionicons name="logo-apple" size={20} color="#000000" />
-              <Text className="text-base font-semibold text-dark ml-3">
-                Continue with Apple
-              </Text>
-            </TouchableOpacity>
+            {Platform.OS === "ios" && (
+              <TouchableOpacity
+                onPress={handleAppleSignIn}
+                activeOpacity={0.8}
+                className="flex-row items-center justify-center py-4 rounded-3xl border-2 border-sage/15 bg-cream"
+              >
+                <Ionicons name="logo-apple" size={20} color="#000000" />
+                <Text className="text-base font-semibold text-dark ml-3">
+                  Continue with Apple
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           {/* Divider */}

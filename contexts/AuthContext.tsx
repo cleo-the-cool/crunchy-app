@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as AppleAuthentication from "expo-apple-authentication";
+import { Platform } from "react-native";
 
 type User = {
   id: string;
@@ -12,6 +14,7 @@ type AuthContextType = {
   isLoading: boolean;
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
+  appleSignIn: () => Promise<void>;
   signOut: () => Promise<void>;
   deleteAccount: () => Promise<void>;
 };
@@ -19,6 +22,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 const AUTH_STORAGE_KEY = "@crunchy_auth_user";
+const APPLE_USER_CACHE_KEY = "@crunchy_apple_user_cache";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -95,6 +99,62 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(existingUser);
   }
 
+  async function appleSignIn() {
+    if (Platform.OS !== "ios") {
+      throw new Error("Apple Sign In is only available on iOS");
+    }
+
+    const isAvailable = await AppleAuthentication.isAvailableAsync();
+    if (!isAvailable) {
+      throw new Error("Apple Sign In is not available on this device");
+    }
+
+    const credential = await AppleAuthentication.signInAsync({
+      requestedScopes: [
+        AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+        AppleAuthentication.AppleAuthenticationScope.EMAIL,
+      ],
+    });
+
+    // Apple only provides email/name on FIRST sign-in, so we cache it
+    const appleUserId = credential.user;
+    let email = credential.email;
+    let name = credential.fullName
+      ? [credential.fullName.givenName, credential.fullName.familyName]
+          .filter(Boolean)
+          .join(" ")
+      : null;
+
+    // If Apple didn't give us email/name, try to load from cache
+    if (!email || !name) {
+      const cached = await AsyncStorage.getItem(
+        `${APPLE_USER_CACHE_KEY}_${appleUserId}`
+      );
+      if (cached) {
+        const cachedData = JSON.parse(cached);
+        if (!email) email = cachedData.email;
+        if (!name) name = cachedData.name;
+      }
+    }
+
+    // Cache the Apple user data for future sign-ins
+    if (email || name) {
+      await AsyncStorage.setItem(
+        `${APPLE_USER_CACHE_KEY}_${appleUserId}`,
+        JSON.stringify({ email: email || "", name: name || "" })
+      );
+    }
+
+    const appleUser: User = {
+      id: `apple_${appleUserId}`,
+      email: email || `${appleUserId}@privaterelay.appleid.com`,
+      name: name || "Apple User",
+    };
+
+    await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(appleUser));
+    setUser(appleUser);
+  }
+
   async function signOut() {
     await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
     setUser(null);
@@ -118,7 +178,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, signUp, signIn, signOut, deleteAccount }}>
+    <AuthContext.Provider value={{ user, isLoading, signUp, signIn, appleSignIn, signOut, deleteAccount }}>
       {children}
     </AuthContext.Provider>
   );
