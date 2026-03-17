@@ -136,5 +136,12 @@ export function buildConcernsPrompt(concerns: CrunchyConcerns): string {
 
   return `\nThe user specifically cares about: ${active.join(", ")}.
 The user does NOT prioritize: ${inactive.join(", ")}.
-Weight the crunchy score heavily toward the user's concerns. Issues in non-prioritized categories should have minimal impact on the score.`;
+Weight the crunchy score heavily toward the user's concerns. Issues in non-prioritized categories should have minimal impact on the score.
+
+CRITICAL - FILTER YOUR OUTPUT BY USER PREFERENCES:
+- The "concerns" array should ONLY contain concerns relevant to the user's selected categories: ${active.join(", ")}.
+- Do NOT include concerns about categories the user did not select (${inactive.join(", ")}).
+- Only flag ingredients as "concern" or "toxic" if the issue relates to the user's selected categories.
+- For example: if the user only selected "Toxins & Chemicals", do NOT flag high sugar, high sodium, calorie content, or environmental issues as concerns — those belong to other categories the user did not select.
+- Keep the analysis focused: irrelevant category concerns should not appear in the output at all.`;
 }

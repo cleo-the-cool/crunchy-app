@@ -102,11 +102,19 @@ const JSON_SCHEMA = `{
   "category": "string (Food, Drinks, Skincare, Makeup, Cleaning, Personal Care, Clothing, Home, Baby, Cookware, Drinkware, Other)",
   "rating": "clean | caution | avoid",
   "crunchyScore": number (1-100, higher = cleaner),
-  "ingredients": [{"name": "string", "risk": "safe | concern | toxic", "explanation": "string"}],
+  "ingredients": [{"name": "string", "risk": "safe | concern | toxic", "explanation": "string"}], // ingredients array MUST have at least 5 entries
   "concerns": ["string"],
   "cleanAlternatives": ["string"],
   "summary": "string (1-2 sentence summary)"
 }`;
+
+const INGREDIENTS_REQUIREMENT = `
+CRITICAL INGREDIENT REQUIREMENTS:
+- ALWAYS return at least 5-10 ingredients in the ingredients array. NEVER return an empty ingredients array.
+- If you cannot identify the exact ingredients, list the TYPICAL ingredients for this type of product.
+- For food items: include common ingredients like oils, sugars, preservatives, emulsifiers, flavorings, and stabilizers that are typical for this product category.
+- For non-food items: include typical materials, chemicals, coatings, and compounds used in this product category.
+- Be thorough: it is better to list likely typical ingredients than to return too few or none.`;
 
 const SCAN_PROMPTS: Record<ScanMode, string> = {
   item: `You are an expert clean living product analyst with extensive knowledge of consumer products, their ingredients, and materials.
@@ -119,6 +127,7 @@ The user has photographed a product. Your job:
 
 ${PRODUCT_TYPES}
 ${MATERIAL_ANALYSIS}
+${INGREDIENTS_REQUIREMENT}
 ${SCORE_CALIBRATION}
 Return a JSON object with this exact structure:
 ${JSON_SCHEMA}`,
@@ -127,6 +136,7 @@ ${JSON_SCHEMA}`,
 Read and analyze every ingredient visible in the photo. Use your knowledge base to identify the product if possible.
 ${PRODUCT_TYPES}
 For clothing: analyze fabric composition, dyes, chemical treatments (formaldehyde, PFAS, etc.).
+${INGREDIENTS_REQUIREMENT}
 ${SCORE_CALIBRATION}
 Return a JSON object with this exact structure:
 ${JSON_SCHEMA}`,
@@ -135,12 +145,14 @@ ${JSON_SCHEMA}`,
 Analyze the claims, certifications, and nutritional information visible. Use your knowledge base for the product.
 ${PRODUCT_TYPES}
 ${MATERIAL_ANALYSIS}
+${INGREDIENTS_REQUIREMENT}
 ${SCORE_CALIBRATION}
 Return a JSON object with this exact structure:
 ${JSON_SCHEMA}`,
 
   barcode: `You are a clean living food and product analyst. The user scanned a barcode and we found product data.
 Analyze the ingredients for health, toxicity, and safety concerns.
+${INGREDIENTS_REQUIREMENT}
 ${SCORE_CALIBRATION}
 Return a JSON object with this exact structure:
 ${JSON_SCHEMA}`,
@@ -671,7 +683,7 @@ ${JSON_SCHEMA}` + (concernsPrompt || "");
 export function buildFocusPrompt(focus: string): string {
   switch (focus) {
     case "body":
-      return "\n\nFOCUS: Analyze ONLY chemicals and ingredients harmful to human health. Ignore environmental concerns. Weight the score entirely on body toxicity.";
+      return "\n\nFOCUS: Analyze ONLY chemicals and ingredients harmful to human health. Ignore environmental concerns. Weight the score entirely on body toxicity. Do NOT include nutritional concerns like sugar, sodium, or calorie content. Only flag actual toxic chemicals, endocrine disruptors, carcinogens, and harmful additives.";
     case "environmental":
       return "\n\nFOCUS: Analyze ONLY environmental impact, sustainability, packaging waste, and ecological harm. Weight the score entirely on environmental concerns.";
     case "quick":
