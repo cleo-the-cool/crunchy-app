@@ -312,35 +312,41 @@ export default function ScanScreen() {
       </View>
 
       {/* Concern Focus Chips */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}
-        className="mb-3"
-      >
-        {SCAN_FOCUS_OPTIONS.map((opt) => (
-          <TouchableOpacity
-            key={opt.key}
-            onPress={() => {
-              setScanFocus(opt.key);
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            }}
-            className="rounded-full px-4 py-2"
-            style={
-              scanFocus === opt.key
-                ? { backgroundColor: "#3D5A3E" }
-                : { backgroundColor: "white", borderWidth: 1, borderColor: "rgba(0,0,0,0.12)" }
-            }
-          >
-            <Text
-              className="text-xs font-semibold"
-              style={{ color: scanFocus === opt.key ? "white" : "#2D2D2D" }}
+      <View style={{ height: 36, marginBottom: 12 }}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 20, gap: 8, alignItems: "center" }}
+          style={{ flexGrow: 0 }}
+        >
+          {SCAN_FOCUS_OPTIONS.map((opt) => (
+            <TouchableOpacity
+              key={opt.key}
+              onPress={() => {
+                setScanFocus(opt.key);
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              }}
+              style={[
+                {
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  borderRadius: 9999,
+                },
+                scanFocus === opt.key
+                  ? { backgroundColor: "#3D5A3E" }
+                  : { backgroundColor: "white", borderWidth: 1, borderColor: "rgba(0,0,0,0.12)" },
+              ]}
             >
-              {opt.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+              <Text
+                className="text-xs font-semibold"
+                style={{ color: scanFocus === opt.key ? "white" : "#2D2D2D" }}
+              >
+                {opt.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
 
       {/* Scan Limit Indicator (free tier) */}
       {tier === "free" && (
