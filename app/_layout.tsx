@@ -6,7 +6,18 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { InterestsProvider } from "@/contexts/InterestsContext";
 import { PreferencesProvider } from "@/contexts/PreferencesContext";
-import { View, ActivityIndicator } from "react-native";
+import { View, ActivityIndicator, Text } from "react-native";
+import { useNetworkStatus } from "@/lib/useNetworkStatus";
+
+function OfflineBanner() {
+  const { isConnected, isChecking } = useNetworkStatus();
+  if (isChecking || isConnected) return null;
+  return (
+    <View className="bg-amber-400 py-2 px-4 items-center">
+      <Text className="text-amber-900 text-sm font-medium">No internet connection</Text>
+    </View>
+  );
+}
 
 function RootNavigator() {
   const { user, isLoading } = useAuth();
@@ -42,8 +53,9 @@ function RootNavigator() {
   }
 
   return (
-    <>
+    <View className="flex-1">
       <StatusBar style="dark" />
+      <OfflineBanner />
       <Stack
         screenOptions={{
           headerShown: false,
@@ -51,7 +63,7 @@ function RootNavigator() {
           animationDuration: 250,
         }}
       />
-    </>
+    </View>
   );
 }
 

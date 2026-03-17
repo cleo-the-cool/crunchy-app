@@ -104,7 +104,7 @@ export default function TermsOfServiceScreen() {
 
         <Section title="13. Contact">
           For questions about these Terms of Service, please contact us at:{"\n"}
-          <Text className="text-forest font-semibold">cleothecoolest@proton.me</Text>
+          <Text className="text-forest font-semibold">hello@crunchyliving.app</Text>
         </Section>
       </ScrollView>
     </SafeAreaView>

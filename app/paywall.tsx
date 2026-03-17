@@ -131,7 +131,7 @@ export default function PaywallScreen() {
     setLoading(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    // Mock subscription delay
+    // TODO: Replace with real IAP when ready
     await new Promise((r) => setTimeout(r, 1500));
 
     await subscribe(selectedTier);

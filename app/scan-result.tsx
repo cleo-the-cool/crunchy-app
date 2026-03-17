@@ -146,7 +146,7 @@ export default function ScanResultScreen() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Build display product from either barcode data (Gemini analysis) or mock product data
+  // Build display product from either barcode data (Gemini analysis) or fallback product data
   let product: DisplayProduct;
 
   if (barcodeData) {
@@ -176,10 +176,10 @@ export default function ScanResultScreen() {
       product = { ...fallback, concerns: [], summary: "" };
     }
   } else {
-    const mockProduct = barcode
+    const fallbackProduct = barcode
       ? findProductByBarcode(barcode) ?? getDefaultProduct(barcode)
       : getDefaultProduct("unknown");
-    product = { ...mockProduct, concerns: [], summary: "" };
+    product = { ...fallbackProduct, concerns: [], summary: "" };
   }
 
   // Auto-save to scan history (only once per mount, skip for history views)

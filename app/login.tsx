@@ -64,10 +64,6 @@ export default function LoginScreen() {
     }
   }
 
-  function handleOAuthMock(provider: string) {
-    Alert.alert("Coming Soon", `${provider} sign-in will be available soon!`);
-  }
-
   return (
     <SafeAreaWrapper>
       <KeyboardAvoidingView
@@ -90,17 +86,6 @@ export default function LoginScreen() {
 
           {/* OAuth Buttons */}
           <View className="gap-3 mb-6">
-            <TouchableOpacity
-              onPress={() => handleOAuthMock("Google")}
-              activeOpacity={0.8}
-              className="flex-row items-center justify-center py-4 rounded-3xl border-2 border-sage/15 bg-cream"
-            >
-              <Ionicons name="logo-google" size={20} color="#4285F4" />
-              <Text className="text-base font-semibold text-dark ml-3">
-                Continue with Google
-              </Text>
-            </TouchableOpacity>
-
             {Platform.OS === "ios" && (
               <TouchableOpacity
                 onPress={handleAppleSignIn}

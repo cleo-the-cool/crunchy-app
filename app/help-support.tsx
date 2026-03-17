@@ -10,7 +10,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useGoBack } from "@/lib/useGoBack";
 
-const CONTACT_EMAIL = "cleothecoolest@proton.me";
+const CONTACT_EMAIL = "hello@crunchyliving.app";
 
 const FAQ_ITEMS = [
   {
