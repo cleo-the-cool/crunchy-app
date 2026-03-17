@@ -58,12 +58,12 @@ export default function RecipeDetailScreen() {
 
   if (!recipe) {
     return (
-      <SafeAreaView className="flex-1 bg-cream items-center justify-center">
+      <SafeAreaView className="flex-1 bg-ivory items-center justify-center">
         <Text className="text-5xl mb-4">🤔</Text>
         <Text className="text-lg font-bold text-dark">Recipe not found</Text>
         <TouchableOpacity
           onPress={goBack}
-          className="bg-sage rounded-2xl px-6 py-3 mt-4"
+          className="bg-forest rounded-3xl px-6 py-3 mt-4"
         >
           <Text className="text-white font-semibold">Go Back</Text>
         </TouchableOpacity>
@@ -123,22 +123,22 @@ export default function RecipeDetailScreen() {
   const displayMadeItCount = recipe.madeItCount + (madeIt ? 1 : 0);
 
   return (
-    <SafeAreaView className="flex-1 bg-cream">
+    <SafeAreaView className="flex-1 bg-ivory">
       {/* Header */}
       <View className="px-5 pt-3 pb-2 flex-row items-center justify-between">
         <TouchableOpacity onPress={goBack} hitSlop={8}>
-          <Ionicons name="arrow-back" size={24} color="#2D2D2D" />
+          <Ionicons name="arrow-back" size={24} color="#3D5A3E" />
         </TouchableOpacity>
         <View className="flex-row gap-4">
           <TouchableOpacity onPress={handleSave} hitSlop={8}>
             <Ionicons
               name={isSaved ? "heart" : "heart-outline"}
               size={24}
-              color={isSaved ? "#E57373" : "#2D2D2D"}
+              color={isSaved ? "#E57373" : "#3D5A3E"}
             />
           </TouchableOpacity>
           <TouchableOpacity onPress={handleShare} hitSlop={8}>
-            <Ionicons name="share-outline" size={24} color="#2D2D2D" />
+            <Ionicons name="share-outline" size={24} color="#3D5A3E" />
           </TouchableOpacity>
         </View>
       </View>
@@ -151,27 +151,24 @@ export default function RecipeDetailScreen() {
         {/* Hero Image */}
         <View
           className="mx-5 h-48 rounded-3xl items-center justify-center"
-          style={{ backgroundColor: "#8B9E7C15" }}
+          style={{ backgroundColor: "#3D5A3E15" }}
         >
           <Text className="text-7xl">{recipe.image}</Text>
         </View>
 
         {/* Title & Meta */}
         <View className="px-5 mt-4">
-          <Text className="text-2xl font-bold text-dark">{recipe.title}</Text>
+          <Text className="text-2xl font-bold text-dark" style={{ fontFamily: 'Georgia' }}>{recipe.title}</Text>
           <Text className="text-sm text-dark/50 mt-1 leading-5">
             {recipe.description}
           </Text>
 
           {/* Meta Info */}
           <View
-            className="flex-row mt-4 bg-white rounded-2xl p-4"
+            className="flex-row mt-4 bg-white rounded-3xl p-4"
             style={{
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.06,
-              shadowRadius: 6,
-              elevation: 2,
+              borderWidth: 1,
+        borderColor: "rgba(0,0,0,0.12)",
             }}
           >
             <View className="flex-1 items-center">
@@ -181,7 +178,7 @@ export default function RecipeDetailScreen() {
             <View className="w-px bg-dark/10" />
             <View className="flex-1 items-center">
               <View className="flex-row items-center gap-1">
-                <Ionicons name="time-outline" size={16} color="#8B9E7C" />
+                <Ionicons name="time-outline" size={16} color="#3D5A3E" />
                 <Text className="text-sm font-semibold text-dark">
                   {recipe.timeMinutes} min
                 </Text>
@@ -191,7 +188,7 @@ export default function RecipeDetailScreen() {
             <View className="w-px bg-dark/10" />
             <View className="flex-1 items-center">
               <View className="flex-row items-center gap-1">
-                <Ionicons name="wallet-outline" size={16} color="#8B9E7C" />
+                <Ionicons name="wallet-outline" size={16} color="#3D5A3E" />
                 <Text className="text-sm font-semibold text-dark">
                   {recipe.costEstimate}
                 </Text>
@@ -204,9 +201,9 @@ export default function RecipeDetailScreen() {
         {/* Cost Comparison */}
         <View className="px-5 mt-4">
           <View
-            className="bg-sage/10 rounded-2xl p-4 flex-row items-center"
+            className="bg-forest/8 rounded-3xl p-4 flex-row items-center"
           >
-            <Ionicons name="trending-down" size={24} color="#8B9E7C" />
+            <Ionicons name="trending-down" size={24} color="#3D5A3E" />
             <View className="ml-3 flex-1">
               <Text className="text-sm font-semibold text-dark">
                 Save money making your own!
@@ -220,17 +217,14 @@ export default function RecipeDetailScreen() {
 
         {/* Ingredients */}
         <View className="px-5 mt-6">
-          <Text className="text-lg font-bold text-dark mb-3">
+          <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: 'Georgia' }}>
             Ingredients
           </Text>
           <View
-            className="bg-white rounded-2xl p-4"
+            className="bg-white rounded-3xl p-4"
             style={{
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.06,
-              shadowRadius: 6,
-              elevation: 2,
+              borderWidth: 1,
+        borderColor: "rgba(0,0,0,0.12)",
             }}
           >
             {recipe.ingredients.map((ing, index) => {
@@ -248,13 +242,13 @@ export default function RecipeDetailScreen() {
                 >
                   <View
                     className={`w-6 h-6 rounded-md items-center justify-center mr-3 mt-0.5 ${
-                      isChecked ? "bg-sage" : "bg-sage/15"
+                      isChecked ? "bg-forest" : "bg-forest/10"
                     }`}
                   >
                     {isChecked ? (
                       <Ionicons name="checkmark" size={14} color="white" />
                     ) : (
-                      <Ionicons name="leaf" size={12} color="#8B9E7C" />
+                      <Ionicons name="leaf" size={12} color="#3D5A3E" />
                     )}
                   </View>
                   <View className="flex-1">
@@ -284,25 +278,22 @@ export default function RecipeDetailScreen() {
 
         {/* Steps */}
         <View className="px-5 mt-6">
-          <Text className="text-lg font-bold text-dark mb-3">
+          <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: 'Georgia' }}>
             Instructions
           </Text>
           <View style={{ gap: 12 }}>
             {recipe.steps.map((step) => (
               <View
                 key={step.step}
-                className="bg-white rounded-2xl p-4"
+                className="bg-white rounded-3xl p-4"
                 style={{
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.06,
-                  shadowRadius: 6,
-                  elevation: 2,
+                  borderWidth: 1,
+        borderColor: "rgba(0,0,0,0.12)",
                 }}
               >
                 <View className="flex-row items-start">
                   <View
-                    className="w-8 h-8 rounded-full bg-sage items-center justify-center mr-3"
+                    className="w-8 h-8 rounded-full bg-forest items-center justify-center mr-3"
                   >
                     <Text className="text-sm font-bold text-white">
                       {step.step}
@@ -313,13 +304,13 @@ export default function RecipeDetailScreen() {
                       {step.instruction}
                     </Text>
                     {step.tip && (
-                      <View className="flex-row items-start mt-2 bg-peach/10 rounded-xl p-2.5">
+                      <View className="flex-row items-start mt-2 bg-gold/10 rounded-xl p-2.5">
                         <Ionicons
                           name="bulb-outline"
                           size={14}
-                          color="#F4A574"
+                          color="#C4A76C"
                         />
-                        <Text className="text-xs text-peach-dark ml-2 flex-1">
+                        <Text className="text-xs text-gold-dark ml-2 flex-1">
                           {step.tip}
                         </Text>
                       </View>
@@ -334,17 +325,14 @@ export default function RecipeDetailScreen() {
         {/* Tips */}
         {recipe.tips.length > 0 && (
           <View className="px-5 mt-6">
-            <Text className="text-lg font-bold text-dark mb-3">
+            <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: 'Georgia' }}>
               Tips
             </Text>
             <View
-              className="bg-white rounded-2xl p-4"
+              className="bg-white rounded-3xl p-4"
               style={{
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.06,
-                shadowRadius: 6,
-                elevation: 2,
+                borderWidth: 1,
+        borderColor: "rgba(0,0,0,0.12)",
               }}
             >
               {recipe.tips.map((tip, index) => (
@@ -356,7 +344,7 @@ export default function RecipeDetailScreen() {
                       : ""
                   }`}
                 >
-                  <Text className="text-sage mr-2">•</Text>
+                  <Text className="text-forest mr-2">•</Text>
                   <Text className="text-sm text-dark/70 flex-1 leading-5">
                     {tip}
                   </Text>
@@ -371,11 +359,11 @@ export default function RecipeDetailScreen() {
           <TouchableOpacity
             onPress={handleMadeIt}
             activeOpacity={0.8}
-            className={`rounded-2xl py-4 flex-row items-center justify-center ${
-              madeIt ? "bg-sage" : "bg-peach"
+            className={`rounded-3xl py-4 flex-row items-center justify-center ${
+              madeIt ? "bg-forest" : "bg-gold"
             }`}
             style={{
-              shadowColor: madeIt ? "#8B9E7C" : "#F4A574",
+              shadowColor: madeIt ? "#3D5A3E" : "#C4A76C",
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.25,
               shadowRadius: 8,
@@ -393,8 +381,8 @@ export default function RecipeDetailScreen() {
           </TouchableOpacity>
 
           <View className="flex-row items-center justify-center mt-3">
-            <Ionicons name="people-outline" size={16} color="#8B9E7C" />
-            <Text className="text-sm text-sage ml-1.5">
+            <Ionicons name="people-outline" size={16} color="#3D5A3E" />
+            <Text className="text-sm text-forest ml-1.5">
               {displayMadeItCount.toLocaleString()} people made this
             </Text>
           </View>

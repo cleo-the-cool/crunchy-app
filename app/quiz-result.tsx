@@ -28,7 +28,7 @@ const TIER_COLORS: Record<string, string> = {
   seedling: "#A8B89C",
   sprout: "#8B9E7C",
   sapling: "#6B7E5C",
-  bloom: "#F4A574",
+  bloom: "#C4A76C",
 };
 
 function getTierDescription(tier: TierInfo): string {
@@ -63,11 +63,11 @@ function ShareableCard({
     >
       <View
         className="rounded-3xl p-8 items-center"
-        style={{ backgroundColor: "#FAF8F5" }}
+        style={{ backgroundColor: "#FFFDF8" }}
       >
         {/* App branding */}
         <View className="flex-row items-center mb-6">
-          <View className="w-8 h-8 rounded-lg bg-sage items-center justify-center mr-2">
+          <View className="w-8 h-8 rounded-lg bg-forest items-center justify-center mr-2">
             <Ionicons name="leaf" size={16} color="white" />
           </View>
           <Text className="text-lg font-bold text-dark">Crunchy</Text>
@@ -88,7 +88,7 @@ function ShareableCard({
         </View>
 
         {/* Label */}
-        <Text className="text-2xl font-bold text-dark mb-2">
+        <Text className="text-2xl font-bold text-dark mb-2" style={{ fontFamily: 'Georgia' }}>
           {tier.label}
         </Text>
         <Text className="text-sm text-dark-light text-center px-4 mb-4">
@@ -96,8 +96,8 @@ function ShareableCard({
         </Text>
 
         {/* Footer */}
-        <View className="bg-sage/10 rounded-2xl px-4 py-2">
-          <Text className="text-xs text-sage font-medium">
+        <View className="bg-forest/8 rounded-3xl px-4 py-2">
+          <Text className="text-xs text-forest font-medium">
             Take the quiz at crunchy.app
           </Text>
         </View>
@@ -222,7 +222,7 @@ export default function QuizResultScreen() {
       <View className="flex-1 px-6 pt-4">
         {/* Header */}
         <Animated.View style={labelAnimStyle} className="items-center mb-4">
-          <Text className="text-lg font-semibold text-dark">Your Crunchy Score</Text>
+          <Text className="text-lg font-semibold text-dark" style={{ fontFamily: 'Georgia' }}>Your Crunchy Score</Text>
         </Animated.View>
 
         {/* Shareable Result Card */}
@@ -230,7 +230,7 @@ export default function QuizResultScreen() {
           <View
             className="rounded-3xl overflow-hidden"
             style={{
-              shadowColor: "#000",
+              shadowColor: "#3D5A3E",
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.12,
               shadowRadius: 16,
@@ -258,7 +258,7 @@ export default function QuizResultScreen() {
         <Animated.View style={buttonsAnimStyle} className="gap-3">
           <TouchableOpacity
             onPress={handleShare}
-            className="flex-row items-center justify-center py-4 rounded-2xl bg-sage"
+            className="flex-row items-center justify-center py-4 rounded-3xl bg-forest"
             activeOpacity={0.8}
           >
             <Ionicons name="share-outline" size={20} color="white" />
@@ -289,7 +289,7 @@ export default function QuizResultScreen() {
             }
             className="items-center py-3"
           >
-            <Text className="text-sage font-medium">Skip for now</Text>
+            <Text className="text-forest font-medium">Skip for now</Text>
           </TouchableOpacity>
         </Animated.View>
       </View>

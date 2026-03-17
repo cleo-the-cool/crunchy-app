@@ -153,7 +153,7 @@ export default function PaywallScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-cream">
+    <SafeAreaView className="flex-1 bg-ivory">
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View className="flex-1">
       {/* Close Button */}
@@ -163,7 +163,7 @@ export default function PaywallScreen() {
           hitSlop={12}
           className="w-9 h-9 rounded-full bg-dark/10 items-center justify-center"
         >
-          <Ionicons name="close" size={20} color="#2D2D2D" />
+          <Ionicons name="close" size={20} color="#3D5A3E" />
         </TouchableOpacity>
       </View>
 
@@ -175,10 +175,10 @@ export default function PaywallScreen() {
       >
         {/* Header */}
         <View className="px-6 pt-2 pb-4 items-center">
-          <View className="bg-sage/15 rounded-full w-16 h-16 items-center justify-center mb-4">
-            <Ionicons name="leaf" size={32} color="#8B9E7C" />
+          <View className="bg-forest/10 rounded-full w-16 h-16 items-center justify-center mb-4">
+            <Ionicons name="leaf" size={32} color="#3D5A3E" />
           </View>
-          <Text className="text-2xl font-bold text-dark text-center">
+          <Text className="text-2xl font-bold text-dark text-center" style={{ fontFamily: 'Georgia' }}>
             Unlock Your Full{"\n"}Clean Living Journey
           </Text>
           <Text className="text-base text-dark/60 text-center mt-2">
@@ -186,8 +186,8 @@ export default function PaywallScreen() {
           </Text>
 
           {/* Social proof */}
-          <View className="flex-row items-center mt-4 bg-sage/10 rounded-full px-4 py-2">
-            <Ionicons name="people" size={16} color="#8B9E7C" />
+          <View className="flex-row items-center mt-4 bg-forest/8 rounded-full px-4 py-2">
+            <Ionicons name="people" size={16} color="#3D5A3E" />
             <Text className="text-sm text-sage-dark ml-2 font-medium">
               Join 10,000+ crunchy girls
             </Text>
@@ -199,6 +199,7 @@ export default function PaywallScreen() {
           {TIERS.map((tier) => {
             const isSelected = selectedTier === tier.id;
             const isCurrent = currentTier === tier.id;
+            const isPremium = tier.id === "premium";
 
             return (
               <TouchableOpacity
@@ -210,13 +211,13 @@ export default function PaywallScreen() {
                 activeOpacity={0.85}
                 className={`rounded-3xl p-5 mb-3 border-2 ${
                   isSelected
-                    ? tier.recommended
-                      ? "border-sage bg-white"
-                      : "border-sage bg-white"
-                    : "border-transparent bg-white"
+                    ? isPremium
+                      ? "border-gold bg-cream"
+                      : "border-forest bg-cream"
+                    : "border-transparent bg-cream"
                 }`}
                 style={{
-                  shadowColor: isSelected ? "#8B9E7C" : "#000",
+                  shadowColor: isSelected ? (isPremium ? "#C4A76C" : "#3D5A3E") : "#3D5A3E",
                   shadowOffset: { width: 0, height: isSelected ? 4 : 2 },
                   shadowOpacity: isSelected ? 0.2 : 0.06,
                   shadowRadius: isSelected ? 12 : 6,
@@ -225,7 +226,7 @@ export default function PaywallScreen() {
               >
                 {/* Recommended badge */}
                 {tier.recommended && (
-                  <View className="absolute -top-3 left-1/2 bg-sage rounded-full px-4 py-1" style={{ transform: [{ translateX: -50 }] }}>
+                  <View className="absolute -top-3 left-1/2 bg-forest rounded-full px-4 py-1" style={{ transform: [{ translateX: -50 }] }}>
                     <Text className="text-white text-xs font-bold">
                       RECOMMENDED
                     </Text>
@@ -237,11 +238,11 @@ export default function PaywallScreen() {
                     {/* Radio indicator */}
                     <View
                       className={`w-6 h-6 rounded-full border-2 items-center justify-center mr-3 ${
-                        isSelected ? "border-sage" : "border-dark/20"
+                        isSelected ? (isPremium ? "border-gold" : "border-forest") : "border-dark/20"
                       }`}
                     >
                       {isSelected && (
-                        <View className="w-3.5 h-3.5 rounded-full bg-sage" />
+                        <View className={`w-3.5 h-3.5 rounded-full ${isPremium ? "bg-gold" : "bg-forest"}`} />
                       )}
                     </View>
                     <View>
@@ -289,7 +290,7 @@ export default function PaywallScreen() {
                               : "close-circle"
                           }
                           size={18}
-                          color={feature.included ? "#4CAF50" : "#ccc"}
+                          color={feature.included ? "#3D5A3E" : "#ccc"}
                         />
                         <Text
                           className={`text-sm ml-2 ${
@@ -312,13 +313,10 @@ export default function PaywallScreen() {
         {/* Value Highlights */}
         <View className="px-5 mt-4">
           <View className="bg-white rounded-3xl p-5" style={{
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.06,
-            shadowRadius: 6,
-            elevation: 2,
+            borderWidth: 1,
+        borderColor: "rgba(0,0,0,0.12)",
           }}>
-            <Text className="text-base font-bold text-dark mb-3">
+            <Text className="text-base font-bold text-dark mb-3" style={{ fontFamily: 'Georgia' }}>
               What you get with Crunchy
             </Text>
             <ValueRow icon="scan" text="Scan any product instantly" />
@@ -330,18 +328,18 @@ export default function PaywallScreen() {
       </ScrollView>
 
       {/* Bottom CTA */}
-      <View className="px-5 pb-4 pt-2 bg-cream">
+      <View className="px-5 pb-4 pt-2 bg-ivory">
         <TouchableOpacity
           onPress={handleSubscribe}
           disabled={loading}
           activeOpacity={0.85}
-          className={`rounded-2xl py-4 items-center ${
-            selectedTier === "free" ? "bg-dark/10" : "bg-sage"
+          className={`rounded-3xl py-4 items-center ${
+            selectedTier === "free" ? "bg-dark/10" : "bg-forest"
           }`}
           style={
             selectedTier !== "free"
               ? {
-                  shadowColor: "#8B9E7C",
+                  shadowColor: "#3D5A3E",
                   shadowOffset: { width: 0, height: 4 },
                   shadowOpacity: 0.3,
                   shadowRadius: 8,
@@ -369,7 +367,7 @@ export default function PaywallScreen() {
         </TouchableOpacity>
 
         {/* Coupon Code */}
-        <View className="flex-row items-center mt-3 bg-white rounded-2xl border border-dark/10 overflow-hidden">
+        <View className="flex-row items-center mt-3 bg-white rounded-3xl border border-dark/10 overflow-hidden">
           <TextInput
             value={couponCode}
             onChangeText={(text) => {
@@ -386,7 +384,7 @@ export default function PaywallScreen() {
             disabled={!couponCode.trim()}
             className="px-4 py-3"
           >
-            <Text className={`text-sm font-bold ${couponCode.trim() ? "text-sage" : "text-dark/20"}`}>
+            <Text className={`text-sm font-bold ${couponCode.trim() ? "text-forest" : "text-dark/20"}`}>
               Apply
             </Text>
           </TouchableOpacity>
@@ -412,8 +410,8 @@ export default function PaywallScreen() {
 function ValueRow({ icon, text }: { icon: keyof typeof Ionicons.glyphMap; text: string }) {
   return (
     <View className="flex-row items-center mb-2.5">
-      <View className="bg-sage/10 rounded-full w-8 h-8 items-center justify-center mr-3">
-        <Ionicons name={icon} size={16} color="#8B9E7C" />
+      <View className="bg-forest/8 rounded-full w-8 h-8 items-center justify-center mr-3">
+        <Ionicons name={icon} size={16} color="#3D5A3E" />
       </View>
       <Text className="text-sm text-dark/80 flex-1">{text}</Text>
     </View>

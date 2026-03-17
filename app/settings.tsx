@@ -78,13 +78,13 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-cream">
+    <SafeAreaView className="flex-1 bg-ivory">
       {/* Header */}
       <View className="flex-row items-center px-6 pt-2 pb-4">
         <TouchableOpacity onPress={goBack} hitSlop={8}>
-          <Ionicons name="arrow-back" size={24} color="#2D2D2D" />
+          <Ionicons name="arrow-back" size={24} color="#3D5A3E" />
         </TouchableOpacity>
-        <Text className="text-xl font-bold text-dark ml-4">Settings</Text>
+        <Text className="text-xl font-bold text-dark ml-4" style={{ fontFamily: 'Georgia' }}>Settings</Text>
       </View>
 
       <ScrollView
@@ -94,7 +94,7 @@ export default function SettingsScreen() {
       >
         {/* ── Account ── */}
         <SectionHeader title="Account" />
-        <View className="mx-6 bg-white rounded-2xl overflow-hidden" style={cardShadow}>
+        <View className="mx-6 bg-white rounded-3xl overflow-hidden" style={cardShadow}>
           <SettingsRow
             icon="person-outline"
             label="Name"
@@ -111,19 +111,23 @@ export default function SettingsScreen() {
             icon="star-outline"
             label="Subscription"
             value="Free Plan"
-            valueColor="#8B9E7C"
+            valueColor="#3D5A3E"
           />
         </View>
 
         {/* ── Preferences ── */}
         <SectionHeader title="Preferences" />
-        <View className="mx-6 bg-white rounded-2xl overflow-hidden" style={cardShadow}>
+        <View className="mx-6 bg-white rounded-3xl overflow-hidden" style={cardShadow}>
           <TouchableOpacity onPress={() => router.push("/edit-profile")}>
             <SettingsRow icon="create-outline" label="Edit Profile" chevron />
           </TouchableOpacity>
           <Divider />
           <TouchableOpacity onPress={() => router.push({ pathname: "/interests", params: { from: "settings" } })}>
             <SettingsRow icon="heart-outline" label="My Interests" chevron />
+          </TouchableOpacity>
+          <Divider />
+          <TouchableOpacity onPress={() => router.push({ pathname: "/onboarding-preferences", params: { from: "settings" } })}>
+            <SettingsRow icon="shield-outline" label="Scan Preferences" chevron />
           </TouchableOpacity>
           <Divider />
           <SettingsToggle
@@ -162,7 +166,7 @@ export default function SettingsScreen() {
 
         {/* ── Legal ── */}
         <SectionHeader title="Legal" />
-        <View className="mx-6 bg-white rounded-2xl overflow-hidden" style={cardShadow}>
+        <View className="mx-6 bg-white rounded-3xl overflow-hidden" style={cardShadow}>
           <TouchableOpacity onPress={() => router.push("/privacy-policy")}>
             <SettingsRow icon="document-text-outline" label="Privacy Policy" chevron />
           </TouchableOpacity>
@@ -174,7 +178,7 @@ export default function SettingsScreen() {
 
         {/* ── Support ── */}
         <SectionHeader title="Support" />
-        <View className="mx-6 bg-white rounded-2xl overflow-hidden" style={cardShadow}>
+        <View className="mx-6 bg-white rounded-3xl overflow-hidden" style={cardShadow}>
           <TouchableOpacity onPress={() => router.push("/help-support")}>
             <SettingsRow icon="help-circle-outline" label="Help & Support" chevron />
           </TouchableOpacity>
@@ -184,8 +188,8 @@ export default function SettingsScreen() {
 
         {/* ── About Crunchy ── */}
         <SectionHeader title="About Crunchy" />
-        <View className="mx-6 bg-white rounded-2xl overflow-hidden" style={cardShadow}>
-          <SettingsRow icon="leaf-outline" label="App" value="Crunchy" valueColor="#8B9E7C" />
+        <View className="mx-6 bg-white rounded-3xl overflow-hidden" style={cardShadow}>
+          <SettingsRow icon="leaf-outline" label="App" value="Crunchy" valueColor="#3D5A3E" />
           <Divider />
           <SettingsRow icon="information-circle-outline" label="Version" value="1.0.0" />
         </View>
@@ -194,12 +198,12 @@ export default function SettingsScreen() {
         <View className="mx-6 mt-6">
           <TouchableOpacity
             onPress={handleLogout}
-            className="bg-white rounded-2xl py-4 items-center"
+            className="bg-white rounded-3xl py-4 items-center"
             style={cardShadow}
           >
             <View className="flex-row items-center">
-              <Ionicons name="log-out-outline" size={20} color="#8B9E7C" />
-              <Text className="text-base font-semibold text-sage ml-2">
+              <Ionicons name="log-out-outline" size={20} color="#3D5A3E" />
+              <Text className="text-base font-semibold text-forest ml-2">
                 Log Out
               </Text>
             </View>
@@ -208,7 +212,7 @@ export default function SettingsScreen() {
 
         {/* ── Danger Zone ── */}
         <DangerZoneHeader />
-        <View className="mx-6 bg-white rounded-2xl overflow-hidden" style={dangerCardShadow}>
+        <View className="mx-6 bg-white rounded-3xl overflow-hidden" style={dangerCardShadow}>
           <TouchableOpacity
             onPress={handleDeleteAccount}
             className="flex-row items-center px-4 py-4"
@@ -233,11 +237,8 @@ export default function SettingsScreen() {
 }
 
 const cardShadow = {
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.06,
-  shadowRadius: 6,
-  elevation: 2,
+  borderWidth: 1,
+  borderColor: "rgba(0,0,0,0.12)",
 };
 
 const dangerCardShadow = {
@@ -252,7 +253,7 @@ const dangerCardShadow = {
 
 function SectionHeader({ title }: { title: string }) {
   return (
-    <Text className="text-sm font-semibold text-dark/40 uppercase tracking-wider px-6 mt-6 mb-2">
+    <Text className="text-sm font-semibold text-dark/40 uppercase tracking-wider px-6 mt-6 mb-2" style={{ fontFamily: 'Georgia' }}>
       {title}
     </Text>
   );
@@ -262,7 +263,7 @@ function DangerZoneHeader() {
   return (
     <Text
       className="text-sm font-semibold uppercase tracking-wider px-6 mt-8 mb-2"
-      style={{ color: "#EF4444" }}
+      style={{ color: "#EF4444", fontFamily: 'Georgia' }}
     >
       Danger Zone
     </Text>
@@ -289,7 +290,7 @@ function SettingsRow({
   return (
     <View className="flex-row items-center px-4 py-3.5">
       <View className="w-8 items-center">
-        <Ionicons name={icon} size={20} color="#8B9E7C" />
+        <Ionicons name={icon} size={20} color="#3D5A3E" />
       </View>
       <Text className="text-base text-dark ml-2 flex-1">{label}</Text>
       {value && (
@@ -323,7 +324,7 @@ function SettingsToggle({
   return (
     <View className="flex-row items-center px-4 py-3">
       <View className="w-8 items-center">
-        <Ionicons name={icon} size={20} color="#8B9E7C" />
+        <Ionicons name={icon} size={20} color="#3D5A3E" />
       </View>
       <View className="flex-1 ml-2">
         <Text className="text-base text-dark">{label}</Text>
@@ -332,7 +333,7 @@ function SettingsToggle({
       <Switch
         value={value}
         onValueChange={onToggle}
-        trackColor={{ false: "#ddd", true: "#8B9E7C" }}
+        trackColor={{ false: "#ddd", true: "#3D5A3E" }}
         thumbColor="white"
       />
     </View>

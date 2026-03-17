@@ -145,7 +145,7 @@ export default function RecipesScreen() {
     filterTime !== null;
 
   return (
-    <SafeAreaView className="flex-1 bg-cream">
+    <SafeAreaView className="flex-1 bg-ivory">
       {/* Header */}
       <View className="px-5 pt-3 pb-2 flex-row items-center">
         <TouchableOpacity
@@ -153,10 +153,10 @@ export default function RecipesScreen() {
           hitSlop={8}
           className="mr-3"
         >
-          <Ionicons name="arrow-back" size={24} color="#2D2D2D" />
+          <Ionicons name="arrow-back" size={24} color="#3D5A3E" />
         </TouchableOpacity>
         <View className="flex-1">
-          <Text className="text-2xl font-bold text-dark">DIY Recipes</Text>
+          <Text className="text-2xl font-bold text-dark" style={{ fontFamily: 'Georgia' }}>DIY Recipes</Text>
           <Text className="text-sm text-dark/50 mt-0.5">
             Make your own clean products
           </Text>
@@ -166,16 +166,13 @@ export default function RecipesScreen() {
       {/* Search Bar */}
       <View className="px-5 mt-2">
         <View
-          className="bg-white rounded-2xl flex-row items-center px-4 py-3"
+          className="bg-white rounded-3xl flex-row items-center px-4 py-3"
           style={{
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.06,
-            shadowRadius: 6,
-            elevation: 2,
+            borderWidth: 1,
+        borderColor: "rgba(0,0,0,0.12)",
           }}
         >
-          <Ionicons name="search" size={20} color="#999" />
+          <Ionicons name="search" size={20} color="#A8B89C" />
           <TextInput
             className="flex-1 ml-3 text-base text-dark"
             placeholder="Search recipes..."
@@ -186,7 +183,7 @@ export default function RecipesScreen() {
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={() => setSearchQuery("")}>
-              <Ionicons name="close-circle" size={20} color="#999" />
+              <Ionicons name="close-circle" size={20} color="#A8B89C" />
             </TouchableOpacity>
           )}
         </View>
@@ -200,7 +197,7 @@ export default function RecipesScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#8B9E7C"
+            tintColor="#3D5A3E"
           />
         }
         keyboardShouldPersistTaps="handled"
@@ -219,11 +216,11 @@ export default function RecipesScreen() {
                   key={cat.name}
                   onPress={() => handleCategoryPress(cat.name)}
                   activeOpacity={0.7}
-                  className={`rounded-2xl px-4 py-2.5 flex-row items-center ${
-                    isSelected ? "bg-sage" : "bg-white"
+                  className={`rounded-3xl px-4 py-2.5 flex-row items-center ${
+                    isSelected ? "bg-forest" : "bg-cream"
                   }`}
                   style={{
-                    shadowColor: "#000",
+                    shadowColor: "#3D5A3E",
                     shadowOffset: { width: 0, height: 1 },
                     shadowOpacity: 0.04,
                     shadowRadius: 4,
@@ -260,10 +257,10 @@ export default function RecipesScreen() {
                     setFilterDifficulty(opt.value as Difficulty | "all")
                   }
                   className={`px-3.5 py-1.5 rounded-full ${
-                    isActive ? "bg-peach" : "bg-white"
+                    isActive ? "bg-gold" : "bg-cream"
                   }`}
                   style={{
-                    shadowColor: "#000",
+                    shadowColor: "#3D5A3E",
                     shadowOffset: { width: 0, height: 1 },
                     shadowOpacity: 0.04,
                     shadowRadius: 4,
@@ -288,10 +285,10 @@ export default function RecipesScreen() {
                   key={opt.label}
                   onPress={() => setFilterTime(opt.value)}
                   className={`px-3.5 py-1.5 rounded-full ${
-                    isActive ? "bg-peach" : "bg-white"
+                    isActive ? "bg-gold" : "bg-cream"
                   }`}
                   style={{
-                    shadowColor: "#000",
+                    shadowColor: "#3D5A3E",
                     shadowOffset: { width: 0, height: 1 },
                     shadowOpacity: 0.04,
                     shadowRadius: 4,
@@ -311,9 +308,9 @@ export default function RecipesScreen() {
             {hasActiveFilters && (
               <TouchableOpacity
                 onPress={clearFilters}
-                className="px-3.5 py-1.5 rounded-full bg-peach/10"
+                className="px-3.5 py-1.5 rounded-full bg-gold/10"
               >
-                <Text className="text-xs font-medium text-peach-dark">
+                <Text className="text-xs font-medium text-gold-dark">
                   Clear all
                 </Text>
               </TouchableOpacity>
@@ -342,7 +339,7 @@ export default function RecipesScreen() {
             {hasActiveFilters && (
               <TouchableOpacity
                 onPress={clearFilters}
-                className="bg-sage rounded-2xl px-6 py-3 mt-4"
+                className="bg-forest rounded-3xl px-6 py-3 mt-4"
               >
                 <Text className="text-white font-semibold">Clear Filters</Text>
               </TouchableOpacity>
@@ -381,19 +378,16 @@ function RecipeCard({
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.8}
-      className="bg-white rounded-2xl overflow-hidden"
+      className="bg-white rounded-3xl overflow-hidden"
       style={{
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 8,
-        elevation: 3,
+        borderWidth: 1,
+        borderColor: "rgba(0,0,0,0.12)",
       }}
     >
       {/* Hero Image Area */}
       <View
         className="h-32 items-center justify-center"
-        style={{ backgroundColor: "#8B9E7C15" }}
+        style={{ backgroundColor: "#3D5A3E15" }}
       >
         <Text className="text-5xl">{recipe.image}</Text>
         <View className="absolute top-3 left-3 bg-white/90 rounded-full px-2.5 py-1 flex-row items-center">
@@ -424,7 +418,7 @@ function RecipeCard({
             <Ionicons
               name={isSaved ? "heart" : "heart-outline"}
               size={20}
-              color={isSaved ? "#E57373" : "#999"}
+              color={isSaved ? "#E57373" : "#A8B89C"}
             />
           </TouchableOpacity>
         </View>
@@ -433,19 +427,19 @@ function RecipeCard({
         <View className="flex-row items-center mt-3 gap-3">
           <DifficultyStars difficulty={recipe.difficulty} />
           <View className="flex-row items-center gap-1">
-            <Ionicons name="time-outline" size={14} color="#999" />
+            <Ionicons name="time-outline" size={14} color="#A8B89C" />
             <Text className="text-xs text-dark/50">{recipe.timeMinutes} min</Text>
           </View>
           <View className="flex-row items-center gap-1">
-            <Ionicons name="wallet-outline" size={14} color="#999" />
+            <Ionicons name="wallet-outline" size={14} color="#A8B89C" />
             <Text className="text-xs text-dark/50">{recipe.costEstimate}</Text>
           </View>
         </View>
 
         {/* Made It Counter */}
         <View className="flex-row items-center mt-2">
-          <Ionicons name="people-outline" size={14} color="#8B9E7C" />
-          <Text className="text-xs text-sage ml-1">
+          <Ionicons name="people-outline" size={14} color="#3D5A3E" />
+          <Text className="text-xs text-forest ml-1">
             {recipe.madeItCount.toLocaleString()} people made this
           </Text>
         </View>

@@ -21,6 +21,7 @@ import { CameraView, useCameraPermissions } from "../utils/camera";
 import * as Haptics from "../utils/haptics";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePreferences, buildConcernsPrompt } from "@/contexts/PreferencesContext";
 import {
   analyzeAndSaveScan,
   type ScanMode,
@@ -82,6 +83,7 @@ export default function LabelScanScreen() {
   const scanMode: ScanMode = modeParam === "label" ? "label" : "ingredients";
   const { canScan, recordScan } = useSubscription();
   const { user } = useAuth();
+  const { concerns } = usePreferences();
   const [permission, requestPermission] = useCameraPermissions();
   const [state, setState] = useState<LabelScanState>("camera");
   const [flashOn, setFlashOn] = useState(false);
@@ -90,6 +92,7 @@ export default function LabelScanScreen() {
   const [errorMessage, setErrorMessage] = useState("");
   const [expandedIngredient, setExpandedIngredient] = useState<string | null>(null);
   const [isSaved, setIsSaved] = useState(false);
+  const [countdown, setCountdown] = useState(0);
   const cameraRef = useRef<CameraView>(null);
 
   const handleCapture = async () => {
@@ -119,11 +122,32 @@ export default function LabelScanScreen() {
         }
       }
 
-      const result = await analyzeAndSaveScan(base64Image, scanMode, user?.id ?? null);
+      if (!base64Image) {
+        setErrorMessage("EMPTY_IMAGE");
+        setState("error");
+        return;
+      }
+
+      const concernsPrompt = buildConcernsPrompt(concerns);
+      const result = await analyzeAndSaveScan(base64Image, scanMode, user?.id ?? null, concernsPrompt);
       recordScan();
       setAnalysis(result);
       setState("result");
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+      // Save to scan history
+      const { addToHistory } = await import("@/lib/scanHistory");
+      addToHistory({
+        productName: result.productName,
+        brand: result.brand,
+        category: result.category,
+        rating: result.rating,
+        crunchyScore: result.crunchyScore,
+        scanMode: scanMode,
+        ingredients: result.ingredients.map(i => ({ name: i.name, risk: i.risk })),
+        concerns: result.concerns,
+        summary: result.summary,
+      }).catch(() => {});
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : "Something went wrong");
       setState("error");
@@ -462,7 +486,24 @@ export default function LabelScanScreen() {
 
   // Error state
   if (state === "error") {
-    const isRateLimited = errorMessage === "RATE_LIMITED";
+    const isRateLimited = errorMessage === "SCANNER_RATE_LIMITED";
+    const isEmptyImage = errorMessage === "EMPTY_IMAGE";
+
+    // Start countdown when rate limited
+    useEffect(() => {
+      if (isRateLimited && countdown === 0) {
+        setCountdown(30);
+      }
+    }, [isRateLimited]);
+
+    useEffect(() => {
+      if (countdown <= 0) return;
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }, [countdown]);
+
+    const retryDisabled = isRateLimited && countdown > 0;
+
     return (
       <SafeAreaView className="flex-1 bg-cream">
         <View className="flex-1 items-center justify-center px-8">
@@ -477,23 +518,29 @@ export default function LabelScanScreen() {
             }}
           >
             <View className="bg-peach/10 rounded-full w-20 h-20 items-center justify-center mb-5">
-              <Ionicons name={isRateLimited ? "time-outline" : "alert-circle"} size={36} color="#F4A574" />
+              <Ionicons name={isRateLimited ? "time-outline" : isEmptyImage ? "camera-outline" : "alert-circle"} size={36} color="#F4A574" />
             </View>
             <Text className="text-xl font-bold text-dark mb-2">
-              {isRateLimited ? "Oops, the scanner is busy" : "Couldn't Analyze"}
+              {isRateLimited
+                ? "Our scanner is taking a breather"
+                : isEmptyImage
+                ? "Photo Capture Failed"
+                : "Couldn't Analyze"}
             </Text>
             <Text className="text-sm text-dark/50 text-center mb-6 leading-5">
               {isRateLimited
-                ? "Try again in a moment."
+                ? "Wait 30 seconds and try again."
+                : isEmptyImage
+                ? "Couldn't capture the photo. Make sure the camera has a clear view and try again."
                 : "Something went wrong. Try again with better lighting and make sure the text is in focus."}
             </Text>
             <TouchableOpacity
-              onPress={handleRetry}
-              activeOpacity={0.85}
-              className="bg-sage rounded-2xl py-3.5 px-8 mb-3 w-full items-center"
+              onPress={retryDisabled ? undefined : handleRetry}
+              activeOpacity={retryDisabled ? 1 : 0.85}
+              className={`rounded-2xl py-3.5 px-8 mb-3 w-full items-center ${retryDisabled ? "bg-sage/40" : "bg-sage"}`}
             >
               <Text className="text-white font-semibold text-base">
-                Try Again
+                {retryDisabled ? `Try Again (${countdown}s)` : "Try Again"}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={handleClose} className="py-2">

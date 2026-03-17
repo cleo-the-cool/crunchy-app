@@ -59,13 +59,13 @@ export default function HelpSupportScreen() {
   const goBack = useGoBack();
 
   return (
-    <SafeAreaView className="flex-1 bg-cream">
+    <SafeAreaView className="flex-1 bg-ivory">
       {/* Header */}
       <View className="flex-row items-center px-5 pt-2 pb-4">
         <TouchableOpacity onPress={goBack} hitSlop={8}>
-          <Ionicons name="arrow-back" size={24} color="#2D2D2D" />
+          <Ionicons name="arrow-back" size={24} color="#3D5A3E" />
         </TouchableOpacity>
-        <Text className="text-xl font-bold text-dark ml-4">Help & Support</Text>
+        <Text className="text-xl font-bold text-dark ml-4" style={{ fontFamily: 'Georgia' }}>Help & Support</Text>
       </View>
 
       <ScrollView
@@ -74,10 +74,10 @@ export default function HelpSupportScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Contact Card */}
-        <View className="mx-5 mb-6 bg-white rounded-2xl overflow-hidden" style={cardShadow}>
+        <View className="mx-5 mb-6 bg-white rounded-3xl overflow-hidden" style={cardShadow}>
           <View className="px-4 py-4 items-center">
-            <View className="w-12 h-12 rounded-full bg-sage/10 items-center justify-center mb-2">
-              <Ionicons name="mail-outline" size={24} color="#8B9E7C" />
+            <View className="w-12 h-12 rounded-full bg-forest/8 items-center justify-center mb-2">
+              <Ionicons name="mail-outline" size={24} color="#3D5A3E" />
             </View>
             <Text className="text-base font-bold text-dark mb-1">Need help?</Text>
             <Text className="text-sm text-dark/50 text-center mb-3">
@@ -85,7 +85,7 @@ export default function HelpSupportScreen() {
             </Text>
             <TouchableOpacity
               onPress={() => Linking.openURL(`mailto:${CONTACT_EMAIL}`)}
-              className="bg-sage rounded-2xl px-6 py-3"
+              className="bg-forest rounded-2xl px-6 py-3"
             >
               <Text className="text-white font-semibold text-sm">
                 {CONTACT_EMAIL}
@@ -95,10 +95,10 @@ export default function HelpSupportScreen() {
         </View>
 
         {/* FAQ Section */}
-        <Text className="text-sm font-semibold text-dark/40 uppercase tracking-wider px-5 mb-2">
+        <Text className="text-sm font-semibold text-dark/40 uppercase tracking-wider px-5 mb-2" style={{ fontFamily: 'Georgia' }}>
           Frequently Asked Questions
         </Text>
-        <View className="mx-5 bg-white rounded-2xl overflow-hidden" style={cardShadow}>
+        <View className="mx-5 bg-white rounded-3xl overflow-hidden" style={cardShadow}>
           {FAQ_ITEMS.map((item, index) => (
             <FAQItem
               key={index}
@@ -132,7 +132,7 @@ function FAQItem({
         activeOpacity={0.7}
       >
         <View className="w-8 items-center">
-          <Ionicons name="help-circle-outline" size={20} color="#8B9E7C" />
+          <Ionicons name="help-circle-outline" size={20} color="#3D5A3E" />
         </View>
         <Text className="text-base text-dark ml-2 flex-1">{question}</Text>
         <Ionicons
@@ -152,9 +152,6 @@ function FAQItem({
 }
 
 const cardShadow = {
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.06,
-  shadowRadius: 6,
-  elevation: 2,
+  borderWidth: 1,
+        borderColor: "rgba(0,0,0,0.12)",
 };

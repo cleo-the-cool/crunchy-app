@@ -64,10 +64,10 @@ export default function LoginScreen() {
         >
           {/* Header */}
           <View className="items-center mb-8">
-            <View className="w-16 h-16 rounded-2xl bg-sage items-center justify-center mb-4">
+            <View className="w-16 h-16 rounded-2xl bg-forest items-center justify-center mb-4">
               <Ionicons name="leaf" size={32} color="white" />
             </View>
-            <Text className="text-2xl font-bold text-dark mb-1">Welcome Back</Text>
+            <Text className="text-2xl font-bold text-dark mb-1" style={{ fontFamily: 'Georgia' }}>Welcome Back</Text>
             <Text className="text-base text-dark-light">Log in to your Crunchy account</Text>
           </View>
 
@@ -76,7 +76,7 @@ export default function LoginScreen() {
             <TouchableOpacity
               onPress={() => handleOAuthMock("Google")}
               activeOpacity={0.8}
-              className="flex-row items-center justify-center py-4 rounded-2xl border-2 border-cream-dark bg-white"
+              className="flex-row items-center justify-center py-4 rounded-3xl border-2 border-sage/15 bg-cream"
             >
               <Ionicons name="logo-google" size={20} color="#4285F4" />
               <Text className="text-base font-semibold text-dark ml-3">
@@ -87,7 +87,7 @@ export default function LoginScreen() {
             <TouchableOpacity
               onPress={() => handleOAuthMock("Apple")}
               activeOpacity={0.8}
-              className="flex-row items-center justify-center py-4 rounded-2xl border-2 border-cream-dark bg-white"
+              className="flex-row items-center justify-center py-4 rounded-3xl border-2 border-sage/15 bg-cream"
             >
               <Ionicons name="logo-apple" size={20} color="#000000" />
               <Text className="text-base font-semibold text-dark ml-3">
@@ -116,7 +116,7 @@ export default function LoginScreen() {
                 autoCapitalize="none"
                 keyboardType="email-address"
                 autoComplete="email"
-                className="border-2 border-cream-dark rounded-2xl px-4 py-3.5 text-base text-dark bg-white"
+                className="border-2 border-cream-dark rounded-3xl px-4 py-3.5 text-base text-dark bg-cream"
               />
               {errors.email && <Text className="text-rating-avoid text-sm mt-1">{errors.email}</Text>}
             </View>
@@ -126,10 +126,10 @@ export default function LoginScreen() {
               <View className="flex-row justify-between items-center mb-1.5">
                 <Text className="text-sm font-medium text-dark">Password</Text>
                 <TouchableOpacity>
-                  <Text className="text-sm text-sage">Forgot password?</Text>
+                  <Text className="text-sm text-forest">Forgot password?</Text>
                 </TouchableOpacity>
               </View>
-              <View className="flex-row items-center border-2 border-cream-dark rounded-2xl bg-white">
+              <View className="flex-row items-center border-2 border-cream-dark rounded-3xl bg-cream">
                 <TextInput
                   value={password}
                   onChangeText={(t) => { setPassword(t); if (errors.password) setErrors((e) => ({ ...e, password: undefined })); }}
@@ -166,7 +166,7 @@ export default function LoginScreen() {
           <View className="flex-row justify-center">
             <Text className="text-dark-light">Don't have an account? </Text>
             <TouchableOpacity onPress={() => router.replace("/signup")}>
-              <Text className="text-sage font-semibold">Sign Up</Text>
+              <Text className="text-forest font-semibold">Sign Up</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

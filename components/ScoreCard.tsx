@@ -11,10 +11,10 @@ interface ScoreCardProps {
 }
 
 const tierColors: Record<string, { bg: string; text: string; ring: string }> = {
-  seedling: { bg: "#F4433615", text: "#F44336", ring: "#F44336" },
-  sprout: { bg: "#FFC10718", text: "#E6A800", ring: "#FFC107" },
-  sapling: { bg: "#8B9E7C18", text: "#6B7F5C", ring: "#8B9E7C" },
-  bloom: { bg: "#4CAF5018", text: "#388E3C", ring: "#4CAF50" },
+  seedling: { bg: "#F4433610", text: "#F44336", ring: "#F44336" },
+  sprout: { bg: "#FFC10712", text: "#E6A800", ring: "#FFC107" },
+  sapling: { bg: "#8B9E7C12", text: "#3D5A3E", ring: "#8B9E7C" },
+  bloom: { bg: "#4CAF5012", text: "#388E3C", ring: "#4CAF50" },
 };
 
 export function ScoreCard({ stats, userName }: ScoreCardProps) {
@@ -39,25 +39,21 @@ export function ScoreCard({ stats, userName }: ScoreCardProps) {
     <View>
       <ViewShot ref={viewShotRef} options={{ format: "png", quality: 1 }}>
         <View
-          className="mx-5 bg-white rounded-3xl p-5"
+          className="mx-5 bg-white rounded-3xl p-6"
           style={{
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.08,
-            shadowRadius: 12,
-            elevation: 4,
+            borderWidth: 1, borderColor: "rgba(0,0,0,0.12)"
           }}
         >
           {/* Header */}
-          <View className="items-center mb-1">
+          <View className="items-center mb-2">
             {userName && (
-              <Text className="text-sm text-dark/50 mb-1">{userName}</Text>
+              <Text className="text-sm text-dark/40 mb-1">{userName}</Text>
             )}
-            <Text className="text-5xl mb-2">{stats.tier.emoji}</Text>
+            <Text className="text-5xl mb-3">{stats.tier.emoji}</Text>
 
             {/* Score Circle */}
             <View
-              className="w-24 h-24 rounded-full items-center justify-center mb-2"
+              className="w-28 h-28 rounded-full items-center justify-center mb-3"
               style={{
                 backgroundColor: colors.bg,
                 borderWidth: 3,
@@ -70,58 +66,63 @@ export function ScoreCard({ stats, userName }: ScoreCardProps) {
               >
                 {stats.crunchyScore}
               </Text>
-              <Text className="text-xs text-dark/50">/ 100</Text>
+              <Text className="text-xs text-dark/40">/ 100</Text>
             </View>
 
             <Text
-              className="text-lg font-bold"
-              style={{ color: colors.text }}
+              className="text-lg"
+              style={{ color: colors.text, fontFamily: "Georgia", fontWeight: "700" }}
             >
               {stats.tier.label}
             </Text>
           </View>
 
           {/* Stats Row */}
-          <View className="flex-row mt-4 pt-4 border-t border-dark/5">
+          <View className="flex-row mt-4 pt-4 border-t border-sage/15">
             <View className="flex-1 items-center">
               <Ionicons name="barcode-outline" size={18} color="#8B9E7C" />
               <Text className="text-lg font-bold text-dark mt-1">
                 {stats.totalScans}
               </Text>
-              <Text className="text-xs text-dark/50">Scans</Text>
+              <Text className="text-xs text-dark/40">Scans</Text>
             </View>
-            <View className="flex-1 items-center border-x border-dark/5">
+            <View className="flex-1 items-center border-x border-sage/15">
               <Ionicons name="flask-outline" size={18} color="#8B9E7C" />
               <Text className="text-lg font-bold text-dark mt-1">
                 {stats.recipesMade}
               </Text>
-              <Text className="text-xs text-dark/50">Recipes</Text>
+              <Text className="text-xs text-dark/40">Recipes</Text>
             </View>
             <View className="flex-1 items-center">
               <Ionicons name="calendar-outline" size={18} color="#8B9E7C" />
               <Text className="text-lg font-bold text-dark mt-1">
                 {stats.daysActive}
               </Text>
-              <Text className="text-xs text-dark/50">Days</Text>
+              <Text className="text-xs text-dark/40">Days</Text>
             </View>
           </View>
 
           {/* Branding */}
-          <View className="items-center mt-3 pt-3 border-t border-dark/5">
-            <Text className="text-xs text-dark/30">Crunchy App</Text>
+          <View className="items-center mt-4 pt-3 border-t border-sage/15">
+            <Text
+              className="text-xs text-sage"
+              style={{ fontWeight: "600", letterSpacing: 3 }}
+            >
+              CRUNCHY
+            </Text>
           </View>
         </View>
       </ViewShot>
 
-      {/* Share Button (outside ViewShot so it's not in the screenshot) */}
+      {/* Share Button */}
       <View className="mx-5 mt-3">
         <TouchableOpacity
           onPress={handleShare}
-          className="flex-row items-center justify-center bg-sage/10 py-3 rounded-2xl"
+          className="flex-row items-center justify-center bg-forest/8 py-3.5 rounded-full"
           activeOpacity={0.7}
         >
-          <Ionicons name="share-outline" size={18} color="#8B9E7C" />
-          <Text className="text-sage font-semibold ml-2">
+          <Ionicons name="share-outline" size={18} color="#3D5A3E" />
+          <Text className="text-forest font-semibold ml-2">
             Share Your Score
           </Text>
         </TouchableOpacity>

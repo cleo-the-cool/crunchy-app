@@ -28,11 +28,8 @@ import { PRODUCTS, type Product } from "@/data/products";
 const LISTS_STORAGE_KEY = "@crunchy_user_lists";
 
 const cardShadow = {
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.06,
-  shadowRadius: 6,
-  elevation: 2,
+  borderWidth: 1,
+        borderColor: "rgba(0,0,0,0.12)",
 };
 
 const CATEGORIES = Object.entries(LIST_CATEGORY_CONFIG) as [
@@ -123,7 +120,7 @@ export default function CreateListScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-cream">
+    <SafeAreaView className="flex-1 bg-ivory">
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -133,9 +130,9 @@ export default function CreateListScreen() {
       {/* Header */}
       <View className="flex-row items-center px-5 pt-2 pb-4">
         <TouchableOpacity onPress={goBack} hitSlop={8}>
-          <Ionicons name="arrow-back" size={24} color="#2D2D2D" />
+          <Ionicons name="arrow-back" size={24} color="#3D5A3E" />
         </TouchableOpacity>
-        <Text className="text-xl font-bold text-dark ml-4">
+        <Text className="text-xl font-bold text-dark ml-4" style={{ fontFamily: 'Georgia' }}>
           Create List
         </Text>
       </View>
@@ -152,7 +149,7 @@ export default function CreateListScreen() {
             List Name
           </Text>
           <View
-            className="bg-white rounded-2xl px-4 py-3"
+            className="bg-white rounded-3xl px-4 py-3"
             style={cardShadow}
           >
             <TextInput
@@ -179,7 +176,7 @@ export default function CreateListScreen() {
             Description (optional)
           </Text>
           <View
-            className="bg-white rounded-2xl px-4 py-3"
+            className="bg-white rounded-3xl px-4 py-3"
             style={cardShadow}
           >
             <TextInput
@@ -205,8 +202,8 @@ export default function CreateListScreen() {
               <TouchableOpacity
                 key={key}
                 onPress={() => setCategory(key)}
-                className={`flex-row items-center px-3 py-2.5 rounded-2xl ${
-                  category === key ? "" : "bg-white"
+                className={`flex-row items-center px-3 py-2.5 rounded-3xl ${
+                  category === key ? "" : "bg-cream"
                 }`}
                 style={[
                   category === key
@@ -231,14 +228,14 @@ export default function CreateListScreen() {
         {/* Visibility */}
         <View className="px-5 mb-5">
           <View
-            className="bg-white rounded-2xl px-4 py-4 flex-row items-center justify-between"
+            className="bg-white rounded-3xl px-4 py-4 flex-row items-center justify-between"
             style={cardShadow}
           >
             <View className="flex-row items-center flex-1">
               <Ionicons
                 name={isPublic ? "globe-outline" : "lock-closed-outline"}
                 size={20}
-                color="#8B9E7C"
+                color="#3D5A3E"
               />
               <View className="ml-3 flex-1">
                 <Text className="text-sm font-semibold text-dark">
@@ -254,7 +251,7 @@ export default function CreateListScreen() {
             <Switch
               value={isPublic}
               onValueChange={setIsPublic}
-              trackColor={{ false: "#DDD", true: "#8B9E7C" }}
+              trackColor={{ false: "#DDD", true: "#3D5A3E" }}
               thumbColor="#FFF"
             />
           </View>
@@ -270,8 +267,8 @@ export default function CreateListScreen() {
               onPress={() => setShowProductSearch(!showProductSearch)}
               className="flex-row items-center"
             >
-              <Ionicons name="add-circle-outline" size={18} color="#8B9E7C" />
-              <Text className="text-sm text-sage font-medium ml-1">
+              <Ionicons name="add-circle-outline" size={18} color="#3D5A3E" />
+              <Text className="text-sm text-forest font-medium ml-1">
                 Add Products
               </Text>
             </TouchableOpacity>
@@ -281,10 +278,10 @@ export default function CreateListScreen() {
           {showProductSearch && (
             <View className="mb-3">
               <View
-                className="bg-white rounded-2xl px-4 py-3 flex-row items-center"
+                className="bg-white rounded-3xl px-4 py-3 flex-row items-center"
                 style={cardShadow}
               >
-                <Ionicons name="search" size={16} color="#999" />
+                <Ionicons name="search" size={16} color="#A8B89C" />
                 <TextInput
                   className="flex-1 ml-2 text-dark text-sm"
                   placeholder="Search products by name or brand..."
@@ -302,7 +299,7 @@ export default function CreateListScreen() {
 
               {/* Search Results */}
               {searchResults.length > 0 && (
-                <View className="mt-2 bg-white rounded-2xl overflow-hidden" style={cardShadow}>
+                <View className="mt-2 bg-white rounded-3xl overflow-hidden" style={cardShadow}>
                   {searchResults.map((product, idx) => {
                     const alreadyAdded = selectedProducts.some((p) => p.id === product.id);
                     return (
@@ -322,9 +319,9 @@ export default function CreateListScreen() {
                           <Text className="text-xs text-dark/50">{product.brand}</Text>
                         </View>
                         {alreadyAdded ? (
-                          <Ionicons name="checkmark-circle" size={20} color="#8B9E7C" />
+                          <Ionicons name="checkmark-circle" size={20} color="#3D5A3E" />
                         ) : (
-                          <Ionicons name="add-circle-outline" size={20} color="#8B9E7C" />
+                          <Ionicons name="add-circle-outline" size={20} color="#3D5A3E" />
                         )}
                       </TouchableOpacity>
                     );
@@ -342,7 +339,7 @@ export default function CreateListScreen() {
 
           {/* Selected Products */}
           {selectedProducts.length > 0 && (
-            <View className="bg-white rounded-2xl overflow-hidden" style={cardShadow}>
+            <View className="bg-white rounded-3xl overflow-hidden" style={cardShadow}>
               {selectedProducts.map((product, idx) => (
                 <View
                   key={product.id}
@@ -369,8 +366,8 @@ export default function CreateListScreen() {
           )}
 
           {selectedProducts.length === 0 && !showProductSearch && (
-            <View className="bg-sage/10 rounded-2xl p-4 flex-row">
-              <Ionicons name="information-circle-outline" size={20} color="#8B9E7C" />
+            <View className="bg-forest/8 rounded-3xl p-4 flex-row">
+              <Ionicons name="information-circle-outline" size={20} color="#3D5A3E" />
               <Text className="text-sm text-dark/60 ml-2.5 flex-1 leading-5">
                 Tap "Add Products" above to search and add products to your list.
               </Text>
@@ -380,13 +377,13 @@ export default function CreateListScreen() {
       </ScrollView>
 
       {/* Create Button */}
-      <View className="px-5 pb-5 pt-3 bg-cream">
+      <View className="px-5 pb-5 pt-3 bg-ivory">
         <TouchableOpacity
           onPress={handleCreate}
           disabled={saving}
-          className={`py-4 rounded-2xl items-center ${saving ? "bg-sage/50" : "bg-sage"}`}
+          className={`py-4 rounded-3xl items-center ${saving ? "bg-forest/50" : "bg-forest"}`}
           style={{
-            shadowColor: "#8B9E7C",
+            shadowColor: "#3D5A3E",
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.3,
             shadowRadius: 8,

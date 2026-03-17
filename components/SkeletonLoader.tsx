@@ -38,7 +38,7 @@ export function SkeletonLoader({
           width: width as number,
           height,
           borderRadius,
-          backgroundColor: "#E0E0E0",
+          backgroundColor: "#A8B89C40",
         },
         animatedStyle,
       ]}
@@ -50,12 +50,12 @@ export function SkeletonLoader({
 export function CardSkeleton() {
   return (
     <View
-      className="bg-white rounded-2xl p-4 mb-3"
+      className="bg-white rounded-3xl p-5 mb-3"
       style={{
-        shadowColor: "#000",
+        shadowColor: "#3D5A3E",
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 8,
+        shadowOpacity: 0.04,
+        shadowRadius: 12,
         elevation: 3,
       }}
     >
@@ -82,17 +82,17 @@ export function CardSkeleton() {
 export function ProductCardSkeleton() {
   return (
     <View
-      className="bg-white rounded-2xl p-3 mb-3"
+      className="bg-white rounded-3xl p-4 mb-3"
       style={{
-        shadowColor: "#000",
+        shadowColor: "#3D5A3E",
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 8,
+        shadowOpacity: 0.04,
+        shadowRadius: 12,
         elevation: 3,
       }}
     >
       <View className="flex-row items-center">
-        <SkeletonLoader width={48} height={48} borderRadius={12} />
+        <SkeletonLoader width={48} height={48} borderRadius={16} />
         <View className="ml-3 flex-1">
           <SkeletonLoader width={140} height={14} />
           <View className="mt-2">

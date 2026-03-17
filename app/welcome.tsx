@@ -1,66 +1,71 @@
-import { View, Text } from "react-native";
+import { View, Text, ImageBackground, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
-import { SafeAreaWrapper, Button } from "@/components";
-import { Ionicons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown, FadeInUp } from "react-native-reanimated";
 
 export default function WelcomeScreen() {
   const router = useRouter();
 
   return (
-    <SafeAreaWrapper>
-      <View className="flex-1 justify-center items-center px-8">
-        {/* Logo */}
-        <Animated.View
-          entering={FadeIn.duration(600)}
-          className="w-28 h-28 bg-sage rounded-3xl items-center justify-center mb-8"
-          style={{
-            shadowColor: "#8B9E7C",
-            shadowOffset: { width: 0, height: 6 },
-            shadowOpacity: 0.25,
-            shadowRadius: 12,
-            elevation: 6,
-          }}
-        >
-          <Ionicons name="leaf" size={56} color="#FFFFFF" />
-        </Animated.View>
+    <ImageBackground
+      source={require("@/assets/images/aesthetic/leaves-hero.jpg")}
+      resizeMode="cover"
+      style={{ flex: 1 }}
+    >
+      <View style={{ flex: 1, backgroundColor: "rgba(61,90,62,0.6)" }}>
+        <SafeAreaView style={{ flex: 1 }}>
+          <View className="flex-1 justify-center items-center px-8">
+            {/* Logo Mark */}
+            <Animated.View
+              entering={FadeIn.duration(800)}
+              className="w-24 h-24 rounded-full items-center justify-center mb-8"
+              style={{ backgroundColor: "rgba(255,255,255,0.2)", borderWidth: 2, borderColor: "rgba(255,255,255,0.3)" }}
+            >
+              <Text className="text-5xl">🌿</Text>
+            </Animated.View>
 
-        {/* App Name */}
-        <Animated.Text
-          entering={FadeInDown.delay(200).duration(500)}
-          className="text-4xl font-bold text-dark mb-3"
-        >
-          Crunchy
-        </Animated.Text>
+            {/* App Name */}
+            <Animated.Text
+              entering={FadeInDown.delay(200).duration(500)}
+              className="text-5xl font-bold text-white mb-3"
+              style={{ fontFamily: "Georgia" }}
+            >
+              Crunchy
+            </Animated.Text>
 
-        {/* Tagline */}
-        <Animated.Text
-          entering={FadeInDown.delay(400).duration(500)}
-          className="text-lg text-dark-light text-center leading-7"
-        >
-          The operating system for{"\n"}conscious living
-        </Animated.Text>
-      </View>
+            {/* Tagline */}
+            <Animated.Text
+              entering={FadeInDown.delay(400).duration(500)}
+              className="text-lg text-white/80 text-center leading-7"
+            >
+              Know what{"'"}s in your products.{"\n"}Live cleaner, feel better.
+            </Animated.Text>
+          </View>
 
-      {/* CTA */}
-      <Animated.View
-        entering={FadeInUp.delay(600).duration(500)}
-        className="px-8 pb-8"
-      >
-        <Button
-          title="Get Started"
-          onPress={() => router.push("/onboarding")}
-        />
-        <Text className="text-center text-dark-light mt-4 text-sm">
-          Already have an account?{" "}
-          <Text
-            className="text-sage font-semibold"
-            onPress={() => router.push("/(tabs)")}
+          {/* CTA */}
+          <Animated.View
+            entering={FadeInUp.delay(600).duration(500)}
+            className="px-8 pb-8"
           >
-            Log in
-          </Text>
-        </Text>
-      </Animated.View>
-    </SafeAreaWrapper>
+            <TouchableOpacity
+              onPress={() => router.push("/onboarding")}
+              activeOpacity={0.85}
+              className="bg-white rounded-full px-7 py-4 items-center justify-center"
+            >
+              <Text className="text-forest text-base font-semibold tracking-wide">Get Started</Text>
+            </TouchableOpacity>
+            <Text className="text-center text-white/60 mt-4 text-sm">
+              Already have an account?{" "}
+              <Text
+                className="text-white font-semibold"
+                onPress={() => router.push("/login")}
+              >
+                Log in
+              </Text>
+            </Text>
+          </Animated.View>
+        </SafeAreaView>
+      </View>
+    </ImageBackground>
   );
 }

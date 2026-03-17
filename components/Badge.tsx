@@ -13,15 +13,15 @@ const ratingConfig: Record<
   BadgeRating,
   { bg: string; text: string; label: string }
 > = {
-  clean: { bg: "bg-rating-clean", text: "text-white", label: "Clean" },
-  caution: { bg: "bg-rating-caution", text: "text-dark", label: "Caution" },
-  avoid: { bg: "bg-rating-avoid", text: "text-white", label: "Avoid" },
+  clean: { bg: "bg-rating-clean/15", text: "text-rating-clean", label: "Clean" },
+  caution: { bg: "bg-rating-caution/15", text: "text-rating-caution", label: "Caution" },
+  avoid: { bg: "bg-rating-avoid/15", text: "text-rating-avoid", label: "Avoid" },
 };
 
 const sizeStyles: Record<string, { container: string; text: string }> = {
-  sm: { container: "px-2 py-0.5 rounded-full", text: "text-xs" },
-  md: { container: "px-3 py-1 rounded-full", text: "text-sm" },
-  lg: { container: "px-4 py-2 rounded-2xl", text: "text-base font-semibold" },
+  sm: { container: "px-2.5 py-1 rounded-full", text: "text-xs" },
+  md: { container: "px-3.5 py-1.5 rounded-full", text: "text-sm" },
+  lg: { container: "px-5 py-2.5 rounded-full", text: "text-base font-semibold" },
 };
 
 export function Badge({ rating, size = "md", label, className = "" }: BadgeProps) {
@@ -30,7 +30,7 @@ export function Badge({ rating, size = "md", label, className = "" }: BadgeProps
 
   return (
     <View className={`${config.bg} ${sizes.container} ${className}`}>
-      <Text className={`${config.text} ${sizes.text} font-medium`}>
+      <Text className={`${config.text} ${sizes.text} font-semibold`}>
         {label ?? config.label}
       </Text>
     </View>

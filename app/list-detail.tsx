@@ -24,11 +24,8 @@ import * as Haptics from "../utils/haptics";
 const LISTS_STORAGE_KEY = "@crunchy_user_lists";
 
 const cardShadow = {
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.06,
-  shadowRadius: 6,
-  elevation: 2,
+  borderWidth: 1,
+        borderColor: "rgba(0,0,0,0.12)",
 };
 
 export default function ListDetailScreen() {
@@ -131,10 +128,10 @@ export default function ListDetailScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-cream">
+      <SafeAreaView className="flex-1 bg-ivory">
         <View className="flex-row items-center px-5 pt-2 pb-4">
           <TouchableOpacity onPress={goBack} hitSlop={8}>
-            <Ionicons name="arrow-back" size={24} color="#2D2D2D" />
+            <Ionicons name="arrow-back" size={24} color="#3D5A3E" />
           </TouchableOpacity>
           <Text className="text-xl font-bold text-dark ml-4">Loading...</Text>
         </View>
@@ -144,10 +141,10 @@ export default function ListDetailScreen() {
 
   if (!list) {
     return (
-      <SafeAreaView className="flex-1 bg-cream">
+      <SafeAreaView className="flex-1 bg-ivory">
         <View className="flex-row items-center px-5 pt-2 pb-4">
           <TouchableOpacity onPress={goBack} hitSlop={8}>
-            <Ionicons name="arrow-back" size={24} color="#2D2D2D" />
+            <Ionicons name="arrow-back" size={24} color="#3D5A3E" />
           </TouchableOpacity>
           <Text className="text-xl font-bold text-dark ml-4">Not Found</Text>
         </View>
@@ -174,24 +171,24 @@ export default function ListDetailScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-cream">
+    <SafeAreaView className="flex-1 bg-ivory">
       {/* Header */}
       <View className="flex-row items-center px-5 pt-2 pb-4">
         <TouchableOpacity onPress={goBack} hitSlop={8}>
-          <Ionicons name="arrow-back" size={24} color="#2D2D2D" />
+          <Ionicons name="arrow-back" size={24} color="#3D5A3E" />
         </TouchableOpacity>
-        <Text className="text-xl font-bold text-dark ml-4 flex-1" numberOfLines={1}>
+        <Text className="text-xl font-bold text-dark ml-4 flex-1" numberOfLines={1} style={{ fontFamily: 'Georgia' }}>
           {list.title}
         </Text>
         <TouchableOpacity onPress={handleSaveList} hitSlop={8} className="ml-2">
           <Ionicons
             name={saved ? "bookmark" : "bookmark-outline"}
             size={22}
-            color={saved ? "#8B9E7C" : "#2D2D2D"}
+            color={saved ? "#3D5A3E" : "#3D5A3E"}
           />
         </TouchableOpacity>
         <TouchableOpacity onPress={handleShareList} hitSlop={8} className="ml-3">
-          <Ionicons name="share-outline" size={22} color="#2D2D2D" />
+          <Ionicons name="share-outline" size={22} color="#3D5A3E" />
         </TouchableOpacity>
       </View>
 
@@ -201,7 +198,7 @@ export default function ListDetailScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* List Info Card */}
-        <View className="mx-5 bg-white rounded-2xl p-5 mb-4" style={cardShadow}>
+        <View className="mx-5 bg-white rounded-3xl p-5 mb-4" style={cardShadow}>
           {/* Category badge */}
           <View
             className="self-start flex-row items-center px-3 py-1.5 rounded-full mb-3"
@@ -232,7 +229,7 @@ export default function ListDetailScreen() {
               className="flex-row items-center mt-4 pt-3"
               style={{ borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.05)" }}
             >
-              <View className="w-8 h-8 rounded-full bg-sage/20 items-center justify-center mr-2.5">
+              <View className="w-8 h-8 rounded-full bg-forest/10 items-center justify-center mr-2.5">
                 <Text className="text-sm">{owner.avatar}</Text>
               </View>
               <View>
@@ -262,7 +259,7 @@ export default function ListDetailScreen() {
               <Ionicons
                 name={list.isPublic ? "globe-outline" : "lock-closed-outline"}
                 size={14}
-                color="#999"
+                color="#A8B89C"
               />
               <Text className="text-xs text-dark/40 ml-1.5">
                 {list.isPublic ? "Public" : "Private"}
@@ -276,7 +273,7 @@ export default function ListDetailScreen() {
 
         {/* Products */}
         <View className="px-5">
-          <Text className="text-base font-bold text-dark mb-3">
+          <Text className="text-base font-bold text-dark mb-3" style={{ fontFamily: 'Georgia' }}>
             Products ({list.products.length})
           </Text>
 
@@ -327,9 +324,9 @@ function ProductCard({
       activeOpacity={0.7}
       delayLongPress={500}
     >
-      <View className="bg-white rounded-2xl p-4 mb-3" style={cardShadow}>
+      <View className="bg-white rounded-3xl p-4 mb-3" style={cardShadow}>
         <View className="flex-row items-center">
-          <View className="w-12 h-12 rounded-2xl bg-sage/10 items-center justify-center mr-3">
+          <View className="w-12 h-12 rounded-3xl bg-forest/8 items-center justify-center mr-3">
             <Text className="text-2xl">{product.image}</Text>
           </View>
           <View className="flex-1">

@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { InterestsProvider } from "@/contexts/InterestsContext";
+import { PreferencesProvider } from "@/contexts/PreferencesContext";
 import { View, ActivityIndicator } from "react-native";
 
 function RootNavigator() {
@@ -23,7 +24,8 @@ function RootNavigator() {
       segments[0] === "onboarding-profile" ||
       segments[0] === "quiz" ||
       segments[0] === "quiz-result" ||
-      segments[0] === "interests";
+      segments[0] === "interests" ||
+      segments[0] === "onboarding-preferences";
     const inTabs = segments[0] === "(tabs)";
 
     if (!user && inTabs) {
@@ -33,8 +35,8 @@ function RootNavigator() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 bg-cream items-center justify-center">
-        <ActivityIndicator size="large" color="#8B9E7C" />
+      <View className="flex-1 bg-ivory items-center justify-center">
+        <ActivityIndicator size="large" color="#3D5A3E" />
       </View>
     );
   }
@@ -58,7 +60,9 @@ export default function RootLayout() {
     <AuthProvider>
       <SubscriptionProvider>
         <InterestsProvider>
-          <RootNavigator />
+          <PreferencesProvider>
+            <RootNavigator />
+          </PreferencesProvider>
         </InterestsProvider>
       </SubscriptionProvider>
     </AuthProvider>

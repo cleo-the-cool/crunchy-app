@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Crunchy",
+    "name": "Crunchy Living",
     "slug": "crunchy-app",
     "scheme": "crunchy",
     "version": "1.0.0",
@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.cleothecooldev.crunchyapp",
+      "bundleIdentifier": "com.crunchyapp.ios",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }

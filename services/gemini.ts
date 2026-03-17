@@ -1,7 +1,7 @@
 import Constants from "expo-constants";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
-export type ScanMode = "item" | "ingredients" | "label";
+export type ScanMode = "item" | "ingredients" | "label" | "barcode";
 
 export interface GeminiIngredient {
   name: string;
@@ -26,58 +26,124 @@ const GEMINI_API_KEY =
   process.env.EXPO_PUBLIC_GEMINI_API_KEY ??
   "";
 
-const GEMINI_MODEL = "gemini-2.0-flash";
+const GEMINI_MODEL = "gemini-2.5-flash";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 function isMockMode(): boolean {
   return !GEMINI_API_KEY || GEMINI_API_KEY === "";
 }
 
-const SCAN_PROMPTS: Record<ScanMode, string> = {
-  item: `You are a clean living product analyst. The user has taken a photo of a product.
-Identify the product and analyze it for health and environmental concerns.
-Return a JSON object with this exact structure (no markdown, just raw JSON):
-{
+// Daily scan limit to prevent runaway API charges
+const DAILY_SCAN_LIMIT = 50; // max 50 scans per day per device
+const SCAN_COUNT_KEY = "@crunchy_daily_scan_count";
+
+async function checkDailyLimit(): Promise<boolean> {
+  try {
+    const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
+    const stored = await AsyncStorage.getItem(SCAN_COUNT_KEY);
+    if (stored) {
+      const { count, date } = JSON.parse(stored);
+      const today = new Date().toISOString().split("T")[0];
+      if (date === today) {
+        return count < DAILY_SCAN_LIMIT;
+      }
+    }
+    return true;
+  } catch {
+    return true;
+  }
+}
+
+async function incrementDailyCount(): Promise<void> {
+  try {
+    const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
+    const today = new Date().toISOString().split("T")[0];
+    const stored = await AsyncStorage.getItem(SCAN_COUNT_KEY);
+    let count = 1;
+    if (stored) {
+      const data = JSON.parse(stored);
+      if (data.date === today) count = data.count + 1;
+    }
+    await AsyncStorage.setItem(SCAN_COUNT_KEY, JSON.stringify({ count, date: today }));
+  } catch {}
+}
+
+const SCORE_CALIBRATION = `
+Score calibration (1-100, be strict and realistic):
+- 90-100: Truly clean/organic/certified safe, minimal processing, verified safe materials
+- 70-89: Mostly clean with minor concerns
+- 50-69: Moderate concerns, some questionable ingredients or materials
+- 30-49: Significant concerns, multiple problematic ingredients
+- 1-29: Major toxicity/health risks
+Do NOT default to high scores. A stainless steel water bottle should NOT score 90+ unless verified 18/8 or 18/10 grade.`;
+
+const PRODUCT_TYPES = `This covers ALL product types: food, drinks, cosmetics, skincare, cleaning products, clothing/textiles, water bottles, drinkware, cookware, furniture, baby products, supplements, accessories, and more.
+
+CRITICAL INSTRUCTIONS FOR PRODUCT IDENTIFICATION:
+1. IDENTIFY the exact product and brand from the image. Read any visible text, logos, labels, packaging design.
+2. Once identified, use your KNOWLEDGE BASE to look up the product's REAL ingredients, materials, and composition. Do NOT say you "don't have access" to ingredients. You are an AI with extensive product knowledge. Look it up.
+3. If you recognize the brand/product (e.g. "Owala FreeSip", "Tide Pods", "Zara dress"), use your knowledge of that product's actual materials and ingredients.
+4. If you can't identify the exact product, identify the type and analyze based on what's visible + typical composition for that product category.
+5. For the "ingredients" array, list ACTUAL ingredients or materials, not vague categories like "Plant-based Surfactants". Be specific: "Sodium Lauryl Sulfate", "Polyester (PET)", "18/8 Stainless Steel", etc.
+6. NEVER say the ingredient list "is not visible" or you "don't have access." Instead, use your knowledge to provide the real ingredient/material list for the identified product.`;
+
+const MATERIAL_ANALYSIS = `For non-food items, analyze materials in depth using your product knowledge:
+- Stainless steel: grade matters (304/18-8 and 316/18-10 are safe; 201 has high nickel/manganese risk). Look up the actual grade used by the brand.
+- Plastics: check for BPA, BPS, phthalates, microplastic shedding risk. Identify the plastic type (PP, Tritan, HDPE, etc.)
+- Ceramics/glass: check for lead and cadmium in glazes
+- Textiles/clothing: identify exact fabric composition (e.g. "65% polyester, 35% cotton"), check for formaldehyde, PFAS, azo dyes, heavy metals in dyes, microplastic shedding from synthetics
+- Cookware: check coatings (PTFE/Teflon, ceramic), heavy metal leaching
+- Drinkware: identify exact materials for each component (lid, body, straw, seal). Check for BPA in plastics, lead in paint/coating.
+For known brands, USE YOUR KNOWLEDGE of their actual materials and manufacturing processes.`;
+
+const JSON_SCHEMA = `{
   "productName": "string",
   "brand": "string",
-  "category": "string (Skincare, Food, Cleaning, Personal Care, Clothing, Home)",
+  "category": "string (Food, Drinks, Skincare, Makeup, Cleaning, Personal Care, Clothing, Home, Baby, Cookware, Drinkware, Other)",
   "rating": "clean | caution | avoid",
   "crunchyScore": number (1-100, higher = cleaner),
   "ingredients": [{"name": "string", "risk": "safe | concern | toxic", "explanation": "string"}],
   "concerns": ["string"],
   "cleanAlternatives": ["string"],
-  "summary": "string (1-2 sentence summary of the analysis)"
-}`,
+  "summary": "string (1-2 sentence summary)"
+}`;
+
+const SCAN_PROMPTS: Record<ScanMode, string> = {
+  item: `You are an expert clean living product analyst with extensive knowledge of consumer products, their ingredients, and materials.
+
+The user has photographed a product. Your job:
+1. IDENTIFY the exact product name and brand from the image (read labels, logos, packaging)
+2. LOOK UP the product's real ingredients or materials using your knowledge base
+3. ANALYZE each ingredient/material for health, toxicity, and safety concerns
+4. Be SPECIFIC: list actual chemical names, material grades, and fabric compositions, not vague categories
+
+${PRODUCT_TYPES}
+${MATERIAL_ANALYSIS}
+${SCORE_CALIBRATION}
+Return a JSON object with this exact structure:
+${JSON_SCHEMA}`,
 
   ingredients: `You are a clean living ingredient analyst. The user has taken a photo of an ingredients list on a product.
-Read and analyze every ingredient visible in the photo.
-Return a JSON object with this exact structure (no markdown, just raw JSON):
-{
-  "productName": "string (best guess or 'Unknown Product')",
-  "brand": "string (best guess or 'Unknown Brand')",
-  "category": "string (Skincare, Food, Cleaning, Personal Care, Clothing, Home)",
-  "rating": "clean | caution | avoid",
-  "crunchyScore": number (1-100, higher = cleaner),
-  "ingredients": [{"name": "string", "risk": "safe | concern | toxic", "explanation": "string"}],
-  "concerns": ["string"],
-  "cleanAlternatives": ["string"],
-  "summary": "string (1-2 sentence summary of the analysis)"
-}`,
+Read and analyze every ingredient visible in the photo. Use your knowledge base to identify the product if possible.
+${PRODUCT_TYPES}
+For clothing: analyze fabric composition, dyes, chemical treatments (formaldehyde, PFAS, etc.).
+${SCORE_CALIBRATION}
+Return a JSON object with this exact structure:
+${JSON_SCHEMA}`,
 
   label: `You are a clean living label analyst. The user has taken a photo of a nutrition or claims label on a product.
-Analyze the claims, certifications, and nutritional information visible.
-Return a JSON object with this exact structure (no markdown, just raw JSON):
-{
-  "productName": "string (best guess or 'Unknown Product')",
-  "brand": "string (best guess or 'Unknown Brand')",
-  "category": "string (Skincare, Food, Cleaning, Personal Care, Clothing, Home)",
-  "rating": "clean | caution | avoid",
-  "crunchyScore": number (1-100, higher = cleaner),
-  "ingredients": [{"name": "string", "risk": "safe | concern | toxic", "explanation": "string"}],
-  "concerns": ["string"],
-  "cleanAlternatives": ["string"],
-  "summary": "string (1-2 sentence summary of the analysis)"
-}`,
+Analyze the claims, certifications, and nutritional information visible. Use your knowledge base for the product.
+${PRODUCT_TYPES}
+${MATERIAL_ANALYSIS}
+${SCORE_CALIBRATION}
+Return a JSON object with this exact structure:
+${JSON_SCHEMA}`,
+
+  barcode: `You are a clean living food and product analyst. The user scanned a barcode and we found product data.
+Analyze the ingredients for health, toxicity, and safety concerns.
+${SCORE_CALIBRATION}
+Return a JSON object with this exact structure:
+${JSON_SCHEMA}`,
 };
 
 // Mock data for when no API key is set
@@ -159,17 +225,71 @@ const MOCK_RESULTS: Record<ScanMode, GeminiAnalysis> = {
     ],
     summary: "While marketed as healthy, this product contains processed oils and multiple sugar sources. The 'natural' claims are somewhat misleading.",
   },
+  barcode: {
+    productName: "Doritos Nacho Cheese",
+    brand: "Frito-Lay",
+    category: "Food",
+    rating: "avoid",
+    crunchyScore: 18,
+    ingredients: [
+      { name: "Corn", risk: "concern", explanation: "Likely GMO corn. Not organic." },
+      { name: "Vegetable Oil", risk: "toxic", explanation: "Blend of corn, canola, and sunflower oil. Highly processed seed oils linked to inflammation." },
+      { name: "Maltodextrin", risk: "toxic", explanation: "Ultra-processed starch with very high glycemic index. Spikes blood sugar rapidly." },
+      { name: "Salt", risk: "concern", explanation: "High sodium content per serving." },
+      { name: "Monosodium Glutamate", risk: "concern", explanation: "Flavor enhancer. Some people report sensitivity reactions." },
+      { name: "Red 40", risk: "toxic", explanation: "Artificial dye linked to hyperactivity in children. Banned in some countries." },
+      { name: "Yellow 6", risk: "toxic", explanation: "Artificial dye with potential carcinogenic contaminants." },
+    ],
+    concerns: [
+      "Multiple artificial dyes (Red 40, Yellow 6)",
+      "Ultra-processed seed oils",
+      "High sodium and maltodextrin",
+    ],
+    cleanAlternatives: [
+      "Siete Grain-Free Tortilla Chips",
+      "Late July Organic Snack Chips",
+      "Jackson's Sweet Potato Chips",
+    ],
+    summary: "Contains multiple artificial dyes, ultra-processed oils, and high sodium. A heavily processed snack with numerous health concerns.",
+  },
 };
 
 function parseGeminiResponse(text: string): GeminiAnalysis {
-  // Try to extract JSON from the response (Gemini sometimes wraps in markdown)
-  let jsonStr = text;
-  const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (jsonMatch) {
-    jsonStr = jsonMatch[1];
-  }
+  let parsed: any = null;
 
-  const parsed = JSON.parse(jsonStr.trim());
+  // Strategy 1: Try parsing raw text directly
+  try {
+    parsed = JSON.parse(text.trim());
+  } catch {
+    // Strategy 2: Try extracting ```json blocks
+    const jsonBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (jsonBlockMatch) {
+      try {
+        parsed = JSON.parse(jsonBlockMatch[1].trim());
+      } catch {
+        // continue to next strategy
+      }
+    }
+
+    // Strategy 3: Find first { to last } and parse that
+    if (!parsed) {
+      const firstBrace = text.indexOf("{");
+      const lastBrace = text.lastIndexOf("}");
+      if (firstBrace !== -1 && lastBrace > firstBrace) {
+        try {
+          parsed = JSON.parse(text.substring(firstBrace, lastBrace + 1));
+        } catch {
+          // continue to next strategy
+        }
+      }
+    }
+
+    // Strategy 4: Log raw response and throw
+    if (!parsed) {
+      console.error("Failed to parse Gemini JSON. Raw response:", text.substring(0, 1000));
+      throw new Error("JSON Parse error: Could not extract valid JSON from Gemini response");
+    }
+  }
 
   return {
     productName: parsed.productName || "Unknown Product",
@@ -307,16 +427,22 @@ async function findCachedProduct(
 
 export async function analyzeWithGemini(
   base64Image: string,
-  mode: ScanMode
+  mode: ScanMode,
+  concernsPrompt?: string
 ): Promise<GeminiAnalysis> {
   if (isMockMode()) {
-    // Simulate network delay
     await new Promise((resolve) => setTimeout(resolve, 2000));
     return MOCK_RESULTS[mode];
   }
 
-  const maxRetries = 3;
-  const retryDelayMs = 2000;
+  // Check daily limit to prevent runaway charges
+  const withinLimit = await checkDailyLimit();
+  if (!withinLimit) {
+    throw new Error("SCANNER_RATE_LIMITED");
+  }
+
+  const maxRetries = 4;
+  const retryDelays = [3000, 6000, 12000, 10000]; // exponential backoff + final 10s
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     const response = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
@@ -326,7 +452,7 @@ export async function analyzeWithGemini(
         contents: [
           {
             parts: [
-              { text: SCAN_PROMPTS[mode] },
+              { text: SCAN_PROMPTS[mode] + (concernsPrompt || "") },
               {
                 inline_data: {
                   mime_type: "image/jpeg",
@@ -338,35 +464,42 @@ export async function analyzeWithGemini(
         ],
         generationConfig: {
           temperature: 0.2,
-          maxOutputTokens: 2048,
+          maxOutputTokens: 8192,
+          responseMimeType: "application/json",
+          thinkingConfig: { thinkingBudget: 0 },
         },
       }),
     });
 
     if (response.status === 429 && attempt < maxRetries) {
-      await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+      await new Promise((resolve) => setTimeout(resolve, retryDelays[attempt - 1]));
       continue;
     }
 
     if (!response.ok) {
       if (response.status === 429) {
-        throw new Error("RATE_LIMITED");
+        throw new Error("SCANNER_RATE_LIMITED");
       }
       const errorText = await response.text();
       throw new Error(`Gemini API error (${response.status}): ${errorText}`);
     }
 
     const data = await response.json();
-    const textContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    // Gemini 2.5 may return thought parts before text parts
+    const parts = data.candidates?.[0]?.content?.parts || [];
+    const textPart = parts.find((p: any) => typeof p.text === "string");
+    const textContent = textPart?.text;
 
     if (!textContent) {
+      console.error("Gemini response parts:", JSON.stringify(parts).substring(0, 500));
       throw new Error("No response from Gemini API");
     }
 
+    await incrementDailyCount();
     return parseGeminiResponse(textContent);
   }
 
-  throw new Error("RATE_LIMITED");
+  throw new Error("SCANNER_RATE_LIMITED");
 }
 
 // Analyze, cache, and save scan in one call.
@@ -374,9 +507,10 @@ export async function analyzeWithGemini(
 export async function analyzeAndSaveScan(
   base64Image: string,
   mode: ScanMode,
-  userId: string | null
+  userId: string | null,
+  concernsPrompt?: string
 ): Promise<GeminiAnalysis> {
-  const analysis = await analyzeWithGemini(base64Image, mode);
+  const analysis = await analyzeWithGemini(base64Image, mode, concernsPrompt);
 
   // Cache product and save scan in background (don't block UI)
   const productId = await cacheProduct(analysis);
@@ -385,6 +519,166 @@ export async function analyzeAndSaveScan(
   }
 
   return analysis;
+}
+
+/** Analyze a barcode product using text prompt (no image needed) */
+export async function analyzeBarcodeScan(
+  prompt: string,
+  userId: string | null,
+  concernsPrompt?: string
+): Promise<GeminiAnalysis> {
+  if (isMockMode()) {
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    return MOCK_RESULTS.barcode;
+  }
+
+  const withinLimit = await checkDailyLimit();
+  if (!withinLimit) {
+    throw new Error("SCANNER_RATE_LIMITED");
+  }
+
+  const fullPrompt = SCAN_PROMPTS.barcode + "\n\n" + prompt + (concernsPrompt || "");
+
+  const maxRetries = 4;
+  const retryDelays = [3000, 6000, 12000, 10000];
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    const response = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: fullPrompt }] }],
+        generationConfig: {
+          temperature: 0.2,
+          maxOutputTokens: 8192,
+          responseMimeType: "application/json",
+          thinkingConfig: { thinkingBudget: 0 },
+        },
+      }),
+    });
+
+    if (response.status === 429 && attempt < maxRetries) {
+      await new Promise((resolve) => setTimeout(resolve, retryDelays[attempt - 1]));
+      continue;
+    }
+
+    if (!response.ok) {
+      if (response.status === 429) throw new Error("SCANNER_RATE_LIMITED");
+      const errorText = await response.text();
+      throw new Error(`Gemini API error (${response.status}): ${errorText}`);
+    }
+
+    const data = await response.json();
+    const parts = data.candidates?.[0]?.content?.parts || [];
+    const textPart = parts.find((p: any) => typeof p.text === "string");
+    const textContent = textPart?.text;
+
+    if (!textContent) throw new Error("No response from Gemini API");
+
+    await incrementDailyCount();
+    const analysis = parseGeminiResponse(textContent);
+
+    // Cache in background
+    if (isSupabaseConfigured()) {
+      cacheProduct(analysis).catch(() => {});
+      if (userId) saveScan(userId, null, "barcode" as ScanMode, analysis).catch(() => {});
+    }
+
+    return analysis;
+  }
+
+  throw new Error("SCANNER_RATE_LIMITED");
+}
+
+/** Analyze a product by name (text-only, no image needed) */
+export async function analyzeProductByName(
+  productName: string,
+  concernsPrompt?: string
+): Promise<GeminiAnalysis> {
+  if (isMockMode()) {
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    return { ...MOCK_RESULTS.item, productName };
+  }
+
+  const withinLimit = await checkDailyLimit();
+  if (!withinLimit) {
+    throw new Error("SCANNER_RATE_LIMITED");
+  }
+
+  const prompt = `You are an expert clean living product analyst. The user wants to look up this product by name: "${productName}".
+
+Use your extensive product knowledge to:
+1. Identify the exact product (if specific brand/product) or analyze the general product category
+2. List the real ingredients or materials
+3. Analyze each for health, toxicity, and safety concerns
+4. Be specific with chemical names and material grades
+
+${PRODUCT_TYPES}
+${MATERIAL_ANALYSIS}
+${SCORE_CALIBRATION}
+Return a JSON object with this exact structure:
+${JSON_SCHEMA}` + (concernsPrompt || "");
+
+  const maxRetries = 4;
+  const retryDelays = [3000, 6000, 12000, 10000];
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    const response = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.2,
+          maxOutputTokens: 8192,
+          responseMimeType: "application/json",
+          thinkingConfig: { thinkingBudget: 0 },
+        },
+      }),
+    });
+
+    if (response.status === 429 && attempt < maxRetries) {
+      await new Promise((resolve) => setTimeout(resolve, retryDelays[attempt - 1]));
+      continue;
+    }
+
+    if (!response.ok) {
+      if (response.status === 429) throw new Error("SCANNER_RATE_LIMITED");
+      const errorText = await response.text();
+      throw new Error(`Gemini API error (${response.status}): ${errorText}`);
+    }
+
+    const data = await response.json();
+    const parts = data.candidates?.[0]?.content?.parts || [];
+    const textPart = parts.find((p: any) => typeof p.text === "string");
+    const textContent = textPart?.text;
+
+    if (!textContent) throw new Error("No response from Gemini API");
+
+    await incrementDailyCount();
+    const analysis = parseGeminiResponse(textContent);
+
+    // Cache in background
+    cacheProduct(analysis).catch(() => {});
+
+    return analysis;
+  }
+
+  throw new Error("SCANNER_RATE_LIMITED");
+}
+
+/** Build a concern prompt suffix based on the scan focus mode */
+export function buildFocusPrompt(focus: string): string {
+  switch (focus) {
+    case "body":
+      return "\n\nFOCUS: Analyze ONLY chemicals and ingredients harmful to human health. Ignore environmental concerns. Weight the score entirely on body toxicity.";
+    case "environmental":
+      return "\n\nFOCUS: Analyze ONLY environmental impact, sustainability, packaging waste, and ecological harm. Weight the score entirely on environmental concerns.";
+    case "quick":
+      return "\n\nFOCUS: Provide a QUICK analysis. Only return the product name, score, and top 3 concerns. Keep the ingredients list to the 5 most important ones. Keep the summary to one sentence.";
+    default:
+      return "";
+  }
 }
 
 export { isMockMode, findCachedProduct };

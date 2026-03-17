@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -21,11 +21,14 @@ import { CameraView, useCameraPermissions } from "../utils/camera";
 import * as Haptics from "../utils/haptics";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePreferences, buildConcernsPrompt } from "@/contexts/PreferencesContext";
 import {
   analyzeAndSaveScan,
+  buildFocusPrompt,
   type GeminiAnalysis,
 } from "@/services/gemini";
 import { Badge } from "@/components";
+import { getRatingFromScore } from "@/lib/savedProducts";
 
 type ProductScanState = "camera" | "processing" | "result" | "error";
 
@@ -51,7 +54,7 @@ function ScanningLineAnimation() {
   }));
 
   return (
-    <View className="w-full h-32 overflow-hidden rounded-xl bg-sage/5 items-center">
+    <View className="w-full h-32 overflow-hidden rounded-xl bg-forest/5 items-center">
       <Animated.View
         style={[
           animatedStyle,
@@ -70,8 +73,10 @@ function ScanningLineAnimation() {
 
 export default function ProductScanScreen() {
   const router = useRouter();
+  const { focus } = useLocalSearchParams<{ focus?: string }>();
   const { canScan, recordScan } = useSubscription();
   const { user } = useAuth();
+  const { concerns } = usePreferences();
   const [permission, requestPermission] = useCameraPermissions();
   const [state, setState] = useState<ProductScanState>("camera");
   const [flashOn, setFlashOn] = useState(false);
@@ -79,6 +84,7 @@ export default function ProductScanScreen() {
   const [errorMessage, setErrorMessage] = useState("");
   const [expandedIngredient, setExpandedIngredient] = useState<string | null>(null);
   const [isSaved, setIsSaved] = useState(false);
+  const [countdown, setCountdown] = useState(0);
   const cameraRef = useRef<CameraView>(null);
 
   const handleCapture = async () => {
@@ -95,25 +101,65 @@ export default function ProductScanScreen() {
 
       if (cameraRef.current) {
         try {
-          const photo = await (cameraRef.current as unknown as { takePictureAsync: (opts: { base64: boolean; quality: number }) => Promise<{ base64?: string }> }).takePictureAsync({
-            base64: true,
-            quality: 0.7,
-          });
-          if (photo?.base64) {
-            base64Image = photo.base64;
+          const cam = cameraRef.current as any;
+          // Try takePictureAsync first (standard CameraView method)
+          if (typeof cam.takePictureAsync === "function") {
+            const photo = await cam.takePictureAsync({
+              base64: true,
+              quality: 0.7,
+            });
+            if (photo?.base64) {
+              base64Image = photo.base64;
+            }
           }
-        } catch {
-          // Camera might not support takePictureAsync in all environments
+          // Fallback: try captureAsync (some Expo SDK versions use this)
+          if (!base64Image && typeof cam.captureAsync === "function") {
+            const photo = await cam.captureAsync({
+              base64: true,
+              quality: 0.7,
+            });
+            if (photo?.base64) {
+              base64Image = photo.base64;
+            }
+          }
+        } catch (camErr: any) {
+          console.warn("Camera capture error:", camErr?.message || camErr);
+          setErrorMessage(camErr?.message || "Camera capture failed");
+          setState("error");
+          return;
         }
       }
 
-      const result = await analyzeAndSaveScan(base64Image, "item", user?.id ?? null);
+      if (!base64Image) {
+        setErrorMessage("EMPTY_IMAGE");
+        setState("error");
+        return;
+      }
+
+      const concernsPrompt = buildConcernsPrompt(concerns) + buildFocusPrompt(focus || "all");
+      const result = await analyzeAndSaveScan(base64Image, "item", user?.id ?? null, concernsPrompt);
       recordScan();
       setAnalysis(result);
       setState("result");
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+      // Save to scan history
+      const { addToHistory } = await import("@/lib/scanHistory");
+      addToHistory({
+        productName: result.productName,
+        brand: result.brand,
+        category: result.category,
+        rating: getRatingFromScore(result.crunchyScore),
+        crunchyScore: result.crunchyScore,
+        scanMode: "item",
+        ingredients: result.ingredients.map(i => ({ name: i.name, risk: i.risk })),
+        concerns: result.concerns,
+        summary: result.summary,
+      }).catch(() => {});
     } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "Something went wrong");
+      const msg = err instanceof Error ? err.message : "Something went wrong";
+      console.error("Scan error:", msg, err);
+      setErrorMessage(msg);
       setState("error");
     }
   };
@@ -147,11 +193,26 @@ export default function ProductScanScreen() {
     return true;
   };
 
+  // Rate limit countdown - must be before any conditional returns
+  const isRateLimited = state === "error" && errorMessage === "SCANNER_RATE_LIMITED";
+
+  useEffect(() => {
+    if (isRateLimited && countdown === 0) {
+      setCountdown(30);
+    }
+  }, [isRateLimited]);
+
+  useEffect(() => {
+    if (countdown <= 0) return;
+    const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [countdown]);
+
   if (!permission) {
     return (
-      <SafeAreaView className="flex-1 bg-cream">
+      <SafeAreaView className="flex-1 bg-ivory">
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#8B9E7C" />
+          <ActivityIndicator size="large" color="#3D5A3E" />
         </View>
       </SafeAreaView>
     );
@@ -160,20 +221,20 @@ export default function ProductScanScreen() {
   // Processing state
   if (state === "processing") {
     return (
-      <SafeAreaView className="flex-1 bg-cream">
+      <SafeAreaView className="flex-1 bg-ivory">
         <View className="flex-1 items-center justify-center px-8">
           <View
             className="bg-white rounded-3xl p-8 items-center w-full"
             style={{
-              shadowColor: "#000",
+              shadowColor: "#3D5A3E",
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.08,
               shadowRadius: 12,
               elevation: 4,
             }}
           >
-            <View className="bg-sage/10 rounded-full w-20 h-20 items-center justify-center mb-5">
-              <Ionicons name="camera" size={36} color="#8B9E7C" />
+            <View className="bg-forest/8 rounded-full w-20 h-20 items-center justify-center mb-5">
+              <Ionicons name="camera" size={36} color="#3D5A3E" />
             </View>
             <Text className="text-xl font-bold text-dark mb-2">
               Identifying Product...
@@ -182,8 +243,8 @@ export default function ProductScanScreen() {
               Our AI is analyzing the product to find its ingredients and rate it
             </Text>
             <ScanningLineAnimation />
-            <View className="flex-row items-center mt-5 bg-sage/5 rounded-xl px-4 py-3">
-              <Ionicons name="sparkles" size={16} color="#8B9E7C" />
+            <View className="flex-row items-center mt-5 bg-forest/5 rounded-xl px-4 py-3">
+              <Ionicons name="sparkles" size={16} color="#3D5A3E" />
               <Text className="text-xs text-dark/40 ml-2">
                 Powered by Gemini AI
               </Text>
@@ -196,27 +257,25 @@ export default function ProductScanScreen() {
 
   // Result state
   if (state === "result" && analysis) {
-    const ratingColor = analysis.rating === "clean" ? "#4CAF50" : analysis.rating === "caution" ? "#FFC107" : "#F44336";
-    const ratingLabel = analysis.rating === "clean" ? "Clean" : analysis.rating === "caution" ? "Caution" : "Avoid";
+    const derivedRating = getRatingFromScore(analysis.crunchyScore);
+    const ratingColor = derivedRating === "clean" ? "#4CAF50" : derivedRating === "caution" ? "#FFC107" : "#F44336";
+    const ratingLabel = derivedRating === "clean" ? "Clean" : derivedRating === "caution" ? "Caution" : "Avoid";
 
     return (
-      <SafeAreaView className="flex-1 bg-cream">
+      <SafeAreaView className="flex-1 bg-ivory">
         {/* Header */}
         <View className="flex-row items-center justify-between px-5 pt-3 pb-2">
           <TouchableOpacity
             onPress={handleBackToScanner}
-            className="w-10 h-10 rounded-full bg-white items-center justify-center"
+            className="w-10 h-10 rounded-full bg-cream items-center justify-center"
             style={{
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.06,
-              shadowRadius: 6,
-              elevation: 2,
+              borderWidth: 1,
+        borderColor: "rgba(0,0,0,0.12)",
             }}
           >
             <Ionicons name="arrow-back" size={20} color="#2D2D2D" />
           </TouchableOpacity>
-          <Text className="text-xl font-bold text-dark">Scan Result</Text>
+          <Text className="text-xl font-bold text-dark" style={{ fontFamily: 'Georgia' }}>Scan Result</Text>
           <View className="w-10" />
         </View>
 
@@ -227,7 +286,7 @@ export default function ProductScanScreen() {
         >
           {/* Product Header Card */}
           <View className="mx-5 mt-2 bg-white rounded-3xl p-5" style={{
-            shadowColor: "#000",
+            shadowColor: "#3D5A3E",
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.08,
             shadowRadius: 12,
@@ -235,11 +294,11 @@ export default function ProductScanScreen() {
           }}>
             <View className="flex-row items-center">
               <View
-                className="w-16 h-16 rounded-2xl items-center justify-center mr-4"
+                className="w-16 h-16 rounded-3xl items-center justify-center mr-4"
                 style={{ backgroundColor: ratingColor + "15" }}
               >
                 <Ionicons
-                  name={analysis.rating === "clean" ? "checkmark-circle" : analysis.rating === "caution" ? "alert-circle" : "warning"}
+                  name={derivedRating === "clean" ? "checkmark-circle" : derivedRating === "caution" ? "alert-circle" : "warning"}
                   size={30}
                   color={ratingColor}
                 />
@@ -265,7 +324,7 @@ export default function ProductScanScreen() {
                   <Text className="text-xl font-bold" style={{ color: ratingColor }}>
                     {ratingLabel}
                   </Text>
-                  <Badge rating={analysis.rating} size="sm" />
+                  <Badge rating={derivedRating} size="sm" />
                 </View>
                 <Text className="text-sm text-dark/60 mt-1">
                   Crunchy Score: {analysis.crunchyScore}/100
@@ -275,8 +334,8 @@ export default function ProductScanScreen() {
           </View>
 
           {/* Summary */}
-          <View className="mx-5 mt-4 bg-white rounded-2xl p-4" style={{
-            shadowColor: "#000",
+          <View className="mx-5 mt-4 bg-white rounded-3xl p-4" style={{
+            shadowColor: "#3D5A3E",
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.05,
             shadowRadius: 6,
@@ -291,8 +350,8 @@ export default function ProductScanScreen() {
               const count = analysis.ingredients.filter((i) => i.risk === risk).length;
               const config = RISK_CONFIG[risk];
               return (
-                <View key={risk} className="flex-1 bg-white rounded-2xl p-3 items-center" style={{
-                  shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
+                <View key={risk} className="flex-1 bg-white rounded-3xl p-3 items-center" style={{
+                  shadowColor: "#3D5A3E", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
                 }}>
                   <Text className="text-lg font-bold" style={{ color: config.color }}>
                     {count}
@@ -305,8 +364,11 @@ export default function ProductScanScreen() {
 
           {/* Ingredients */}
           <View className="mx-5 mt-4">
-            <Text className="text-lg font-bold text-dark mb-3">Ingredients</Text>
-            {analysis.ingredients.map((ingredient) => {
+            <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: 'Georgia' }}>Ingredients</Text>
+            {[...analysis.ingredients].sort((a, b) => {
+              const order: Record<string, number> = { toxic: 0, concern: 1, safe: 2 };
+              return (order[a.risk] ?? 1) - (order[b.risk] ?? 1);
+            }).map((ingredient) => {
               const risk = RISK_CONFIG[ingredient.risk];
               const isExpanded = expandedIngredient === ingredient.name;
               return (
@@ -317,9 +379,9 @@ export default function ProductScanScreen() {
                     setExpandedIngredient(isExpanded ? null : ingredient.name);
                   }}
                   activeOpacity={0.7}
-                  className="bg-white rounded-2xl mb-2 overflow-hidden"
+                  className="bg-white rounded-3xl mb-2 overflow-hidden"
                   style={{
-                    shadowColor: "#000",
+                    shadowColor: "#3D5A3E",
                     shadowOffset: { width: 0, height: 1 },
                     shadowOpacity: 0.04,
                     shadowRadius: 4,
@@ -366,9 +428,9 @@ export default function ProductScanScreen() {
           {/* Concerns */}
           {analysis.concerns.length > 0 && (
             <View className="mx-5 mt-4">
-              <Text className="text-lg font-bold text-dark mb-3">Concerns</Text>
-              <View className="bg-white rounded-2xl p-4" style={{
-                shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
+              <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: 'Georgia' }}>Concerns</Text>
+              <View className="bg-white rounded-3xl p-4" style={{
+                shadowColor: "#3D5A3E", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
               }}>
                 {analysis.concerns.map((concern, i) => (
                   <View key={i} className="flex-row items-start mb-2">
@@ -383,9 +445,9 @@ export default function ProductScanScreen() {
           {/* Clean Alternatives */}
           {analysis.cleanAlternatives.length > 0 && (
             <View className="mx-5 mt-4">
-              <Text className="text-lg font-bold text-dark mb-3">Clean Alternatives</Text>
-              <View className="bg-white rounded-2xl p-4" style={{
-                shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
+              <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: 'Georgia' }}>Clean Alternatives</Text>
+              <View className="bg-white rounded-3xl p-4" style={{
+                shadowColor: "#3D5A3E", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
               }}>
                 {analysis.cleanAlternatives.map((alt, i) => (
                   <View key={i} className="flex-row items-center mb-2">
@@ -400,20 +462,35 @@ export default function ProductScanScreen() {
           {/* Action Buttons */}
           <View className="mx-5 mt-6 gap-3">
             <TouchableOpacity
-              onPress={() => {
+              onPress={async () => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                const { saveProduct, unsaveProduct } = await import("@/lib/savedProducts");
+                if (isSaved) {
+                  await unsaveProduct(analysis?.productName ?? "unknown");
+                } else if (analysis) {
+                  await saveProduct({
+                    id: `gemini-${Date.now()}`,
+                    name: analysis.productName,
+                    brand: analysis.brand || undefined,
+                    rating: getRatingFromScore(analysis.crunchyScore),
+                    image: getCategoryEmoji(analysis.category),
+                    category: analysis.category,
+                    scanData: analysis,
+                    savedAt: new Date().toISOString(),
+                  });
+                }
                 setIsSaved(!isSaved);
               }}
               activeOpacity={0.85}
-              className={`rounded-2xl py-4 flex-row items-center justify-center ${isSaved ? "bg-sage/10" : "bg-sage"}`}
-              style={isSaved ? { borderWidth: 1, borderColor: "#8B9E7C" } : undefined}
+              className={`rounded-2xl py-4 flex-row items-center justify-center ${isSaved ? "bg-forest/8" : "bg-forest"}`}
+              style={isSaved ? { borderWidth: 1, borderColor: "#3D5A3E" } : undefined}
             >
               <Ionicons
                 name={isSaved ? "bookmark" : "bookmark-outline"}
                 size={20}
-                color={isSaved ? "#8B9E7C" : "white"}
+                color={isSaved ? "#3D5A3E" : "white"}
               />
-              <Text className={`font-semibold text-base ml-2 ${isSaved ? "text-sage" : "text-white"}`}>
+              <Text className={`font-semibold text-base ml-2 ${isSaved ? "text-forest" : "text-white"}`}>
                 {isSaved ? "Product Saved" : "Save Product"}
               </Text>
             </TouchableOpacity>
@@ -424,7 +501,7 @@ export default function ProductScanScreen() {
               style={{
                 borderWidth: 1,
                 borderColor: "#e5e5e5",
-                shadowColor: "#000",
+                shadowColor: "#3D5A3E",
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: 0.05,
                 shadowRadius: 6,
@@ -444,7 +521,10 @@ export default function ProductScanScreen() {
 
   // Error state
   if (state === "error") {
-    const isRateLimited = errorMessage === "RATE_LIMITED";
+    const isEmptyImage = errorMessage === "EMPTY_IMAGE";
+
+    const retryDisabled = isRateLimited && countdown > 0;
+
     return (
       <SafeAreaView className="flex-1 bg-cream">
         <View className="flex-1 items-center justify-center px-8">
@@ -459,23 +539,29 @@ export default function ProductScanScreen() {
             }}
           >
             <View className="bg-peach/10 rounded-full w-20 h-20 items-center justify-center mb-5">
-              <Ionicons name={isRateLimited ? "time-outline" : "alert-circle"} size={36} color="#F4A574" />
+              <Ionicons name={isRateLimited ? "time-outline" : isEmptyImage ? "camera-outline" : "alert-circle"} size={36} color="#F4A574" />
             </View>
             <Text className="text-xl font-bold text-dark mb-2">
-              {isRateLimited ? "Oops, the scanner is busy" : "Couldn't Identify Product"}
+              {isRateLimited
+                ? "Our scanner is taking a breather"
+                : isEmptyImage
+                ? "Photo Capture Failed"
+                : "Couldn't Identify Product"}
             </Text>
             <Text className="text-sm text-dark/50 text-center mb-6 leading-5">
               {isRateLimited
-                ? "Try again in a moment."
+                ? "Wait 30 seconds and try again."
+                : isEmptyImage
+                ? "Couldn't capture the photo. Make sure the camera has a clear view and try again."
                 : "Try again with a clearer view of the product."}
             </Text>
             <TouchableOpacity
-              onPress={handleRetry}
-              activeOpacity={0.85}
-              className="bg-sage rounded-2xl py-3.5 px-8 mb-3 w-full items-center"
+              onPress={retryDisabled ? undefined : handleRetry}
+              activeOpacity={retryDisabled ? 1 : 0.85}
+              className={`rounded-2xl py-3.5 px-8 mb-3 w-full items-center ${retryDisabled ? "bg-sage/40" : "bg-sage"}`}
             >
               <Text className="text-white font-semibold text-base">
-                Try Again
+                {retryDisabled ? `Try Again (${countdown}s)` : "Try Again"}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={handleClose} className="py-2">
@@ -505,14 +591,15 @@ export default function ProductScanScreen() {
       {/* Camera */}
       <View className="flex-1">
         {permission.granted ? (
-          <CameraView
-            ref={cameraRef}
-            style={{ flex: 1 }}
-            facing="back"
-            enableTorch={flashOn}
-          >
-            {/* Overlay */}
-            <View className="flex-1 items-center justify-center">
+          <View style={{ flex: 1 }}>
+            <CameraView
+              ref={cameraRef}
+              style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+              facing="back"
+              enableTorch={flashOn}
+            />
+            {/* Overlay - positioned absolutely over camera */}
+            <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} className="items-center justify-center">
               <View className="absolute inset-0 bg-black/30" />
 
               {/* Corner bracket frame guide */}
@@ -578,7 +665,7 @@ export default function ProductScanScreen() {
                 <View className="w-12 h-12" />
               </View>
             </View>
-          </CameraView>
+          </View>
         ) : (
           <View className="flex-1 items-center justify-center px-8">
             <View className="bg-white/10 rounded-full w-20 h-20 items-center justify-center mb-5">
@@ -605,4 +692,13 @@ export default function ProductScanScreen() {
       </View>
     </SafeAreaView>
   );
+}
+
+function getCategoryEmoji(category: string): string {
+  const map: Record<string, string> = {
+    Food: "🍎", Drinks: "🥤", Skincare: "🧴", Makeup: "💄",
+    Cleaning: "🧹", "Personal Care": "🪥", Clothing: "👕",
+    Home: "🏠", Baby: "👶", Cookware: "🍳", Drinkware: "🥤",
+  };
+  return map[category] || "📦";
 }

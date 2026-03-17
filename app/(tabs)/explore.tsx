@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -6,674 +6,381 @@ import {
   TouchableOpacity,
   TextInput,
   RefreshControl,
+  ImageBackground,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import * as Haptics from "../../utils/haptics";
-import { Badge, ProductCardSkeleton } from "@/components";
-import {
-  PRODUCTS,
-  CATEGORIES,
-  type Product,
-  type Rating,
-  type ProductCategory,
-} from "@/data/products";
-import { RECIPES, type Recipe } from "@/data/recipes";
-import {
-  COMMUNITY_POSTS,
-  POST_TYPE_CONFIG,
-  type CommunityPost,
-} from "@/data/community";
+import { CATEGORY_IMAGES } from "@/lib/categoryImages";
 
-type FilterRating = Rating | "all";
+interface ProductSuggestion {
+  name: string;
+  brand: string;
+  emoji: string;
+  tip: string;
+}
 
-const FILTER_OPTIONS: { label: string; value: FilterRating }[] = [
-  { label: "All", value: "all" },
-  { label: "Clean", value: "clean" },
-  { label: "Caution", value: "caution" },
-  { label: "Avoid", value: "avoid" },
+interface BrowseCategory {
+  key: string;
+  label: string;
+  emoji: string;
+  products: ProductSuggestion[];
+}
+
+const BROWSE_CATEGORIES: BrowseCategory[] = [
+  {
+    key: "skincare",
+    label: "Skincare",
+    emoji: "🧴",
+    products: [
+      { name: "CeraVe Moisturizing Cream", brand: "CeraVe", emoji: "🧴", tip: "Fragrance-free, dermatologist recommended" },
+      { name: "Thayers Witch Hazel Toner", brand: "Thayers", emoji: "🌿", tip: "Alcohol-free, natural ingredients" },
+      { name: "Cocokind Daily SPF", brand: "Cocokind", emoji: "☀️", tip: "Mineral sunscreen, clean ingredients" },
+      { name: "Versed Dew Point Gel Cream", brand: "Versed", emoji: "💧", tip: "Lightweight, non-toxic formula" },
+      { name: "Weleda Skin Food", brand: "Weleda", emoji: "🌻", tip: "Plant-based, ultra-nourishing" },
+    ],
+  },
+  {
+    key: "food",
+    label: "Food & Pantry",
+    emoji: "🍎",
+    products: [
+      { name: "Primal Kitchen Mayo", brand: "Primal Kitchen", emoji: "🥑", tip: "Avocado oil based, no seed oils" },
+      { name: "Hu Chocolate Bars", brand: "Hu", emoji: "🍫", tip: "No refined sugar, clean ingredients" },
+      { name: "Siete Tortilla Chips", brand: "Siete", emoji: "🌮", tip: "Grain-free, avocado oil" },
+      { name: "Chosen Foods Avocado Oil", brand: "Chosen Foods", emoji: "🫒", tip: "Pure avocado oil for cooking" },
+      { name: "Purely Elizabeth Granola", brand: "Purely Elizabeth", emoji: "🥣", tip: "Ancient grains, low sugar" },
+    ],
+  },
+  {
+    key: "drinks",
+    label: "Drinks",
+    emoji: "🥤",
+    products: [
+      { name: "Olipop Prebiotic Soda", brand: "Olipop", emoji: "🥤", tip: "Gut-friendly, low sugar" },
+      { name: "Rishi Matcha", brand: "Rishi", emoji: "🍵", tip: "Organic, ceremonial grade" },
+      { name: "Harmless Harvest Coconut Water", brand: "Harmless Harvest", emoji: "🥥", tip: "Raw, organic, never heated" },
+      { name: "Poppi Prebiotic Soda", brand: "Poppi", emoji: "🍒", tip: "Apple cider vinegar based" },
+      { name: "Four Sigmatic Mushroom Coffee", brand: "Four Sigmatic", emoji: "☕", tip: "Adaptogens + organic coffee" },
+    ],
+  },
+  {
+    key: "cleaning",
+    label: "Cleaning",
+    emoji: "🧹",
+    products: [
+      { name: "Branch Basics Concentrate", brand: "Branch Basics", emoji: "🫧", tip: "One cleaner for everything, non-toxic" },
+      { name: "Blueland Cleaning Tablets", brand: "Blueland", emoji: "💧", tip: "Eco-friendly, zero plastic waste" },
+      { name: "Dr. Bronner's Castile Soap", brand: "Dr. Bronner's", emoji: "🧼", tip: "Multi-use, organic, fair trade" },
+      { name: "Force of Nature Cleaner", brand: "Force of Nature", emoji: "⚡", tip: "Electrolyzed water, kills 99.9% germs" },
+      { name: "Seventh Generation Dish Soap", brand: "Seventh Generation", emoji: "🌎", tip: "Plant-based, no synthetic fragrances" },
+    ],
+  },
+  {
+    key: "makeup",
+    label: "Makeup & Beauty",
+    emoji: "💄",
+    products: [
+      { name: "ILIA Super Serum Skin Tint", brand: "ILIA", emoji: "✨", tip: "Clean coverage with skincare benefits" },
+      { name: "Tower 28 ShineOn Lip Jelly", brand: "Tower 28", emoji: "💋", tip: "Non-toxic, great for sensitive skin" },
+      { name: "RMS Beauty Lip2Cheek", brand: "RMS", emoji: "🌹", tip: "Organic, multi-use color" },
+      { name: "Kosas Cloud Set Powder", brand: "Kosas", emoji: "☁️", tip: "Clean, lightweight, skin-friendly" },
+      { name: "Saie Dew Blush", brand: "Saie", emoji: "🎀", tip: "Clean beauty, buildable color" },
+    ],
+  },
+  {
+    key: "wellness",
+    label: "Wellness & Supplements",
+    emoji: "🌿",
+    products: [
+      { name: "Seed Daily Synbiotic", brand: "Seed", emoji: "🦠", tip: "Science-backed probiotic" },
+      { name: "Moon Juice Magnesi-Om", brand: "Moon Juice", emoji: "🌙", tip: "Magnesium for sleep + calm" },
+      { name: "Athletic Greens AG1", brand: "AG1", emoji: "🥬", tip: "All-in-one daily supplement" },
+      { name: "Vital Proteins Collagen", brand: "Vital Proteins", emoji: "💪", tip: "Grass-fed, pasture-raised collagen" },
+      { name: "Liquid IV Hydration", brand: "Liquid IV", emoji: "💧", tip: "Electrolyte mix, non-GMO" },
+    ],
+  },
+  {
+    key: "baby",
+    label: "Baby & Kids",
+    emoji: "👶",
+    products: [
+      { name: "Pipette Baby Lotion", brand: "Pipette", emoji: "🧴", tip: "Dermatologist tested, clean formula" },
+      { name: "Attitude Baby Diapers", brand: "Attitude", emoji: "👶", tip: "Hypoallergenic, plant-based" },
+      { name: "Babyganics Sunscreen", brand: "Babyganics", emoji: "☀️", tip: "Mineral SPF, tear-free" },
+      { name: "Earth Mama Organic Balm", brand: "Earth Mama", emoji: "🌱", tip: "Organic herbs, gentle on skin" },
+      { name: "Honest Company Wipes", brand: "Honest", emoji: "🧻", tip: "Plant-based, hypoallergenic" },
+    ],
+  },
+  {
+    key: "home",
+    label: "Home",
+    emoji: "🏠",
+    products: [
+      { name: "Coyuchi Organic Sheets", brand: "Coyuchi", emoji: "🛏️", tip: "100% organic cotton, GOTS certified" },
+      { name: "Vitruvi Essential Oil Diffuser", brand: "Vitruvi", emoji: "🌬️", tip: "Ceramic, no plastic parts" },
+      { name: "Beeswax Candles", brand: "Various", emoji: "🕯️", tip: "No paraffin, clean burning" },
+      { name: "Molly Suds Laundry Powder", brand: "Molly Suds", emoji: "👕", tip: "Plant-based, no synthetic fragrances" },
+      { name: "Public Goods Hand Soap", brand: "Public Goods", emoji: "🧼", tip: "Essential oils, no sulfates" },
+    ],
+  },
+  {
+    key: "clothing",
+    label: "Clothing & Fashion",
+    emoji: "👕",
+    products: [
+      { name: "Pact Organic Basics", brand: "Pact", emoji: "🌿", tip: "Fair trade, organic cotton" },
+      { name: "Girlfriend Collective Leggings", brand: "Girlfriend", emoji: "🏃‍♀️", tip: "Made from recycled materials" },
+      { name: "Allbirds Sneakers", brand: "Allbirds", emoji: "👟", tip: "Merino wool, sustainable materials" },
+      { name: "Quince Cashmere", brand: "Quince", emoji: "🧶", tip: "Affordable, sustainably sourced" },
+      { name: "Everlane Basics", brand: "Everlane", emoji: "👚", tip: "Transparent pricing, ethical factories" },
+    ],
+  },
 ];
-
-// Featured recipes - hand-picked popular ones
-const FEATURED_RECIPE_IDS = ["r1", "r8", "r15", "r22", "r30", "r5"];
-
-// Popular products - clean-rated ones for featuring
-const POPULAR_PRODUCT_IDS = ["p5", "p8", "p11", "p14", "p18", "p21"];
 
 export default function ExploreScreen() {
   const router = useRouter();
   const [searchInput, setSearchInput] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] =
-    useState<ProductCategory | null>(null);
-  const [filterRating, setFilterRating] = useState<FilterRating>("all");
   const [refreshing, setRefreshing] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [savedItems, setSavedItems] = useState<Set<string>>(new Set());
-  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
-  const isSearching = searchQuery.trim().length > 0;
-
-  // Debounce search input by 300ms
-  useEffect(() => {
-    if (debounceTimer.current) clearTimeout(debounceTimer.current);
-    debounceTimer.current = setTimeout(() => {
-      setSearchQuery(searchInput);
-    }, 300);
-    return () => {
-      if (debounceTimer.current) clearTimeout(debounceTimer.current);
-    };
-  }, [searchInput]);
-
-  // Simulate initial load
-  useState(() => {
-    setTimeout(() => setIsLoading(false), 600);
-  });
+  const filteredCategories = searchInput.trim()
+    ? BROWSE_CATEGORIES.filter((cat) => {
+        const q = searchInput.toLowerCase();
+        return (
+          cat.label.toLowerCase().includes(q) ||
+          cat.key.toLowerCase().includes(q) ||
+          cat.products.some(
+            (p) =>
+              p.name.toLowerCase().includes(q) ||
+              p.brand.toLowerCase().includes(q)
+          )
+        );
+      })
+    : BROWSE_CATEGORIES;
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 1500);
+    setTimeout(() => setRefreshing(false), 800);
   }, []);
 
-  const filteredProducts = useMemo(() => {
-    let results = PRODUCTS;
-
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      results = results.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.brand.toLowerCase().includes(q) ||
-          p.category.toLowerCase().includes(q)
-      );
-    }
-
-    if (selectedCategory) {
-      results = results.filter((p) => p.category === selectedCategory);
-    }
-
-    if (filterRating !== "all") {
-      results = results.filter((p) => p.rating === filterRating);
-    }
-
-    return results;
-  }, [searchQuery, selectedCategory, filterRating]);
-
-  // Search recipes when there's a search query
-  const matchingRecipes = useMemo(() => {
-    if (!searchQuery.trim()) return [];
-    const q = searchQuery.toLowerCase();
-    return RECIPES.filter(
-      (r) =>
-        r.title.toLowerCase().includes(q) ||
-        r.category.toLowerCase().includes(q) ||
-        r.description.toLowerCase().includes(q) ||
-        r.ingredients.some((ing) => ing.name.toLowerCase().includes(q))
-    ).slice(0, 5);
-  }, [searchQuery]);
-
-  // Search community posts when there's a search query
-  const matchingPosts = useMemo(() => {
-    if (!searchQuery.trim()) return [];
-    const q = searchQuery.toLowerCase();
-    return COMMUNITY_POSTS.filter(
-      (p) =>
-        p.content.toLowerCase().includes(q) ||
-        p.username.toLowerCase().includes(q) ||
-        p.hashtags.some((h) => h.toLowerCase().includes(q)) ||
-        p.postType.toLowerCase().includes(q)
-    ).slice(0, 5);
-  }, [searchQuery]);
-
-  // Featured data for empty search state
-  const featuredRecipes = useMemo(() => {
-    return RECIPES.filter((r) => FEATURED_RECIPE_IDS.includes(r.id)).slice(0, 6);
-  }, []);
-
-  const popularProducts = useMemo(() => {
-    const byId = PRODUCTS.filter((p) => POPULAR_PRODUCT_IDS.includes(p.id));
-    // Fill with clean-rated products if not enough matched
-    if (byId.length < 4) {
-      const extras = PRODUCTS.filter(
-        (p) => p.rating === "clean" && !POPULAR_PRODUCT_IDS.includes(p.id)
-      ).slice(0, 6 - byId.length);
-      return [...byId, ...extras];
-    }
-    return byId;
-  }, []);
-
-  const handleCategoryPress = (category: ProductCategory) => {
+  const handleProductPress = (_product: ProductSuggestion) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setSelectedCategory(selectedCategory === category ? null : category);
+    // Navigate to scanner so user can scan this product
+    router.push("/(tabs)/scan");
   };
 
-  const handleProductPress = (product: Product) => {
+  const handleCategoryPress = (key: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push(`/product-detail?barcode=${product.barcode}`);
+    setExpandedCategory(expandedCategory === key ? null : key);
   };
-
-  const handleSaveToggle = (productId: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setSavedItems((prev) => {
-      const next = new Set(prev);
-      if (next.has(productId)) {
-        next.delete(productId);
-      } else {
-        next.add(productId);
-      }
-      return next;
-    });
-  };
-
-  const clearFilters = () => {
-    setSearchInput("");
-    setSearchQuery("");
-    setSelectedCategory(null);
-    setFilterRating("all");
-  };
-
-  const hasActiveFilters =
-    searchInput.trim() !== "" ||
-    selectedCategory !== null ||
-    filterRating !== "all";
-
-  const totalResults =
-    filteredProducts.length + matchingRecipes.length + matchingPosts.length;
 
   return (
-    <SafeAreaView className="flex-1 bg-cream">
-      {/* Header */}
-      <View className="px-5 pt-3 pb-2">
-        <Text className="text-2xl font-bold text-dark">Explore</Text>
-        <Text className="text-sm text-dark/50 mt-0.5">
-          Discover clean alternatives
-        </Text>
-      </View>
+    <View className="flex-1 bg-ivory">
+      {/* Hero Header with Nature Image */}
+      <ImageBackground
+        source={require("@/assets/images/aesthetic/fresh-produce.jpg")}
+        resizeMode="cover"
+      >
+        <View style={{ backgroundColor: "rgba(61,90,62,0.6)" }}>
+          <SafeAreaView edges={["top"]}>
+            <View className="px-5 pt-4 pb-5">
+              <Text className="text-3xl font-bold text-white" style={{ fontFamily: 'Georgia' }}>Explore</Text>
+              <Text className="text-sm text-white/70 mt-0.5">
+                Browse clean products by category
+              </Text>
 
-      {/* Search Bar */}
-      <View className="px-5 mt-2">
-        <View
-          className="bg-white rounded-2xl flex-row items-center px-4 py-3"
-          style={{
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.06,
-            shadowRadius: 6,
-            elevation: 2,
-          }}
-        >
-          <Ionicons name="search" size={20} color="#999" />
-          <TextInput
-            className="flex-1 ml-3 text-base text-dark"
-            placeholder="Search products, recipes, posts..."
-            placeholderTextColor="#999"
-            value={searchInput}
-            onChangeText={setSearchInput}
-            returnKeyType="search"
-          />
-          {searchInput.length > 0 && (
-            <TouchableOpacity onPress={() => { setSearchInput(""); setSearchQuery(""); }}>
-              <Ionicons name="close-circle" size={20} color="#999" />
-            </TouchableOpacity>
-          )}
+              {/* Search Bar */}
+              <View className="mt-4">
+                <View
+                  className="bg-white rounded-3xl flex-row items-center px-4 py-3"
+                  style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)" }}
+                >
+                  <Ionicons name="search" size={20} color="#A8B89C" />
+                  <TextInput
+                    className="flex-1 ml-3 text-base text-dark"
+                    placeholder="Search categories and products..."
+                    placeholderTextColor="#999"
+                    value={searchInput}
+                    onChangeText={setSearchInput}
+                    returnKeyType="search"
+                  />
+                  {searchInput.length > 0 && (
+                    <TouchableOpacity onPress={() => setSearchInput("")}>
+                      <Ionicons name="close-circle" size={20} color="#A8B89C" />
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+            </View>
+          </SafeAreaView>
         </View>
-      </View>
+      </ImageBackground>
 
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor="#8B9E7C"
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#3D5A3E" />
         }
         keyboardShouldPersistTaps="handled"
       >
-        {isLoading ? (
-          <View className="px-5 mt-4" style={{ gap: 12 }}>
-            <ProductCardSkeleton />
-            <ProductCardSkeleton />
-            <ProductCardSkeleton />
-            <ProductCardSkeleton />
-          </View>
-        ) : isSearching ? (
-          /* ====== SEARCH RESULTS MODE ====== */
-          <>
-            {totalResults === 0 ? (
-              /* No Results */
-              <View className="items-center px-5 mt-16">
-                <Text className="text-5xl mb-4">🔍</Text>
-                <Text className="text-lg font-bold text-dark text-center">
-                  Nothing found for "{searchQuery}"
-                </Text>
-                <Text className="text-sm text-dark/50 text-center mt-2 px-4">
-                  Try scanning a product to add it to our database!
-                </Text>
+        {/* Scan CTA */}
+        <View className="px-5 mt-4">
+          <TouchableOpacity
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              router.push("/(tabs)/scan");
+            }}
+            activeOpacity={0.85}
+            className="bg-forest rounded-3xl py-4 flex-row items-center justify-center"
+            style={{
+              shadowColor: "#3D5A3E",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.15,
+              shadowRadius: 8,
+              elevation: 4,
+            }}
+          >
+            <Ionicons name="scan-outline" size={20} color="white" />
+            <Text className="text-white font-semibold text-base ml-2">
+              Scan a Product to Analyze It
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Category Grid (when not filtering) */}
+        {!searchInput.trim() && (
+          <View className="px-5 mt-5">
+            <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: "Georgia" }}>
+              Browse by Category
+            </Text>
+            <View className="flex-row flex-wrap" style={{ gap: 10 }}>
+              {BROWSE_CATEGORIES.map((cat) => (
                 <TouchableOpacity
-                  onPress={() => router.push("/(tabs)/scan")}
-                  className="bg-sage rounded-2xl px-6 py-3 mt-4"
+                  key={cat.key}
+                  onPress={() => handleCategoryPress(cat.key)}
+                  activeOpacity={0.8}
+                  style={{ width: "48%", flexGrow: 1 }}
                 >
-                  <Text className="text-white font-semibold">Scan a Product</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <>
-                {/* Recipe Results */}
-                {matchingRecipes.length > 0 && (
-                  <View className="px-5 mt-4">
-                    <View className="flex-row items-center justify-between mb-2">
-                      <View className="flex-row items-center">
-                        <Ionicons name="book-outline" size={16} color="#8B9E7C" />
-                        <Text className="text-sm font-semibold text-dark ml-1.5">
-                          Recipes ({matchingRecipes.length})
-                        </Text>
-                      </View>
-                      <TouchableOpacity onPress={() => router.push("/recipes")}>
-                        <Text className="text-sm text-sage font-medium">See all</Text>
-                      </TouchableOpacity>
-                    </View>
-                    <ScrollView
-                      horizontal
-                      showsHorizontalScrollIndicator={false}
-                      contentContainerStyle={{ gap: 10 }}
-                    >
-                      {matchingRecipes.map((recipe) => (
-                        <RecipeCard key={recipe.id} recipe={recipe} onPress={() => {
-                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                          router.push(`/recipe-detail?id=${recipe.id}`);
-                        }} />
-                      ))}
-                    </ScrollView>
-                  </View>
-                )}
-
-                {/* Product Results */}
-                {filteredProducts.length > 0 && (
-                  <View className="px-5 mt-4">
-                    <View className="flex-row items-center mb-2">
-                      <Ionicons name="cube-outline" size={16} color="#8B9E7C" />
-                      <Text className="text-sm font-semibold text-dark ml-1.5">
-                        Products ({filteredProducts.length})
-                      </Text>
-                    </View>
-                    <View style={{ gap: 12 }}>
-                      {filteredProducts.map((product) => (
-                        <ProductCard
-                          key={product.id}
-                          product={product}
-                          isSaved={savedItems.has(product.id)}
-                          onPress={() => handleProductPress(product)}
-                          onSave={() => handleSaveToggle(product.id)}
-                        />
-                      ))}
-                    </View>
-                  </View>
-                )}
-
-                {/* Community Posts Results */}
-                {matchingPosts.length > 0 && (
-                  <View className="px-5 mt-4">
-                    <View className="flex-row items-center justify-between mb-2">
-                      <View className="flex-row items-center">
-                        <Ionicons name="people-outline" size={16} color="#8B9E7C" />
-                        <Text className="text-sm font-semibold text-dark ml-1.5">
-                          Community Posts ({matchingPosts.length})
-                        </Text>
-                      </View>
-                      <TouchableOpacity onPress={() => router.push("/(tabs)/community")}>
-                        <Text className="text-sm text-sage font-medium">See all</Text>
-                      </TouchableOpacity>
-                    </View>
-                    <View style={{ gap: 10 }}>
-                      {matchingPosts.map((post) => (
-                        <CommunityPostCard key={post.id} post={post} />
-                      ))}
-                    </View>
-                  </View>
-                )}
-              </>
-            )}
-          </>
-        ) : (
-          /* ====== BROWSE / TRENDING MODE (no search query) ====== */
-          <>
-            {/* Category Grid */}
-            <View className="px-5 mt-4">
-              <View className="flex-row flex-wrap" style={{ gap: 10 }}>
-                {CATEGORIES.map((cat) => {
-                  const isSelected = selectedCategory === cat.name;
-                  return (
-                    <TouchableOpacity
-                      key={cat.name}
-                      onPress={() => handleCategoryPress(cat.name)}
-                      activeOpacity={0.7}
-                      className={`rounded-2xl p-3 items-center justify-center ${
-                        isSelected ? "bg-sage" : "bg-white"
-                      }`}
-                      style={{
-                        width: "31%",
-                        shadowColor: "#000",
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: isSelected ? 0.12 : 0.06,
-                        shadowRadius: 6,
-                        elevation: isSelected ? 4 : 2,
-                      }}
-                    >
-                      <Text className="text-2xl mb-1">{cat.icon}</Text>
-                      <Text
-                        className={`text-xs font-semibold ${
-                          isSelected ? "text-white" : "text-dark"
-                        }`}
-                      >
-                        {cat.name}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
-
-            {/* Filter Bar */}
-            <View className="mt-4 px-5">
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ gap: 8 }}
-              >
-                {FILTER_OPTIONS.map((opt) => {
-                  const isActive = filterRating === opt.value;
-                  return (
-                    <TouchableOpacity
-                      key={opt.value}
-                      onPress={() => setFilterRating(opt.value)}
-                      className={`px-4 py-2 rounded-full ${
-                        isActive ? "bg-sage" : "bg-white"
-                      }`}
-                      style={{
-                        shadowColor: "#000",
-                        shadowOffset: { width: 0, height: 1 },
-                        shadowOpacity: 0.04,
-                        shadowRadius: 4,
-                        elevation: 1,
-                      }}
-                    >
-                      <Text
-                        className={`text-sm font-medium ${
-                          isActive ? "text-white" : "text-dark/70"
-                        }`}
-                      >
-                        {opt.label}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-                {hasActiveFilters && (
-                  <TouchableOpacity
-                    onPress={clearFilters}
-                    className="px-4 py-2 rounded-full bg-peach/10"
+                  <ImageBackground
+                    source={CATEGORY_IMAGES[cat.key]}
+                    resizeMode="cover"
+                    imageStyle={{ borderRadius: 16 }}
                   >
-                    <Text className="text-sm font-medium text-peach-dark">
-                      Clear all
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </ScrollView>
-            </View>
-
-            {/* Featured Recipes (when not filtering by category/rating) */}
-            {!selectedCategory && filterRating === "all" && (
-              <View className="mt-5">
-                <View className="px-5 flex-row items-center justify-between mb-2">
-                  <View className="flex-row items-center">
-                    <Text className="text-base mr-1.5">🔥</Text>
-                    <Text className="text-base font-bold text-dark">
-                      Featured Recipes
-                    </Text>
-                  </View>
-                  <TouchableOpacity onPress={() => router.push("/recipes")}>
-                    <Text className="text-sm text-sage font-medium">See all</Text>
-                  </TouchableOpacity>
-                </View>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
-                >
-                  {featuredRecipes.map((recipe) => (
-                    <RecipeCard key={recipe.id} recipe={recipe} onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      router.push(`/recipe-detail?id=${recipe.id}`);
-                    }} />
-                  ))}
-                </ScrollView>
-              </View>
-            )}
-
-            {/* Popular Products (when not filtering by category/rating) */}
-            {!selectedCategory && filterRating === "all" && (
-              <View className="mt-5 px-5">
-                <View className="flex-row items-center mb-2">
-                  <Text className="text-base mr-1.5">⭐</Text>
-                  <Text className="text-base font-bold text-dark">
-                    Popular Products
-                  </Text>
-                </View>
-                <View style={{ gap: 12 }}>
-                  {popularProducts.map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      isSaved={savedItems.has(product.id)}
-                      onPress={() => handleProductPress(product)}
-                      onSave={() => handleSaveToggle(product.id)}
-                    />
-                  ))}
-                </View>
-              </View>
-            )}
-
-            {/* Filtered Product List (when category or rating filter is active) */}
-            {(selectedCategory || filterRating !== "all") && (
-              <>
-                <View className="px-5 mt-4 mb-2">
-                  <Text className="text-sm text-dark/50">
-                    {filteredProducts.length}{" "}
-                    {filteredProducts.length === 1 ? "product" : "products"} found
-                  </Text>
-                </View>
-
-                {filteredProducts.length === 0 ? (
-                  <View className="items-center px-5 mt-8">
-                    <Text className="text-5xl mb-4">🔍</Text>
-                    <Text className="text-lg font-bold text-dark text-center">
-                      No products found
-                    </Text>
-                    <Text className="text-sm text-dark/50 text-center mt-2">
-                      Try adjusting your filters to see more products
-                    </Text>
-                    <TouchableOpacity
-                      onPress={clearFilters}
-                      className="bg-sage rounded-2xl px-6 py-3 mt-4"
+                    <View
+                      className="rounded-2xl px-4 py-5 justify-end"
+                      style={{ backgroundColor: "rgba(0,0,0,0.35)", height: 100 }}
                     >
-                      <Text className="text-white font-semibold">Clear Filters</Text>
-                    </TouchableOpacity>
+                      <Text className="text-2xl mb-1">{cat.emoji}</Text>
+                      <Text className="text-white font-bold text-base">{cat.label}</Text>
+                    </View>
+                  </ImageBackground>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Expanded Category or Search Results */}
+        {(searchInput.trim() ? filteredCategories : expandedCategory ? BROWSE_CATEGORIES.filter((c) => c.key === expandedCategory) : []).map((cat) => (
+          <View key={cat.key} className="px-5 mt-5">
+            <View className="flex-row items-center justify-between mb-3">
+              <View className="flex-row items-center">
+                <Text className="text-xl mr-2">{cat.emoji}</Text>
+                <Text className="text-lg font-bold text-dark" style={{ fontFamily: "Georgia" }}>
+                  {cat.label}
+                </Text>
+              </View>
+              {!searchInput.trim() && (
+                <TouchableOpacity onPress={() => setExpandedCategory(null)}>
+                  <Text className="text-sm text-forest font-medium">Close</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            <View style={{ gap: 10 }}>
+              {cat.products
+                .filter((p) => {
+                  if (!searchInput.trim()) return true;
+                  const q = searchInput.toLowerCase();
+                  return (
+                    p.name.toLowerCase().includes(q) ||
+                    p.brand.toLowerCase().includes(q)
+                  );
+                })
+                .map((product, idx) => (
+                  <TouchableOpacity
+                    key={idx}
+                    onPress={() => handleProductPress(product)}
+                    activeOpacity={0.7}
+                    className="bg-white rounded-3xl p-4 flex-row items-center"
+                    style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.08)" }}
+                  >
+                    <Text className="text-2xl mr-3">{product.emoji}</Text>
+                    <View className="flex-1">
+                      <Text className="text-sm font-semibold text-dark" numberOfLines={1}>
+                        {product.name}
+                      </Text>
+                      <Text className="text-xs text-dark/50 mt-0.5">{product.brand}</Text>
+                      <Text className="text-xs text-forest/70 mt-1">{product.tip}</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={16} color="#A8B89C" />
+                  </TouchableOpacity>
+                ))}
+            </View>
+          </View>
+        ))}
+
+        {/* Popular Products section when nothing selected/searched */}
+        {!searchInput.trim() && !expandedCategory && (
+          <View className="px-5 mt-6">
+            <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: "Georgia" }}>
+              Popular Clean Swaps
+            </Text>
+            <View style={{ gap: 10 }}>
+              {[
+                BROWSE_CATEGORIES[0].products[0], // Skincare
+                BROWSE_CATEGORIES[1].products[0], // Food
+                BROWSE_CATEGORIES[2].products[0], // Drinks
+                BROWSE_CATEGORIES[3].products[0], // Cleaning
+                BROWSE_CATEGORIES[4].products[0], // Makeup
+                BROWSE_CATEGORIES[5].products[0], // Wellness
+              ].map((product, idx) => (
+                <TouchableOpacity
+                  key={idx}
+                  onPress={() => handleProductPress(product)}
+                  activeOpacity={0.7}
+                  className="bg-white rounded-3xl p-4 flex-row items-center"
+                  style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.08)" }}
+                >
+                  <Text className="text-2xl mr-3">{product.emoji}</Text>
+                  <View className="flex-1">
+                    <Text className="text-sm font-semibold text-dark" numberOfLines={1}>
+                      {product.name}
+                    </Text>
+                    <Text className="text-xs text-dark/50 mt-0.5">{product.brand}</Text>
+                    <Text className="text-xs text-forest/70 mt-1">{product.tip}</Text>
                   </View>
-                ) : (
-                  <View className="px-5" style={{ gap: 12 }}>
-                    {filteredProducts.map((product) => (
-                      <ProductCard
-                        key={product.id}
-                        product={product}
-                        isSaved={savedItems.has(product.id)}
-                        onPress={() => handleProductPress(product)}
-                        onSave={() => handleSaveToggle(product.id)}
-                      />
-                    ))}
-                  </View>
-                )}
-              </>
-            )}
-          </>
+                  <Ionicons name="chevron-forward" size={16} color="#A8B89C" />
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* No results */}
+        {searchInput.trim() && filteredCategories.length === 0 && (
+          <View className="items-center px-5 mt-10">
+            <Ionicons name="search-outline" size={40} color="#A8B89C" />
+            <Text className="text-base font-semibold text-dark mt-3">No results found</Text>
+            <Text className="text-sm text-dark/40 text-center mt-1">
+              Try a different search term, or use the scanner to analyze a specific product
+            </Text>
+          </View>
         )}
       </ScrollView>
-    </SafeAreaView>
-  );
-}
-
-function RecipeCard({ recipe, onPress }: { recipe: Recipe; onPress: () => void }) {
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.8}
-      className="bg-white rounded-2xl p-3 items-center"
-      style={{
-        width: 130,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 6,
-        elevation: 2,
-      }}
-    >
-      <Text className="text-3xl mb-1">{recipe.image}</Text>
-      <Text className="text-xs font-semibold text-dark text-center" numberOfLines={2}>
-        {recipe.title}
-      </Text>
-      <View className="flex-row items-center mt-1" style={{ gap: 6 }}>
-        <Text className="text-xs text-sage font-medium">{recipe.category}</Text>
-        <View className="w-1 h-1 rounded-full bg-dark/20" />
-        <Text className="text-xs text-dark/40">{recipe.difficulty}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-}
-
-function CommunityPostCard({ post }: { post: CommunityPost }) {
-  const router = useRouter();
-  const typeConfig = POST_TYPE_CONFIG[post.postType];
-
-  return (
-    <TouchableOpacity
-      onPress={() => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        router.push("/(tabs)/community");
-      }}
-      activeOpacity={0.8}
-      className="bg-white rounded-2xl p-4"
-      style={{
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 8,
-        elevation: 3,
-      }}
-    >
-      <View className="flex-row items-center mb-2">
-        <View className="w-8 h-8 rounded-full bg-sage/15 items-center justify-center mr-2">
-          <Text className="text-base">{post.avatar}</Text>
-        </View>
-        <Text className="text-sm font-semibold text-dark flex-1" numberOfLines={1}>
-          {post.username}
-        </Text>
-        <View
-          className="px-2 py-0.5 rounded-full"
-          style={{ backgroundColor: typeConfig.color + "18" }}
-        >
-          <Text className="text-xs font-medium" style={{ color: typeConfig.color }}>
-            {typeConfig.label}
-          </Text>
-        </View>
-      </View>
-      <Text className="text-sm text-dark/70" numberOfLines={2}>
-        {post.content}
-      </Text>
-      <View className="flex-row items-center mt-2" style={{ gap: 10 }}>
-        <View className="flex-row items-center">
-          <Ionicons name="heart-outline" size={14} color="#999" />
-          <Text className="text-xs text-dark/40 ml-1">{post.likes}</Text>
-        </View>
-        <View className="flex-row items-center">
-          <Ionicons name="chatbubble-outline" size={13} color="#999" />
-          <Text className="text-xs text-dark/40 ml-1">{post.comments.length}</Text>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
-}
-
-function ProductCard({
-  product,
-  isSaved,
-  onPress,
-  onSave,
-}: {
-  product: Product;
-  isSaved: boolean;
-  onPress: () => void;
-  onSave: () => void;
-}) {
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.8}
-      className="bg-white rounded-2xl overflow-hidden"
-      style={{
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 8,
-        elevation: 3,
-      }}
-    >
-      <View className="flex-row p-4">
-        {/* Product Image */}
-        <View
-          className="w-16 h-16 rounded-2xl items-center justify-center mr-3"
-          style={{
-            backgroundColor:
-              product.rating === "clean"
-                ? "#4CAF5015"
-                : product.rating === "caution"
-                ? "#FFC10715"
-                : "#F4433615",
-          }}
-        >
-          <Text className="text-3xl">{product.image}</Text>
-        </View>
-
-        {/* Product Info */}
-        <View className="flex-1">
-          <View className="flex-row items-start justify-between">
-            <View className="flex-1 mr-2">
-              <Text
-                className="text-base font-semibold text-dark"
-                numberOfLines={1}
-              >
-                {product.name}
-              </Text>
-              <Text className="text-xs text-dark/50 mt-0.5">
-                {product.brand}
-              </Text>
-            </View>
-            <TouchableOpacity onPress={onSave} hitSlop={8}>
-              <Ionicons
-                name={isSaved ? "bookmark" : "bookmark-outline"}
-                size={20}
-                color={isSaved ? "#8B9E7C" : "#999"}
-              />
-            </TouchableOpacity>
-          </View>
-
-          <View className="flex-row items-center mt-2 gap-2">
-            <Badge rating={product.rating} size="sm" />
-            <Text className="text-xs text-dark/40">{product.category}</Text>
-          </View>
-        </View>
-      </View>
-    </TouchableOpacity>
+    </View>
   );
 }

@@ -6,6 +6,7 @@ import {
   ScrollView,
   Share,
   Alert,
+  ImageBackground,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -26,12 +27,14 @@ import {
   findProductByBarcode,
   getDefaultProduct,
   type Product,
-  type Ingredient,
   type IngredientRisk,
   type Rating,
   type Alternative,
 } from "@/data/products";
 import { Badge } from "@/components";
+import { addToHistory } from "@/lib/scanHistory";
+import { getRatingFromScore } from "@/lib/savedProducts";
+import { getCategoryImage } from "@/lib/categoryImages";
 
 const RATING_CONFIG: Record<Rating, { icon: keyof typeof Ionicons.glyphMap; color: string; bg: string; label: string; description: string }> = {
   clean: {
@@ -107,26 +110,96 @@ function ScanSuccessAnimation({ color }: { color: string }) {
   );
 }
 
+interface DisplayProduct {
+  id: string;
+  name: string;
+  brand: string;
+  category: string;
+  image: string;
+  rating: Rating;
+  crunchyScore?: number;
+  barcode: string;
+  ingredients: Array<{ name: string; risk: IngredientRisk; explanation: string }>;
+  alternatives: Alternative[];
+  diyRecipeId?: string;
+  concerns?: string[];
+  summary?: string;
+}
+
 export default function ScanResultScreen() {
   const router = useRouter();
-  const { barcode, type } = useLocalSearchParams<{
+  const { barcode, type, barcodeData, source } = useLocalSearchParams<{
     barcode?: string;
     type?: string;
+    barcodeData?: string;
+    source?: string;
   }>();
 
   const [expandedIngredient, setExpandedIngredient] = useState<string | null>(null);
   const [isSaved, setIsSaved] = useState(false);
   const [showSuccess, setShowSuccess] = useState(true);
   const shareCardRef = useRef<ViewShot>(null);
+  const [historySaved, setHistorySaved] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowSuccess(false), 2000);
     return () => clearTimeout(timer);
   }, []);
 
-  const product: Product = barcode
-    ? findProductByBarcode(barcode) ?? getDefaultProduct(barcode)
-    : getDefaultProduct("unknown");
+  // Build display product from either barcode data (Gemini analysis) or mock product data
+  let product: DisplayProduct;
+
+  if (barcodeData) {
+    try {
+      const analysis = JSON.parse(barcodeData);
+      const score = analysis.crunchyScore || 50;
+      product = {
+        id: `gemini_${Date.now()}`,
+        name: analysis.productName || "Unknown Product",
+        brand: analysis.brand || "Unknown Brand",
+        category: analysis.category || "Other",
+        image: getCategoryEmoji(analysis.category),
+        rating: getRatingFromScore(score),
+        crunchyScore: score,
+        barcode: barcode || "",
+        ingredients: (analysis.ingredients || []).map((i: any) => ({
+          name: i.name || "",
+          risk: (i.risk || "concern") as IngredientRisk,
+          explanation: i.explanation || "",
+        })),
+        alternatives: [],
+        concerns: analysis.concerns || [],
+        summary: analysis.summary || "",
+      };
+    } catch {
+      const fallback = getDefaultProduct("unknown");
+      product = { ...fallback, concerns: [], summary: "" };
+    }
+  } else {
+    const mockProduct = barcode
+      ? findProductByBarcode(barcode) ?? getDefaultProduct(barcode)
+      : getDefaultProduct("unknown");
+    product = { ...mockProduct, concerns: [], summary: "" };
+  }
+
+  // Auto-save to scan history (only once per mount, skip for history views)
+  useEffect(() => {
+    if (!historySaved && source !== "history") {
+      setHistorySaved(true);
+      addToHistory({
+        productName: product.name,
+        brand: product.brand,
+        category: product.category,
+        rating: product.rating,
+        crunchyScore: product.crunchyScore || 50,
+        barcode: product.barcode,
+        scanMode: source || "item",
+        ingredients: product.ingredients.map(i => ({ name: i.name, risk: i.risk })),
+        concerns: product.concerns,
+        summary: product.summary,
+      }).catch(() => {});
+    }
+  }, []);
 
   const ratingInfo = RATING_CONFIG[product.rating];
 
@@ -135,8 +208,24 @@ export default function ScanResultScreen() {
     setExpandedIngredient(expandedIngredient === name ? null : name);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const { saveProduct, unsaveProduct } = await import("@/lib/savedProducts");
+    if (isSaved) {
+      await unsaveProduct(product.id);
+    } else {
+      await saveProduct({
+        id: product.id,
+        name: product.name,
+        brand: product.brand,
+        barcode: product.barcode,
+        rating: product.rating,
+        image: product.image,
+        category: product.category,
+        scanData: barcodeData ? JSON.parse(barcodeData) : undefined,
+        savedAt: new Date().toISOString(),
+      });
+    }
     setIsSaved(!isSaved);
   };
 
@@ -155,8 +244,9 @@ export default function ScanResultScreen() {
       // Fallback to text share
     }
     try {
+      const scoreText = product.crunchyScore ? ` (Score: ${product.crunchyScore}/100)` : "";
       await Share.share({
-        message: `I scanned ${product.name} by ${product.brand} on Crunchy and it's rated ${ratingInfo.label}! Download Crunchy to check your products.`,
+        message: `I scanned ${product.name} by ${product.brand} on Crunchy and it's rated ${ratingInfo.label}${scoreText}! 🌿\n\nDownload Crunchy to check your products.`,
       });
     } catch {
       // User cancelled
@@ -187,7 +277,7 @@ export default function ScanResultScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-cream">
-      {showSuccess && <ScanSuccessAnimation color={ratingInfo.color} />}
+      {showSuccess && source !== "history" && <ScanSuccessAnimation color={ratingInfo.color} />}
       {/* Header */}
       <View className="flex-row items-center justify-between px-5 pt-3 pb-2">
         <View className="flex-row items-center">
@@ -247,58 +337,93 @@ export default function ScanResultScreen() {
       >
         {/* Shareable Card - captured by ViewShot */}
         <ViewShot ref={shareCardRef} options={{ format: "png", quality: 1 }}>
-          {/* Product Header */}
-          <Animated.View entering={FadeIn.delay(200).duration(400)} className="mx-5 mt-2 bg-white rounded-3xl p-5" style={{
+          {/* Product Header with botanical accent */}
+          <Animated.View entering={FadeIn.delay(200).duration(400)} className="mx-5 mt-2 rounded-3xl overflow-hidden" style={{
             shadowColor: "#000",
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.08,
             shadowRadius: 12,
             elevation: 4,
           }}>
-            <View className="flex-row items-center">
-              {/* Product Image Placeholder */}
-              <View
-                className="w-20 h-20 rounded-2xl items-center justify-center mr-4"
-                style={{ backgroundColor: ratingInfo.color + "15" }}
-              >
-                <Text className="text-4xl">{product.image}</Text>
-              </View>
-              <View className="flex-1">
-                <Text className="text-xs text-dark/40 uppercase font-medium tracking-wide">
-                  {product.category}
-                </Text>
-                <Text className="text-lg font-bold text-dark mt-0.5">
-                  {product.name}
-                </Text>
-                <Text className="text-sm text-dark/50">{product.brand}</Text>
-              </View>
-            </View>
-
-            {/* Overall Rating */}
-            <View
-              className="mt-4 rounded-2xl p-4 flex-row items-center"
-              style={{ backgroundColor: ratingInfo.color + "12" }}
+            {/* Botanical header strip */}
+            <ImageBackground
+              source={getCategoryImage(product.category)}
+              resizeMode="cover"
             >
-              <View
-                className="w-14 h-14 rounded-full items-center justify-center mr-4"
-                style={{ backgroundColor: ratingInfo.color + "25" }}
-              >
-                <Ionicons name={ratingInfo.icon} size={30} color={ratingInfo.color} />
-              </View>
-              <View className="flex-1">
-                <View className="flex-row items-center gap-2">
-                  <Text className="text-xl font-bold" style={{ color: ratingInfo.color }}>
-                    {ratingInfo.label}
-                  </Text>
-                  <Badge rating={product.rating} size="sm" />
+              <View className="px-5 pt-5 pb-4" style={{ backgroundColor: "rgba(61,90,62,0.7)" }}>
+                <View className="flex-row items-center">
+                  <View
+                    className="w-16 h-16 rounded-2xl items-center justify-center mr-4"
+                    style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
+                  >
+                    <Text className="text-3xl">{product.image}</Text>
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-xs text-white/60 uppercase font-medium tracking-wide">
+                      {product.category}
+                    </Text>
+                    <Text className="text-lg font-bold text-white mt-0.5" style={{ fontFamily: "Georgia" }}>
+                      {product.name}
+                    </Text>
+                    <Text className="text-sm text-white/70">{product.brand}</Text>
+                  </View>
                 </View>
-                <Text className="text-sm text-dark/60 mt-1">
-                  {ratingInfo.description}
-                </Text>
+              </View>
+            </ImageBackground>
+
+            {/* White card body */}
+            <View className="bg-white px-5 pb-5">
+              {/* Overall Rating */}
+              <View
+                className="mt-4 rounded-2xl p-4 flex-row items-center"
+                style={{ backgroundColor: ratingInfo.color + "12" }}
+              >
+                <View
+                  className="w-14 h-14 rounded-full items-center justify-center mr-4"
+                  style={{ backgroundColor: ratingInfo.color + "25" }}
+                >
+                  <Ionicons name={ratingInfo.icon} size={30} color={ratingInfo.color} />
+                </View>
+                <View className="flex-1">
+                  <View className="flex-row items-center gap-2">
+                    <Text className="text-xl font-bold" style={{ color: ratingInfo.color }}>
+                      {ratingInfo.label}
+                    </Text>
+                    <Badge rating={product.rating} size="sm" />
+                    {product.crunchyScore !== undefined && (
+                      <View className="bg-forest/10 rounded-full px-2.5 py-0.5">
+                        <Text className="text-forest text-xs font-bold">{product.crunchyScore}/100</Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text className="text-sm text-dark/60 mt-1">
+                    {product.summary || ratingInfo.description}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Branding for share */}
+              <View className="flex-row items-center justify-center mt-3 pt-3" style={{ borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.06)" }}>
+                <Text className="text-sm text-dark/30" style={{ fontWeight: "500" }}>Scanned with </Text>
+                <Text className="text-sm text-forest" style={{ fontFamily: "Georgia", fontStyle: "italic", fontWeight: "600" }}>Crunchy</Text>
+                <Text className="text-sm ml-1">🌿</Text>
               </View>
             </View>
           </Animated.View>
         </ViewShot>
+
+        {/* Concerns (if from Gemini analysis) */}
+        {product.concerns && product.concerns.length > 0 && (
+          <View className="mx-5 mt-4 bg-white rounded-2xl p-4" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.08)" }}>
+            <Text className="text-sm font-bold text-dark mb-2">Key Concerns</Text>
+            {product.concerns.map((concern, idx) => (
+              <View key={idx} className="flex-row items-start mb-1.5">
+                <Ionicons name="alert-circle" size={14} color="#FFC107" style={{ marginTop: 2, marginRight: 6 }} />
+                <Text className="text-sm text-dark/70 flex-1">{concern}</Text>
+              </View>
+            ))}
+          </View>
+        )}
 
         {/* Ingredient Summary */}
         <View className="flex-row mx-5 mt-4 gap-2">
@@ -331,7 +456,10 @@ export default function ScanResultScreen() {
         {/* Ingredients List */}
         <View className="mx-5 mt-4">
           <Text className="text-lg font-bold text-dark mb-3">Ingredients</Text>
-          {product.ingredients.map((ingredient) => {
+          {[...product.ingredients].sort((a, b) => {
+            const order = { toxic: 0, concern: 1, safe: 2 };
+            return (order[a.risk] ?? 1) - (order[b.risk] ?? 1);
+          }).map((ingredient) => {
             const risk = RISK_CONFIG[ingredient.risk];
             const isExpanded = expandedIngredient === ingredient.name;
             return (
@@ -372,7 +500,7 @@ export default function ScanResultScreen() {
                     />
                   </View>
                 </View>
-                {isExpanded && (
+                {isExpanded && ingredient.explanation && (
                   <View
                     className="px-3.5 pb-3.5 pt-0"
                     style={{ borderTopWidth: 1, borderTopColor: "#f0f0f0" }}
@@ -412,7 +540,6 @@ export default function ScanResultScreen() {
                     elevation: 3,
                   }}
                 >
-                  {/* Product Image */}
                   <View
                     className="h-28 items-center justify-center"
                     style={{ backgroundColor: "#4CAF50" + "10" }}
@@ -453,21 +580,14 @@ export default function ScanResultScreen() {
             onPress={handleDIY}
             activeOpacity={0.8}
             className="mx-5 mt-5 bg-peach/10 rounded-2xl p-4 flex-row items-center"
-            style={{
-              borderWidth: 1,
-              borderColor: "#F4A574" + "30",
-            }}
+            style={{ borderWidth: 1, borderColor: "#F4A574" + "30" }}
           >
             <View className="w-12 h-12 rounded-full bg-peach/20 items-center justify-center mr-3">
               <Ionicons name="flask-outline" size={24} color="#F4A574" />
             </View>
             <View className="flex-1">
-              <Text className="text-base font-bold text-dark">
-                DIY Instead
-              </Text>
-              <Text className="text-xs text-dark/50 mt-0.5">
-                Make a clean version at home
-              </Text>
+              <Text className="text-base font-bold text-dark">DIY Instead</Text>
+              <Text className="text-xs text-dark/50 mt-0.5">Make a clean version at home</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#F4A574" />
           </TouchableOpacity>
@@ -513,4 +633,21 @@ export default function ScanResultScreen() {
       </ScrollView>
     </SafeAreaView>
   );
+}
+
+function getCategoryEmoji(category: string): string {
+  const map: Record<string, string> = {
+    Food: "🍎",
+    Drinks: "🥤",
+    Skincare: "🧴",
+    Makeup: "💄",
+    Cleaning: "🧹",
+    "Personal Care": "🪥",
+    Clothing: "👕",
+    Home: "🏠",
+    Baby: "👶",
+    Cookware: "🍳",
+    Drinkware: "🥤",
+  };
+  return map[category] || "📦";
 }

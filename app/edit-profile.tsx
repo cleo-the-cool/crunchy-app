@@ -103,7 +103,7 @@ export default function EditProfileScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-cream">
+    <SafeAreaView className="flex-1 bg-ivory">
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -112,11 +112,11 @@ export default function EditProfileScreen() {
           {/* Header */}
           <View className="flex-row items-center justify-between px-6 pt-2 pb-4">
             <TouchableOpacity onPress={goBack} hitSlop={8}>
-              <Ionicons name="arrow-back" size={24} color="#2D2D2D" />
+              <Ionicons name="arrow-back" size={24} color="#3D5A3E" />
             </TouchableOpacity>
-            <Text className="text-lg font-bold text-dark">Edit Profile</Text>
+            <Text className="text-lg font-bold text-dark" style={{ fontFamily: 'Georgia' }}>Edit Profile</Text>
             <TouchableOpacity onPress={handleSave} disabled={isSaving} hitSlop={8}>
-              <Text className={`text-base font-semibold ${isSaving ? "text-dark/30" : "text-sage"}`}>
+              <Text className={`text-base font-semibold ${isSaving ? "text-dark/30" : "text-forest"}`}>
                 {isSaving ? "Saving..." : "Save"}
               </Text>
             </TouchableOpacity>
@@ -131,9 +131,9 @@ export default function EditProfileScreen() {
             {/* Avatar Selection */}
             <View className="items-center px-6 pt-4 pb-6">
               <View
-                className="w-24 h-24 rounded-full bg-sage/15 items-center justify-center mb-4"
+                className="w-24 h-24 rounded-full bg-forest/10 items-center justify-center mb-4"
                 style={{
-                  shadowColor: "#8B9E7C",
+                  shadowColor: "#3D5A3E",
                   shadowOffset: { width: 0, height: 4 },
                   shadowOpacity: 0.2,
                   shadowRadius: 8,
@@ -160,15 +160,15 @@ export default function EditProfileScreen() {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       }}
                       activeOpacity={0.7}
-                      className={`w-14 h-14 rounded-2xl items-center justify-center ${
+                      className={`w-14 h-14 rounded-3xl items-center justify-center ${
                         isSelected
-                          ? "bg-sage/15 border-2 border-sage"
-                          : "bg-white border-2 border-cream-dark"
+                          ? "bg-forest/10 border-2 border-forest"
+                          : "bg-cream border-2 border-cream-dark"
                       }`}
                       style={
                         isSelected
                           ? {
-                              shadowColor: "#8B9E7C",
+                              shadowColor: "#3D5A3E",
                               shadowOffset: { width: 0, height: 2 },
                               shadowOpacity: 0.2,
                               shadowRadius: 6,
@@ -179,7 +179,7 @@ export default function EditProfileScreen() {
                     >
                       <Text className="text-2xl">{avatar.emoji}</Text>
                       {isSelected && (
-                        <View className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-sage items-center justify-center">
+                        <View className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-forest items-center justify-center">
                           <Text className="text-white text-[8px] font-bold">
                             {"\u2713"}
                           </Text>
@@ -200,9 +200,9 @@ export default function EditProfileScreen() {
                 value={displayName}
                 onChangeText={setDisplayName}
                 placeholder="What should we call you?"
-                placeholderTextColor="#999"
+                placeholderTextColor="#A8B89C"
                 autoCapitalize="words"
-                className="bg-white rounded-2xl px-4 py-3.5 text-base text-dark"
+                className="bg-white rounded-3xl px-4 py-3.5 text-base text-dark"
                 style={inputShadow}
               />
             </View>
@@ -216,11 +216,11 @@ export default function EditProfileScreen() {
                 value={bio}
                 onChangeText={(t) => setBio(t.slice(0, 150))}
                 placeholder="Tell us a bit about yourself..."
-                placeholderTextColor="#999"
+                placeholderTextColor="#A8B89C"
                 multiline
                 numberOfLines={4}
                 textAlignVertical="top"
-                className="bg-white rounded-2xl px-4 py-3.5 text-base text-dark"
+                className="bg-white rounded-3xl px-4 py-3.5 text-base text-dark"
                 style={{ minHeight: 100, ...inputShadow }}
               />
               <Text className="text-xs text-dark/40 mt-1 text-right">
@@ -244,19 +244,19 @@ export default function EditProfileScreen() {
                       key={option.id}
                       onPress={() => toggleInterest(option.id)}
                       activeOpacity={0.7}
-                      className={`flex-row items-center px-3.5 py-2.5 rounded-2xl ${
-                        isSelected ? "bg-sage/15 border border-sage" : "bg-white border border-cream-dark"
+                      className={`flex-row items-center px-3.5 py-2.5 rounded-3xl ${
+                        isSelected ? "bg-forest/10 border border-forest" : "bg-cream border border-cream-dark"
                       }`}
                       style={isSelected ? selectedChipShadow : inputShadow}
                     >
                       <Text className="text-base mr-1.5">{option.icon}</Text>
                       <Text
-                        className={`text-sm font-medium ${isSelected ? "text-sage" : "text-dark/70"}`}
+                        className={`text-sm font-medium ${isSelected ? "text-forest" : "text-dark/70"}`}
                       >
                         {option.label}
                       </Text>
                       {isSelected && (
-                        <View className="ml-1.5 w-4 h-4 rounded-full bg-sage items-center justify-center">
+                        <View className="ml-1.5 w-4 h-4 rounded-full bg-forest items-center justify-center">
                           <Text className="text-white text-[8px] font-bold">{"\u2713"}</Text>
                         </View>
                       )}
@@ -273,15 +273,12 @@ export default function EditProfileScreen() {
 }
 
 const inputShadow = {
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.06,
-  shadowRadius: 6,
-  elevation: 2,
+  borderWidth: 1,
+        borderColor: "rgba(0,0,0,0.12)",
 };
 
 const selectedChipShadow = {
-  shadowColor: "#8B9E7C",
+  shadowColor: "#3D5A3E",
   shadowOffset: { width: 0, height: 2 },
   shadowOpacity: 0.15,
   shadowRadius: 4,

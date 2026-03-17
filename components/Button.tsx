@@ -17,15 +17,15 @@ interface ButtonProps {
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: "bg-sage",
-  secondary: "bg-peach",
-  outline: "bg-transparent border-2 border-sage",
+  primary: "bg-forest",
+  secondary: "bg-cream-dark border border-forest/10",
+  outline: "bg-transparent border-2 border-forest/20",
 };
 
 const textStyles: Record<ButtonVariant, string> = {
-  primary: "text-white",
-  secondary: "text-white",
-  outline: "text-sage",
+  primary: "text-cream",
+  secondary: "text-forest",
+  outline: "text-forest",
 };
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -45,7 +45,7 @@ export function Button({
   }));
 
   const handlePressIn = () => {
-    scale.value = withSpring(0.95, { damping: 15, stiffness: 300 });
+    scale.value = withSpring(0.96, { damping: 15, stiffness: 300 });
   };
 
   const handlePressOut = () => {
@@ -59,15 +59,15 @@ export function Button({
       onPressOut={handlePressOut}
       disabled={disabled || loading}
       style={animatedStyle}
-      className={`rounded-2xl px-6 py-4 items-center justify-center ${variantStyles[variant]} ${disabled ? "opacity-50" : ""} ${className}`}
+      className={`rounded-full px-7 py-4 items-center justify-center ${variantStyles[variant]} ${disabled ? "opacity-50" : ""} ${className}`}
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === "outline" ? "#8B9E7C" : "#FFFFFF"}
+          color={variant === "primary" ? "#FAF8F5" : "#3D5A3E"}
         />
       ) : (
         <Text
-          className={`text-base font-semibold ${textStyles[variant]}`}
+          className={`text-base font-semibold tracking-wide ${textStyles[variant]}`}
         >
           {title}
         </Text>

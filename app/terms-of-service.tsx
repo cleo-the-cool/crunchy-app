@@ -7,13 +7,13 @@ export default function TermsOfServiceScreen() {
   const goBack = useGoBack();
 
   return (
-    <SafeAreaView className="flex-1 bg-cream">
+    <SafeAreaView className="flex-1 bg-ivory">
       {/* Header */}
       <View className="flex-row items-center px-5 pt-2 pb-4">
         <TouchableOpacity onPress={goBack} hitSlop={8}>
-          <Ionicons name="arrow-back" size={24} color="#2D2D2D" />
+          <Ionicons name="arrow-back" size={24} color="#3D5A3E" />
         </TouchableOpacity>
-        <Text className="text-xl font-bold text-dark ml-4">Terms of Service</Text>
+        <Text className="text-xl font-bold text-dark ml-4" style={{ fontFamily: 'Georgia' }}>Terms of Service</Text>
       </View>
 
       <ScrollView
@@ -104,7 +104,7 @@ export default function TermsOfServiceScreen() {
 
         <Section title="13. Contact">
           For questions about these Terms of Service, please contact us at:{"\n"}
-          <Text className="text-sage font-semibold">cleothecoolest@proton.me</Text>
+          <Text className="text-forest font-semibold">cleothecoolest@proton.me</Text>
         </Section>
       </ScrollView>
     </SafeAreaView>
@@ -114,7 +114,7 @@ export default function TermsOfServiceScreen() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <View className="mb-5">
-      <Text className="text-base font-bold text-dark mb-2">{title}</Text>
+      <Text className="text-base font-bold text-dark mb-2" style={{ fontFamily: 'Georgia' }}>{title}</Text>
       <Text className="text-sm text-dark/70 leading-5">{children}</Text>
     </View>
   );

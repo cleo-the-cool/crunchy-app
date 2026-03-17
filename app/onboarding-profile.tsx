@@ -60,10 +60,13 @@ export default function OnboardingProfileScreen() {
         >
           {/* Header */}
           <Animated.View entering={FadeIn.duration(400)} className="items-center mb-8">
-            <View className="w-16 h-16 rounded-2xl bg-sage items-center justify-center mb-4">
+            <View className="w-16 h-16 rounded-2xl bg-forest items-center justify-center mb-4">
               <Ionicons name="person-add" size={32} color="white" />
             </View>
-            <Text className="text-2xl font-bold text-dark mb-1">
+            <Text
+              className="text-2xl font-bold text-dark mb-1"
+              style={{ fontFamily: 'Georgia' }}
+            >
               Set Up Your Profile
             </Text>
             <Text className="text-base text-dark-light text-center">
@@ -85,7 +88,7 @@ export default function OnboardingProfileScreen() {
               placeholder="What should we call you?"
               placeholderTextColor="#999"
               autoCapitalize="words"
-              className="border-2 border-cream-dark rounded-2xl px-4 py-3.5 text-base text-dark bg-white"
+              className="border-2 border-cream-dark rounded-2xl px-4 py-3.5 text-base text-dark bg-cream"
             />
           </Animated.View>
 
@@ -108,13 +111,13 @@ export default function OnboardingProfileScreen() {
                     activeOpacity={0.7}
                     className={`w-16 h-16 rounded-2xl items-center justify-center ${
                       isSelected
-                        ? "bg-sage/15 border-2 border-sage"
-                        : "bg-white border-2 border-cream-dark"
+                        ? "bg-forest/10 border-2 border-forest"
+                        : "bg-cream border-2 border-cream-dark"
                     }`}
                     style={
                       isSelected
                         ? {
-                            shadowColor: "#8B9E7C",
+                            shadowColor: "#3D5A3E",
                             shadowOffset: { width: 0, height: 2 },
                             shadowOpacity: 0.2,
                             shadowRadius: 6,
@@ -125,7 +128,7 @@ export default function OnboardingProfileScreen() {
                   >
                     <Text className="text-3xl">{avatar.emoji}</Text>
                     {isSelected && (
-                      <View className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-sage items-center justify-center">
+                      <View className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-forest items-center justify-center">
                         <Text className="text-white text-xs font-bold">
                           ✓
                         </Text>
@@ -154,7 +157,7 @@ export default function OnboardingProfileScreen() {
             onPress={() => router.push("/quiz")}
             className="items-center py-3 mt-1"
           >
-            <Text className="text-sage font-medium">Skip for now</Text>
+            <Text className="text-forest font-medium">Skip for now</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>

@@ -25,11 +25,8 @@ import {
 const LISTS_STORAGE_KEY = "@crunchy_user_lists";
 
 const cardShadow = {
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.06,
-  shadowRadius: 6,
-  elevation: 2,
+  borderWidth: 1,
+        borderColor: "rgba(0,0,0,0.12)",
 };
 
 const CATEGORY_FILTERS: { key: "all" | ListCategory; label: string }[] = [
@@ -125,21 +122,21 @@ export default function ListsScreen() {
         : "Check back later for community lists";
 
   return (
-    <SafeAreaView className="flex-1 bg-cream">
+    <SafeAreaView className="flex-1 bg-ivory">
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View className="flex-1">
       {/* Header */}
       <View className="flex-row items-center px-5 pt-2 pb-4">
         <TouchableOpacity onPress={goBack} hitSlop={8}>
-          <Ionicons name="arrow-back" size={24} color="#2D2D2D" />
+          <Ionicons name="arrow-back" size={24} color="#3D5A3E" />
         </TouchableOpacity>
-        <Text className="text-xl font-bold text-dark ml-4">
+        <Text className="text-xl font-bold text-dark ml-4" style={{ fontFamily: 'Georgia' }}>
           Product Lists
         </Text>
         <View className="flex-1" />
         <TouchableOpacity
           onPress={() => router.push("/create-list")}
-          className="bg-sage w-9 h-9 rounded-full items-center justify-center"
+          className="bg-forest w-9 h-9 rounded-full items-center justify-center"
         >
           <Ionicons name="add" size={22} color="#FFF" />
         </TouchableOpacity>
@@ -147,11 +144,11 @@ export default function ListsScreen() {
 
       {/* Tab Segments */}
       <View className="px-5 mb-3">
-        <View className="flex-row bg-white rounded-2xl p-1" style={cardShadow}>
+        <View className="flex-row bg-white rounded-3xl p-1" style={cardShadow}>
           <TouchableOpacity
             onPress={() => setActiveTab("my-lists")}
             className={`flex-1 py-2.5 rounded-xl items-center ${
-              activeTab === "my-lists" ? "bg-sage" : ""
+              activeTab === "my-lists" ? "bg-forest" : ""
             }`}
           >
             <Text
@@ -165,7 +162,7 @@ export default function ListsScreen() {
           <TouchableOpacity
             onPress={() => setActiveTab("browse")}
             className={`flex-1 py-2.5 rounded-xl items-center ${
-              activeTab === "browse" ? "bg-sage" : ""
+              activeTab === "browse" ? "bg-forest" : ""
             }`}
           >
             <Text
@@ -182,10 +179,10 @@ export default function ListsScreen() {
       {/* Search */}
       <View className="px-5 mb-3">
         <View
-          className="flex-row items-center bg-white rounded-2xl px-4 py-3"
+          className="flex-row items-center bg-white rounded-3xl px-4 py-3"
           style={cardShadow}
         >
-          <Ionicons name="search" size={18} color="#999" />
+          <Ionicons name="search" size={18} color="#A8B89C" />
           <TextInput
             className="flex-1 ml-2 text-dark text-sm"
             placeholder="Search lists or products..."
@@ -214,7 +211,7 @@ export default function ListsScreen() {
             key={cat.key}
             onPress={() => setActiveCategory(cat.key)}
             className={`px-4 py-2 rounded-full ${
-              activeCategory === cat.key ? "bg-sage" : "bg-white"
+              activeCategory === cat.key ? "bg-forest" : "bg-cream"
             }`}
             style={activeCategory !== cat.key ? cardShadow : undefined}
           >
@@ -248,7 +245,7 @@ export default function ListsScreen() {
             {activeTab === "my-lists" && !searchQuery && (
               <TouchableOpacity
                 onPress={() => router.push("/create-list")}
-                className="mt-4 bg-sage px-6 py-3 rounded-2xl"
+                className="mt-4 bg-forest px-6 py-3 rounded-3xl"
               >
                 <Text className="text-white font-semibold">Create a List</Text>
               </TouchableOpacity>
@@ -287,7 +284,7 @@ function ListCard({ list }: { list: ProductList }) {
       activeOpacity={0.7}
       className="mb-3"
     >
-      <View className="bg-white rounded-2xl p-4" style={cardShadow}>
+      <View className="bg-white rounded-3xl p-4" style={cardShadow}>
         {/* Top row: category badge + product count */}
         <View className="flex-row items-center justify-between mb-2">
           <View
@@ -323,7 +320,7 @@ function ListCard({ list }: { list: ProductList }) {
             {list.products.slice(0, 5).map((p) => (
               <View
                 key={p.id}
-                className="w-9 h-9 rounded-xl bg-sage/10 items-center justify-center"
+                className="w-9 h-9 rounded-xl bg-forest/8 items-center justify-center"
               >
                 <Text className="text-base">{p.image}</Text>
               </View>
@@ -343,7 +340,7 @@ function ListCard({ list }: { list: ProductList }) {
           <Ionicons
             name={list.isPublic ? "globe-outline" : "lock-closed-outline"}
             size={14}
-            color="#999"
+            color="#A8B89C"
           />
           <Text className="text-xs text-dark/40 ml-1.5">
             {list.isPublic ? "Public" : "Private"}
