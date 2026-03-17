@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
+  Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -706,17 +707,31 @@ export default function LabelScanScreen() {
               Camera Access Needed
             </Text>
             <Text className="text-white/60 text-sm text-center mb-6 leading-5">
-              To scan labels, Crunchy needs access to your camera.
+              Camera access is needed to scan products
             </Text>
-            <TouchableOpacity
-              onPress={async () => {
-                await ensurePermission();
-              }}
-              className="bg-sage rounded-2xl py-3.5 px-8"
-            >
-              <Text className="text-white font-semibold text-base">
-                Enable Camera
-              </Text>
+            {permission.canAskAgain ? (
+              <TouchableOpacity
+                onPress={async () => {
+                  await ensurePermission();
+                }}
+                className="bg-sage rounded-2xl py-3.5 px-8 mb-3"
+              >
+                <Text className="text-white font-semibold text-base">
+                  Enable Camera
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                onPress={() => Linking.openSettings()}
+                className="bg-sage rounded-2xl py-3.5 px-8 mb-3"
+              >
+                <Text className="text-white font-semibold text-base">
+                  Open Settings
+                </Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity onPress={handleClose} className="py-2">
+              <Text className="text-white/50 text-sm font-medium">Go Back</Text>
             </TouchableOpacity>
           </View>
         )}

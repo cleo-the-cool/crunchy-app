@@ -122,7 +122,7 @@ export default function ListsScreen() {
         : "Check back later for community lists";
 
   return (
-    <SafeAreaView className="flex-1 bg-ivory">
+    <SafeAreaView className="flex-1 bg-ivory" edges={["top"]}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View className="flex-1">
       {/* Header */}

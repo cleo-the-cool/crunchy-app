@@ -59,7 +59,7 @@ export default function HelpSupportScreen() {
   const goBack = useGoBack();
 
   return (
-    <SafeAreaView className="flex-1 bg-ivory">
+    <SafeAreaView className="flex-1 bg-ivory" edges={["top"]}>
       {/* Header */}
       <View className="flex-row items-center px-5 pt-2 pb-4">
         <TouchableOpacity onPress={goBack} hitSlop={8}>

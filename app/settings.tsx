@@ -13,6 +13,7 @@ import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGoBack } from "@/lib/useGoBack";
+import * as Haptics from "../utils/haptics";
 
 const NOTIF_STORAGE_KEY = "@crunchy_notification_prefs";
 
@@ -78,7 +79,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-ivory">
+    <SafeAreaView className="flex-1 bg-ivory" edges={["top"]}>
       {/* Header */}
       <View className="flex-row items-center px-6 pt-2 pb-4">
         <TouchableOpacity onPress={goBack} hitSlop={8}>
@@ -332,7 +333,10 @@ function SettingsToggle({
       </View>
       <Switch
         value={value}
-        onValueChange={onToggle}
+        onValueChange={(v) => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          onToggle(v);
+        }}
         trackColor={{ false: "#ddd", true: "#3D5A3E" }}
         thumbColor="white"
       />

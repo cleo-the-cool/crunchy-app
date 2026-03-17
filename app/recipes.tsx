@@ -145,7 +145,7 @@ export default function RecipesScreen() {
     filterTime !== null;
 
   return (
-    <SafeAreaView className="flex-1 bg-ivory">
+    <SafeAreaView className="flex-1 bg-ivory" edges={["top"]}>
       {/* Header */}
       <View className="px-5 pt-3 pb-2 flex-row items-center">
         <TouchableOpacity

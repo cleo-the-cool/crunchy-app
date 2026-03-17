@@ -17,6 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useGoBack } from "@/lib/useGoBack";
+import * as Haptics from "../utils/haptics";
 import {
   LIST_CATEGORY_CONFIG,
   type ListCategory,
@@ -90,6 +91,7 @@ export default function CreateListScreen() {
       return;
     }
 
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setSaving(true);
     try {
       const newList: ProductList = {
@@ -201,7 +203,10 @@ export default function CreateListScreen() {
             {CATEGORIES.map(([key, config]) => (
               <TouchableOpacity
                 key={key}
-                onPress={() => setCategory(key)}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  setCategory(key);
+                }}
                 className={`flex-row items-center px-3 py-2.5 rounded-3xl ${
                   category === key ? "" : "bg-cream"
                 }`}
