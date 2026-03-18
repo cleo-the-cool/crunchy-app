@@ -82,7 +82,7 @@ export default function HomeScreen() {
 
   const handleScan = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.push("/(tabs)/scan");
+    router.push("/product-scan");
   };
 
   const firstName = user?.name?.split(" ")[0] ?? "Friend";

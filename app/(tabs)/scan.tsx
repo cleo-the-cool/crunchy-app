@@ -168,7 +168,7 @@ export default function ScanScreen() {
 
   const getModeSubtitle = (mode: ExtendedScanMode) => {
     switch (mode) {
-      case "item": return "Take a photo of any product to identify and rate it";
+      case "item": return "Take a photo of any product to rate it";
       case "ingredients": return "Take a photo of the ingredients list to analyze";
       case "label": return "Take a photo of the nutrition or claims label";
       case "barcode": return "Scan a barcode for instant ingredient lookup";
