@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
-  Switch,
   Alert,
   TextInput,
   Modal,
@@ -17,38 +16,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useGoBack } from "@/lib/useGoBack";
 import * as Haptics from "../utils/haptics";
 
-const NOTIF_STORAGE_KEY = "@crunchy_notification_prefs";
-
 export default function SettingsScreen() {
-  const { user, signOut, deleteAccount, updateName } = useAuth();
+  const { user, signOut, deleteAccount, updateName, appleSignIn } = useAuth();
   const router = useRouter();
   const goBack = useGoBack();
-  const [communityNotifications, setCommunityNotifications] = useState(true);
-  const [scanReminders, setScanReminders] = useState(false);
-  const [tipsAndUpdates, setTipsAndUpdates] = useState(true);
   const [showNameModal, setShowNameModal] = useState(false);
   const [newName, setNewName] = useState("");
 
-  useEffect(() => {
-    loadNotifPrefs();
-  }, []);
-
-  async function loadNotifPrefs() {
-    const stored = await AsyncStorage.getItem(NOTIF_STORAGE_KEY);
-    if (stored) {
-      const prefs = JSON.parse(stored);
-      setCommunityNotifications(prefs.community ?? true);
-      setScanReminders(prefs.scanReminders ?? false);
-      setTipsAndUpdates(prefs.tipsAndUpdates ?? true);
-    }
-  }
-
-  async function saveNotifPref(key: string, value: boolean) {
-    const stored = await AsyncStorage.getItem(NOTIF_STORAGE_KEY);
-    const prefs = stored ? JSON.parse(stored) : {};
-    prefs[key] = value;
-    await AsyncStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify(prefs));
-  }
+  const isAppleUser = user?.id?.startsWith("apple_");
 
   const handleChangeName = () => {
     setNewName(user?.name ?? "");
@@ -69,6 +44,15 @@ export default function SettingsScreen() {
     setShowNameModal(false);
   };
 
+  const handleAppleSignIn = async () => {
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      await appleSignIn();
+    } catch {
+      Alert.alert("Sign In Failed", "Could not sign in with Apple. Please try again.");
+    }
+  };
+
   const handleDeleteAccount = () => {
     Alert.alert(
       "Delete Account",
@@ -87,11 +71,11 @@ export default function SettingsScreen() {
     );
   };
 
-  const handleLogout = () => {
-    Alert.alert("Log Out", "Are you sure you want to log out?", [
+  const handleSignOut = () => {
+    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
       { text: "Cancel", style: "cancel" },
       {
-        text: "Log Out",
+        text: "Sign Out",
         style: "destructive",
         onPress: async () => {
           await signOut();
@@ -116,79 +100,41 @@ export default function SettingsScreen() {
         contentContainerStyle={{ paddingBottom: 48 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Change Name */}
+        {/* Account */}
         <SectionHeader title="Account" />
         <View className="mx-6 bg-white rounded-3xl overflow-hidden" style={cardShadow}>
           <TouchableOpacity onPress={handleChangeName}>
-            <SettingsRow
-              icon="person-outline"
-              label="Change Name"
-              value={user?.name ?? "Not set"}
-              chevron
-            />
+            <SettingsRow icon="person-outline" label="Change Name" chevron />
           </TouchableOpacity>
+          {!isAppleUser && (
+            <>
+              <Divider />
+              <TouchableOpacity onPress={handleAppleSignIn}>
+                <SettingsRow icon="logo-apple" label="Sign in with Apple" chevron />
+              </TouchableOpacity>
+            </>
+          )}
         </View>
 
-        {/* Scan Preferences / Concerns */}
+        {/* Preferences */}
         <SectionHeader title="Preferences" />
         <View className="mx-6 bg-white rounded-3xl overflow-hidden" style={cardShadow}>
           <TouchableOpacity onPress={() => router.push({ pathname: "/onboarding-preferences", params: { from: "settings" } })}>
-            <SettingsRow icon="shield-outline" label="Scan Preferences / Concerns" chevron />
+            <SettingsRow icon="shield-outline" label="Scan Preferences" chevron />
           </TouchableOpacity>
           <Divider />
           <TouchableOpacity onPress={() => router.push({ pathname: "/interests", params: { from: "settings" } })}>
-            <SettingsRow icon="heart-outline" label="My Interests" chevron />
+            <SettingsRow icon="heart-outline" label="Interests" chevron />
           </TouchableOpacity>
         </View>
 
-        {/* Notifications */}
-        <SectionHeader title="Notifications" />
-        <View className="mx-6 bg-white rounded-3xl overflow-hidden" style={cardShadow}>
-          <SettingsToggle
-            icon="people-outline"
-            label="Community Notifications"
-            description="Likes and comments on your posts"
-            value={communityNotifications}
-            onToggle={(v) => {
-              setCommunityNotifications(v);
-              saveNotifPref("community", v);
-            }}
-          />
-          <Divider />
-          <SettingsToggle
-            icon="scan-outline"
-            label="Scan Reminders"
-            description="Weekly reminders to scan products"
-            value={scanReminders}
-            onToggle={(v) => {
-              setScanReminders(v);
-              saveNotifPref("scanReminders", v);
-            }}
-          />
-          <Divider />
-          <SettingsToggle
-            icon="bulb-outline"
-            label="Tips & Updates"
-            description="Clean living tips and new features"
-            value={tipsAndUpdates}
-            onToggle={(v) => {
-              setTipsAndUpdates(v);
-              saveNotifPref("tipsAndUpdates", v);
-            }}
-          />
-        </View>
-
-        {/* Help & Support */}
+        {/* Support */}
         <SectionHeader title="Support" />
         <View className="mx-6 bg-white rounded-3xl overflow-hidden" style={cardShadow}>
           <TouchableOpacity onPress={() => router.push("/help-support")}>
-            <SettingsRow icon="help-circle-outline" label="Help & Support" chevron />
+            <SettingsRow icon="help-circle-outline" label="Help & FAQ" chevron />
           </TouchableOpacity>
-        </View>
-
-        {/* Legal */}
-        <SectionHeader title="Legal" />
-        <View className="mx-6 bg-white rounded-3xl overflow-hidden" style={cardShadow}>
+          <Divider />
           <TouchableOpacity onPress={() => router.push("/privacy-policy")}>
             <SettingsRow icon="document-text-outline" label="Privacy Policy" chevron />
           </TouchableOpacity>
@@ -198,41 +144,21 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Sign Out */}
-        <View className="mx-6 mt-6">
-          <TouchableOpacity
-            onPress={handleLogout}
-            className="bg-white rounded-3xl py-4 items-center"
-            style={cardShadow}
-          >
-            <View className="flex-row items-center">
-              <Ionicons name="log-out-outline" size={20} color="#3D5A3E" />
-              <Text className="text-base font-semibold text-forest ml-2">
-                Sign Out
-              </Text>
-            </View>
+        {/* Account Actions */}
+        <SectionHeader title="Account Actions" />
+        <View className="mx-6 bg-white rounded-3xl overflow-hidden" style={cardShadow}>
+          <TouchableOpacity onPress={handleSignOut}>
+            <SettingsRow icon="log-out-outline" label="Sign Out" chevron />
           </TouchableOpacity>
-        </View>
-
-        {/* Danger Zone - Delete Account */}
-        <DangerZoneHeader />
-        <View className="mx-6 bg-white rounded-3xl overflow-hidden" style={dangerCardShadow}>
-          <TouchableOpacity
-            onPress={handleDeleteAccount}
-            className="flex-row items-center px-4 py-4"
-          >
-            <View className="w-8 h-8 rounded-full bg-red-50 items-center justify-center">
-              <Ionicons name="trash-outline" size={18} color="#EF4444" />
+          <Divider />
+          <TouchableOpacity onPress={handleDeleteAccount}>
+            <View className="flex-row items-center px-4 py-3.5">
+              <View className="w-8 items-center">
+                <Ionicons name="trash-outline" size={20} color="#EF4444" />
+              </View>
+              <Text className="text-base ml-2 flex-1" style={{ color: "#EF4444" }}>Delete Account</Text>
+              <Ionicons name="chevron-forward" size={18} color="#EF4444" />
             </View>
-            <View className="flex-1 ml-3">
-              <Text className="text-base font-semibold" style={{ color: "#EF4444" }}>
-                Delete Account
-              </Text>
-              <Text className="text-xs text-dark/40 mt-0.5">
-                Permanently remove all your data
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color="#EF4444" />
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -284,31 +210,10 @@ const cardShadow = {
   elevation: 3,
 };
 
-const dangerCardShadow = {
-  shadowColor: "#EF4444",
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.08,
-  shadowRadius: 6,
-  elevation: 2,
-  borderWidth: 1,
-  borderColor: "rgba(239,68,68,0.15)",
-};
-
 function SectionHeader({ title }: { title: string }) {
   return (
     <Text className="text-sm font-semibold text-dark/40 uppercase tracking-wider px-6 mt-6 mb-2">
       {title}
-    </Text>
-  );
-}
-
-function DangerZoneHeader() {
-  return (
-    <Text
-      className="text-sm font-semibold uppercase tracking-wider px-6 mt-8 mb-2"
-      style={{ color: "#EF4444" }}
-    >
-      Danger Zone
     </Text>
   );
 }
@@ -320,14 +225,10 @@ function Divider() {
 function SettingsRow({
   icon,
   label,
-  value,
-  valueColor,
   chevron,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
-  value?: string;
-  valueColor?: string;
   chevron?: boolean;
 }) {
   return (
@@ -336,52 +237,9 @@ function SettingsRow({
         <Ionicons name={icon} size={20} color="#3D5A3E" />
       </View>
       <Text className="text-base text-dark ml-2 flex-1">{label}</Text>
-      {value && (
-        <Text
-          className="text-sm text-dark/50"
-          style={valueColor ? { color: valueColor } : undefined}
-        >
-          {value}
-        </Text>
-      )}
       {chevron && (
         <Ionicons name="chevron-forward" size={18} color="#ccc" />
       )}
-    </View>
-  );
-}
-
-function SettingsToggle({
-  icon,
-  label,
-  description,
-  value,
-  onToggle,
-}: {
-  icon: keyof typeof Ionicons.glyphMap;
-  label: string;
-  description: string;
-  value: boolean;
-  onToggle: (v: boolean) => void;
-}) {
-  return (
-    <View className="flex-row items-center px-4 py-3">
-      <View className="w-8 items-center">
-        <Ionicons name={icon} size={20} color="#3D5A3E" />
-      </View>
-      <View className="flex-1 ml-2">
-        <Text className="text-base text-dark">{label}</Text>
-        <Text className="text-xs text-dark/40">{description}</Text>
-      </View>
-      <Switch
-        value={value}
-        onValueChange={(v) => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          onToggle(v);
-        }}
-        trackColor={{ false: "#ddd", true: "#3D5A3E" }}
-        thumbColor="white"
-      />
     </View>
   );
 }
