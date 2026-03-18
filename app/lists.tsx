@@ -7,6 +7,7 @@ import {
   TextInput,
   Keyboard,
   TouchableWithoutFeedback,
+  ImageBackground,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -16,8 +17,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useGoBack } from "@/lib/useGoBack";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  getPublicLists,
-  searchLists,
   LIST_CATEGORY_CONFIG,
   type ProductList,
   type ListCategory,
@@ -28,34 +27,21 @@ const LISTS_STORAGE_KEY = "@crunchy_user_lists";
 
 const cardShadow = {
   borderWidth: 1,
-        borderColor: "rgba(0,0,0,0.15)",
-  shadowColor: '#000',
+  borderColor: "rgba(0,0,0,0.15)",
+  shadowColor: "#000",
   shadowOffset: { width: 0, height: 2 },
   shadowOpacity: 0.1,
   shadowRadius: 10,
   elevation: 3,
 };
 
-const CATEGORY_FILTERS: { key: "all" | ListCategory; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "skincare", label: "Skincare" },
-  { key: "grocery", label: "Grocery" },
-  { key: "cleaning", label: "Cleaning" },
-  { key: "baby", label: "Baby" },
-  { key: "wellness", label: "Wellness" },
-  { key: "general", label: "General" },
-];
-
-type TabKey = "my-lists" | "browse";
+type TabKey = "my-lists" | "saved";
 
 export default function ListsScreen() {
   const router = useRouter();
   const goBack = useGoBack();
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState<"all" | ListCategory>(
-    "all"
-  );
   const [activeTab, setActiveTab] = useState<TabKey>("my-lists");
   const [myLists, setMyLists] = useState<ProductList[]>([]);
   const [savedProducts, setSavedProducts] = useState<SavedProduct[]>([]);
@@ -85,7 +71,6 @@ export default function ListsScreen() {
     loadSavedProducts();
   }, [loadMyLists, loadSavedProducts]);
 
-  // Reload lists when screen comes back into focus (e.g. after creating a list)
   useFocusEffect(
     useCallback(() => {
       loadMyLists();
@@ -94,26 +79,21 @@ export default function ListsScreen() {
   );
 
   // Group saved products by category
-  const savedByCategory = savedProducts.reduce<Record<string, SavedProduct[]>>((acc, p) => {
-    const cat = p.category || "Other";
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(p);
-    return acc;
-  }, {});
+  const savedByCategory = savedProducts.reduce<Record<string, SavedProduct[]>>(
+    (acc, p) => {
+      const cat = p.category || "Other";
+      if (!acc[cat]) acc[cat] = [];
+      acc[cat].push(p);
+      return acc;
+    },
+    {}
+  );
 
-  // Browse lists come from the public data source
-  const browseLists = getPublicLists();
-
-  const baseLists = activeTab === "my-lists" ? myLists : browseLists;
-
-  let filteredLists: ProductList[];
-  if (searchQuery.trim()) {
-    if (activeTab === "browse") {
-      filteredLists = searchLists(searchQuery);
-    } else {
-      const q = searchQuery.toLowerCase();
-      filteredLists = baseLists.filter(
-        (l) =>
+  // Filter lists by search
+  const filteredLists = searchQuery.trim()
+    ? myLists.filter((l) => {
+        const q = searchQuery.toLowerCase();
+        return (
           l.title.toLowerCase().includes(q) ||
           l.description.toLowerCase().includes(q) ||
           l.products.some(
@@ -121,226 +101,267 @@ export default function ListsScreen() {
               p.name.toLowerCase().includes(q) ||
               p.brand.toLowerCase().includes(q)
           )
-      );
-    }
-  } else {
-    filteredLists = baseLists;
-  }
+        );
+      })
+    : myLists;
 
-  if (activeCategory !== "all") {
-    filteredLists = filteredLists.filter(
-      (l) => l.category === activeCategory
-    );
-  }
+  // Filter saved products by search
+  const filteredSaved = searchQuery.trim()
+    ? savedProducts.filter((p) => {
+        const q = searchQuery.toLowerCase();
+        return (
+          p.name.toLowerCase().includes(q) ||
+          (p.brand?.toLowerCase().includes(q) ?? false) ||
+          (p.category?.toLowerCase().includes(q) ?? false)
+        );
+      })
+    : savedProducts;
 
-  const emptyMessage =
-    activeTab === "my-lists"
-      ? searchQuery
-        ? "No matching lists found"
-        : "You haven't created any lists yet"
-      : searchQuery
-        ? "No matching lists found"
-        : "No public lists to browse yet";
-
-  const emptySub =
-    activeTab === "my-lists" && !searchQuery
-      ? "Create your first list to organize your favorite products!"
-      : searchQuery
-        ? "Try a different search term"
-        : "Check back later for community lists";
+  const filteredSavedByCategory = filteredSaved.reduce<
+    Record<string, SavedProduct[]>
+  >((acc, p) => {
+    const cat = p.category || "Other";
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(p);
+    return acc;
+  }, {});
 
   return (
     <SafeAreaView className="flex-1 bg-ivory" edges={["top"]}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <View className="flex-1">
-      {/* Header */}
-      <View className="flex-row items-center px-5 pt-2 pb-4">
-        <TouchableOpacity onPress={goBack} hitSlop={8}>
-          <Ionicons name="arrow-back" size={24} color="#3D5A3E" />
-        </TouchableOpacity>
-        <Text className="text-xl font-bold text-dark ml-4">
-          Product Lists
-        </Text>
-        <View className="flex-1" />
-        <TouchableOpacity
-          onPress={() => router.push("/create-list")}
-          className="bg-forest w-9 h-9 rounded-full items-center justify-center"
-        >
-          <Ionicons name="add" size={22} color="#FFF" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Tab Segments */}
-      <View className="px-5 mb-3">
-        <View className="flex-row bg-white rounded-3xl p-1" style={cardShadow}>
-          <TouchableOpacity
-            onPress={() => setActiveTab("my-lists")}
-            className={`flex-1 py-2.5 rounded-xl items-center ${
-              activeTab === "my-lists" ? "bg-forest" : ""
-            }`}
-          >
-            <Text
-              className={`text-sm font-semibold ${
-                activeTab === "my-lists" ? "text-white" : "text-dark/50"
-              }`}
+        <View className="flex-1">
+          {/* Header Image */}
+          <View className="mx-5 mt-1 mb-3">
+            <ImageBackground
+              source={require("@/assets/images/aesthetic/lists-header.jpg")}
+              resizeMode="cover"
+              imageStyle={{ borderRadius: 24 }}
             >
-              My Lists
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setActiveTab("browse")}
-            className={`flex-1 py-2.5 rounded-xl items-center ${
-              activeTab === "browse" ? "bg-forest" : ""
-            }`}
-          >
-            <Text
-              className={`text-sm font-semibold ${
-                activeTab === "browse" ? "text-white" : "text-dark/50"
-              }`}
-            >
-              Browse Lists
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Search */}
-      <View className="px-5 mb-3">
-        <View
-          className="flex-row items-center bg-white rounded-3xl px-4 py-3"
-          style={cardShadow}
-        >
-          <Ionicons name="search" size={18} color="#A8B89C" />
-          <TextInput
-            className="flex-1 ml-2 text-dark text-sm"
-            placeholder="Search lists or products..."
-            placeholderTextColor="#999"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery("")}>
-              <Ionicons name="close-circle" size={18} color="#CCC" />
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-
-      {/* Category Filters */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}
-        className="mb-3"
-        style={{ maxHeight: 40 }}
-      >
-        {CATEGORY_FILTERS.map((cat) => (
-          <TouchableOpacity
-            key={cat.key}
-            onPress={() => setActiveCategory(cat.key)}
-            className={`px-4 py-2 rounded-full ${
-              activeCategory === cat.key ? "bg-forest" : "bg-cream"
-            }`}
-            style={activeCategory !== cat.key ? cardShadow : undefined}
-          >
-            <Text
-              className={`text-sm font-medium ${
-                activeCategory === cat.key ? "text-white" : "text-dark/60"
-              }`}
-            >
-              {cat.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      {/* Lists */}
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* Saved Products Section (My Lists tab only) */}
-        {activeTab === "my-lists" && savedProducts.length > 0 && !searchQuery && (
-          <View className="mb-4">
-            <View className="bg-white rounded-3xl p-4" style={cardShadow}>
-              <View className="flex-row items-center mb-3">
-                <View className="w-9 h-9 rounded-full bg-forest/10 items-center justify-center mr-3">
-                  <Ionicons name="bookmark" size={18} color="#3D5A3E" />
+              <View
+                className="rounded-3xl px-5 py-5"
+                style={{ backgroundColor: "rgba(61,90,62,0.55)" }}
+              >
+                <View className="flex-row items-center">
+                  <TouchableOpacity onPress={goBack} hitSlop={8}>
+                    <Ionicons name="arrow-back" size={24} color="#FFF" />
+                  </TouchableOpacity>
+                  <Text className="text-xl font-bold text-white ml-4 flex-1">
+                    Product Lists
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => router.push("/create-list")}
+                    className="w-9 h-9 rounded-full items-center justify-center"
+                    style={{ backgroundColor: "rgba(255,255,255,0.25)" }}
+                  >
+                    <Ionicons name="add" size={22} color="#FFF" />
+                  </TouchableOpacity>
                 </View>
-                <View className="flex-1">
-                  <Text className="text-base font-bold text-dark">Saved Products</Text>
-                  <Text className="text-xs text-dark/50">{savedProducts.length} product{savedProducts.length !== 1 ? "s" : ""}</Text>
-                </View>
+                <Text className="text-white/80 text-sm mt-2">
+                  Organize your favorite clean products
+                </Text>
               </View>
+            </ImageBackground>
+          </View>
 
-              {Object.entries(savedByCategory)
-                .sort(([a], [b]) => a.localeCompare(b))
-                .map(([category, products]) => (
-                <View key={category} className="mt-2">
-                  <Text className="text-xs font-semibold text-dark/40 uppercase tracking-wide mb-1.5">{category}</Text>
-                  {products.slice(0, 3).map((product) => (
-                    <TouchableOpacity
-                      key={product.id}
-                      onPress={() => router.push(`/product-detail?id=${product.id}`)}
-                      className="flex-row items-center py-2 border-b border-dark/5"
-                    >
-                      <View
-                        className="w-8 h-8 rounded-xl items-center justify-center mr-3"
-                        style={{
-                          backgroundColor:
-                            product.rating === "clean" ? "#E8F5E9" :
-                            product.rating === "caution" ? "#FFF8E1" : "#FFEBEE",
-                        }}
-                      >
-                        <Text className="text-sm">
-                          {product.rating === "clean" ? "✅" : product.rating === "caution" ? "⚠️" : "🚫"}
-                        </Text>
-                      </View>
-                      <View className="flex-1">
-                        <Text className="text-sm font-medium text-dark" numberOfLines={1}>{product.name}</Text>
-                        {product.brand ? <Text className="text-xs text-dark/40">{product.brand}</Text> : null}
-                      </View>
-                      <Ionicons name="chevron-forward" size={16} color="#CCC" />
-                    </TouchableOpacity>
-                  ))}
-                  {products.length > 3 && (
-                    <Text className="text-xs text-forest font-medium mt-1.5">
-                      +{products.length - 3} more
-                    </Text>
-                  )}
-                </View>
-              ))}
+          {/* Tab Segments */}
+          <View className="px-5 mb-3">
+            <View
+              className="flex-row bg-white rounded-3xl p-1"
+              style={cardShadow}
+            >
+              <TouchableOpacity
+                onPress={() => setActiveTab("my-lists")}
+                className={`flex-1 py-2.5 rounded-xl items-center ${
+                  activeTab === "my-lists" ? "bg-forest" : ""
+                }`}
+              >
+                <Text
+                  className={`text-sm font-semibold ${
+                    activeTab === "my-lists" ? "text-white" : "text-dark/50"
+                  }`}
+                >
+                  My Lists
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setActiveTab("saved")}
+                className={`flex-1 py-2.5 rounded-xl items-center ${
+                  activeTab === "saved" ? "bg-forest" : ""
+                }`}
+              >
+                <Text
+                  className={`text-sm font-semibold ${
+                    activeTab === "saved" ? "text-white" : "text-dark/50"
+                  }`}
+                >
+                  Saved Products
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
-        )}
 
-        {filteredLists.length === 0 && (activeTab !== "my-lists" || savedProducts.length === 0) ? (
-          <View className="items-center py-16">
-            <Ionicons name="list-outline" size={48} color="#A8B89C" style={{ marginBottom: 16 }} />
-            <Text className="text-lg font-bold text-dark text-center">
-              {emptyMessage}
-            </Text>
-            <Text className="text-sm text-dark/50 text-center mt-2">
-              {emptySub}
-            </Text>
-            {activeTab === "my-lists" && !searchQuery && (
-              <TouchableOpacity
-                onPress={() => router.push("/create-list")}
-                className="mt-4 bg-forest px-6 py-3 rounded-3xl"
-              >
-                <Text className="text-white font-semibold">Create a List</Text>
-              </TouchableOpacity>
-            )}
+          {/* Search */}
+          <View className="px-5 mb-3">
+            <View
+              className="flex-row items-center bg-white rounded-3xl px-4 py-3"
+              style={cardShadow}
+            >
+              <Ionicons name="search" size={18} color="#A8B89C" />
+              <TextInput
+                className="flex-1 ml-2 text-dark text-sm"
+                placeholder={
+                  activeTab === "my-lists"
+                    ? "Search lists..."
+                    : "Search saved products..."
+                }
+                placeholderTextColor="#999"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity onPress={() => setSearchQuery("")}>
+                  <Ionicons name="close-circle" size={18} color="#CCC" />
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
-        ) : (
-          filteredLists.map((list) => (
-            <ListCard key={list.id} list={list} />
-          ))
-        )}
-      </ScrollView>
-      </View>
+
+          {/* Content */}
+          <ScrollView
+            className="flex-1"
+            contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            {activeTab === "my-lists" ? (
+              /* ── My Lists Tab ── */
+              filteredLists.length === 0 ? (
+                <View className="items-center py-16">
+                  <Ionicons
+                    name="list-outline"
+                    size={48}
+                    color="#A8B89C"
+                    style={{ marginBottom: 16 }}
+                  />
+                  <Text className="text-lg font-bold text-dark text-center">
+                    {searchQuery
+                      ? "No matching lists found"
+                      : "You haven't created any lists yet"}
+                  </Text>
+                  <Text className="text-sm text-dark/50 text-center mt-2">
+                    {searchQuery
+                      ? "Try a different search term"
+                      : "Create your first list to organize your favorite products!"}
+                  </Text>
+                  {!searchQuery && (
+                    <TouchableOpacity
+                      onPress={() => router.push("/create-list")}
+                      className="mt-4 bg-forest px-6 py-3 rounded-3xl"
+                    >
+                      <Text className="text-white font-semibold">
+                        Create a List
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              ) : (
+                filteredLists.map((list) => (
+                  <ListCard key={list.id} list={list} />
+                ))
+              )
+            ) : (
+              /* ── Saved Products Tab ── */
+              filteredSaved.length === 0 ? (
+                <View className="items-center py-16">
+                  <Ionicons
+                    name="bookmark-outline"
+                    size={48}
+                    color="#A8B89C"
+                    style={{ marginBottom: 16 }}
+                  />
+                  <Text className="text-lg font-bold text-dark text-center">
+                    {searchQuery
+                      ? "No matching products found"
+                      : "No saved products yet"}
+                  </Text>
+                  <Text className="text-sm text-dark/50 text-center mt-2">
+                    {searchQuery
+                      ? "Try a different search term"
+                      : "Scan products and save your favorites to see them here!"}
+                  </Text>
+                </View>
+              ) : (
+                Object.entries(filteredSavedByCategory)
+                  .sort(([a], [b]) => a.localeCompare(b))
+                  .map(([category, products]) => (
+                    <View key={category} className="mb-4">
+                      <Text className="text-xs font-semibold text-dark/40 uppercase tracking-wide mb-2 ml-1">
+                        {category}
+                      </Text>
+                      <View
+                        className="bg-white rounded-3xl px-4 py-1"
+                        style={cardShadow}
+                      >
+                        {products.map((product, i) => (
+                          <TouchableOpacity
+                            key={product.id}
+                            onPress={() =>
+                              router.push(
+                                `/product-detail?id=${product.id}`
+                              )
+                            }
+                            className={`flex-row items-center py-3 ${
+                              i < products.length - 1
+                                ? "border-b border-dark/5"
+                                : ""
+                            }`}
+                          >
+                            <View
+                              className="w-9 h-9 rounded-xl items-center justify-center mr-3"
+                              style={{
+                                backgroundColor:
+                                  product.rating === "clean"
+                                    ? "#E8F5E9"
+                                    : product.rating === "caution"
+                                      ? "#FFF8E1"
+                                      : "#FFEBEE",
+                              }}
+                            >
+                              <Text className="text-base">
+                                {product.rating === "clean"
+                                  ? "✅"
+                                  : product.rating === "caution"
+                                    ? "⚠️"
+                                    : "🚫"}
+                              </Text>
+                            </View>
+                            <View className="flex-1">
+                              <Text
+                                className="text-sm font-medium text-dark"
+                                numberOfLines={1}
+                              >
+                                {product.name}
+                              </Text>
+                              {product.brand ? (
+                                <Text className="text-xs text-dark/40">
+                                  {product.brand}
+                                </Text>
+                              ) : null}
+                            </View>
+                            <Ionicons
+                              name="chevron-forward"
+                              size={16}
+                              color="#CCC"
+                            />
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    </View>
+                  ))
+              )
+            )}
+          </ScrollView>
+        </View>
       </TouchableWithoutFeedback>
     </SafeAreaView>
   );
@@ -383,7 +404,8 @@ function ListCard({ list }: { list: ProductList }) {
             </Text>
           </View>
           <Text className="text-xs text-dark/40">
-            {list.products.length} product{list.products.length !== 1 ? "s" : ""}
+            {list.products.length} product
+            {list.products.length !== 1 ? "s" : ""}
           </Text>
         </View>
 
@@ -405,7 +427,11 @@ function ListCard({ list }: { list: ProductList }) {
                 key={p.id}
                 className="w-9 h-9 rounded-xl bg-forest/8 items-center justify-center"
               >
-                {p.image ? <Text className="text-base">{p.image}</Text> : <Ionicons name="cube-outline" size={16} color="#A8B89C" />}
+                {p.image ? (
+                  <Text className="text-base">{p.image}</Text>
+                ) : (
+                  <Ionicons name="cube-outline" size={16} color="#A8B89C" />
+                )}
               </View>
             ))}
             {list.products.length > 5 && (
@@ -418,7 +444,7 @@ function ListCard({ list }: { list: ProductList }) {
           </View>
         )}
 
-        {/* Visibility badge for own lists */}
+        {/* Footer */}
         <View className="flex-row items-center mt-3 pt-2.5 border-t border-dark/5">
           <Ionicons
             name={list.isPublic ? "globe-outline" : "lock-closed-outline"}

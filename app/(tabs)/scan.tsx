@@ -356,7 +356,7 @@ export default function ScanScreen() {
         {/* Start Scanning CTA with botanical background */}
         <View className="mx-5 mb-5">
           <ImageBackground
-            source={require("@/assets/images/aesthetic/aloe-vera.jpg")}
+            source={require("@/assets/images/aesthetic/scan-magnifying-glass.jpg")}
             resizeMode="cover"
             imageStyle={{ borderRadius: 24 }}
           >
