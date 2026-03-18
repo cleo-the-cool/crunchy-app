@@ -151,41 +151,41 @@ export default function ListsScreen() {
   }, {});
 
   return (
-    <SafeAreaView className="flex-1 bg-ivory" edges={["top"]}>
+    <View className="flex-1 bg-ivory">
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View className="flex-1">
-          {/* Header Image */}
-          <View className="mx-5 mt-1 mb-3">
-            <ImageBackground
-              source={require("@/assets/images/aesthetic/lists-header.jpg")}
-              resizeMode="cover"
-              imageStyle={{ borderRadius: 24 }}
-            >
-              <View
-                className="rounded-3xl px-5 py-5"
-                style={{ backgroundColor: "rgba(61,90,62,0.55)" }}
-              >
-                <View className="flex-row items-center">
-                  <TouchableOpacity onPress={goBack} hitSlop={8}>
-                    <Ionicons name="arrow-back" size={24} color="#FFF" />
-                  </TouchableOpacity>
-                  <Text className="text-xl font-bold text-white ml-4 flex-1">
+          {/* Header Image — matches homepage hero style */}
+          <ImageBackground
+            source={require("@/assets/images/aesthetic/lists-header.jpg")}
+            resizeMode="cover"
+            style={{ width: "100%" }}
+          >
+            <View style={{ backgroundColor: "rgba(61,90,62,0.55)" }}>
+              <SafeAreaView edges={["top"]}>
+                <View className="px-6 pt-6 pb-8" style={{ minHeight: 140 }}>
+                  <View className="flex-row items-center">
+                    <TouchableOpacity onPress={goBack} hitSlop={8}>
+                      <Ionicons name="arrow-back" size={24} color="#FFF" />
+                    </TouchableOpacity>
+                    <View className="flex-1" />
+                    <TouchableOpacity
+                      onPress={() => router.push("/create-list")}
+                      className="w-9 h-9 rounded-full items-center justify-center"
+                      style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
+                    >
+                      <Ionicons name="add" size={22} color="#FFF" />
+                    </TouchableOpacity>
+                  </View>
+                  <Text className="text-4xl font-bold text-white mt-3">
                     Product Lists
                   </Text>
-                  <TouchableOpacity
-                    onPress={() => router.push("/create-list")}
-                    className="w-9 h-9 rounded-full items-center justify-center"
-                    style={{ backgroundColor: "rgba(255,255,255,0.25)" }}
-                  >
-                    <Ionicons name="add" size={22} color="#FFF" />
-                  </TouchableOpacity>
+                  <Text className="text-white/60 text-sm mt-1">
+                    Organize your favorite clean products
+                  </Text>
                 </View>
-                <Text className="text-white/80 text-sm mt-2">
-                  Organize your favorite clean products
-                </Text>
-              </View>
-            </ImageBackground>
-          </View>
+              </SafeAreaView>
+            </View>
+          </ImageBackground>
 
           {/* Tab Segments */}
           <View className="px-5 mb-3">
@@ -393,7 +393,7 @@ export default function ListsScreen() {
           </ScrollView>
         </View>
       </TouchableWithoutFeedback>
-    </SafeAreaView>
+    </View>
   );
 }
 
