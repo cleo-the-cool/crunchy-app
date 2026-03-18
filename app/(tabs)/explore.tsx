@@ -32,109 +32,109 @@ const BROWSE_CATEGORIES: BrowseCategory[] = [
   {
     key: "skincare",
     label: "Skincare",
-    emoji: "🧴",
+    emoji: "",
     products: [
-      { name: "CeraVe Moisturizing Cream", brand: "CeraVe", emoji: "🧴", tip: "Fragrance-free, dermatologist recommended" },
-      { name: "Thayers Witch Hazel Toner", brand: "Thayers", emoji: "🌿", tip: "Alcohol-free, natural ingredients" },
-      { name: "Cocokind Daily SPF", brand: "Cocokind", emoji: "☀️", tip: "Mineral sunscreen, clean ingredients" },
-      { name: "Versed Dew Point Gel Cream", brand: "Versed", emoji: "💧", tip: "Lightweight, non-toxic formula" },
-      { name: "Weleda Skin Food", brand: "Weleda", emoji: "🌻", tip: "Plant-based, ultra-nourishing" },
+      { name: "CeraVe Moisturizing Cream", brand: "CeraVe", emoji: "", tip: "Fragrance-free, dermatologist recommended" },
+      { name: "Thayers Witch Hazel Toner", brand: "Thayers", emoji: "", tip: "Alcohol-free, natural ingredients" },
+      { name: "Cocokind Daily SPF", brand: "Cocokind", emoji: "", tip: "Mineral sunscreen, clean ingredients" },
+      { name: "Versed Dew Point Gel Cream", brand: "Versed", emoji: "", tip: "Lightweight, non-toxic formula" },
+      { name: "Weleda Skin Food", brand: "Weleda", emoji: "", tip: "Plant-based, ultra-nourishing" },
     ],
   },
   {
     key: "food",
     label: "Food & Pantry",
-    emoji: "🍎",
+    emoji: "",
     products: [
-      { name: "Primal Kitchen Mayo", brand: "Primal Kitchen", emoji: "🥑", tip: "Avocado oil based, no seed oils" },
-      { name: "Hu Chocolate Bars", brand: "Hu", emoji: "🍫", tip: "No refined sugar, clean ingredients" },
-      { name: "Siete Tortilla Chips", brand: "Siete", emoji: "🌮", tip: "Grain-free, avocado oil" },
-      { name: "Chosen Foods Avocado Oil", brand: "Chosen Foods", emoji: "🫒", tip: "Pure avocado oil for cooking" },
-      { name: "Purely Elizabeth Granola", brand: "Purely Elizabeth", emoji: "🥣", tip: "Ancient grains, low sugar" },
+      { name: "Primal Kitchen Mayo", brand: "Primal Kitchen", emoji: "", tip: "Avocado oil based, no seed oils" },
+      { name: "Hu Chocolate Bars", brand: "Hu", emoji: "", tip: "No refined sugar, clean ingredients" },
+      { name: "Siete Tortilla Chips", brand: "Siete", emoji: "", tip: "Grain-free, avocado oil" },
+      { name: "Chosen Foods Avocado Oil", brand: "Chosen Foods", emoji: "", tip: "Pure avocado oil for cooking" },
+      { name: "Purely Elizabeth Granola", brand: "Purely Elizabeth", emoji: "", tip: "Ancient grains, low sugar" },
     ],
   },
   {
     key: "drinks",
     label: "Drinks",
-    emoji: "🥤",
+    emoji: "",
     products: [
-      { name: "Olipop Prebiotic Soda", brand: "Olipop", emoji: "🥤", tip: "Gut-friendly, low sugar" },
-      { name: "Rishi Matcha", brand: "Rishi", emoji: "🍵", tip: "Organic, ceremonial grade" },
-      { name: "Harmless Harvest Coconut Water", brand: "Harmless Harvest", emoji: "🥥", tip: "Raw, organic, never heated" },
-      { name: "Poppi Prebiotic Soda", brand: "Poppi", emoji: "🍒", tip: "Apple cider vinegar based" },
-      { name: "Four Sigmatic Mushroom Coffee", brand: "Four Sigmatic", emoji: "☕", tip: "Adaptogens + organic coffee" },
+      { name: "Olipop Prebiotic Soda", brand: "Olipop", emoji: "", tip: "Gut-friendly, low sugar" },
+      { name: "Rishi Matcha", brand: "Rishi", emoji: "", tip: "Organic, ceremonial grade" },
+      { name: "Harmless Harvest Coconut Water", brand: "Harmless Harvest", emoji: "", tip: "Raw, organic, never heated" },
+      { name: "Poppi Prebiotic Soda", brand: "Poppi", emoji: "", tip: "Apple cider vinegar based" },
+      { name: "Four Sigmatic Mushroom Coffee", brand: "Four Sigmatic", emoji: "", tip: "Adaptogens + organic coffee" },
     ],
   },
   {
     key: "cleaning",
     label: "Cleaning",
-    emoji: "🧹",
+    emoji: "",
     products: [
-      { name: "Branch Basics Concentrate", brand: "Branch Basics", emoji: "🫧", tip: "One cleaner for everything, non-toxic" },
-      { name: "Blueland Cleaning Tablets", brand: "Blueland", emoji: "💧", tip: "Eco-friendly, zero plastic waste" },
-      { name: "Dr. Bronner's Castile Soap", brand: "Dr. Bronner's", emoji: "🧼", tip: "Multi-use, organic, fair trade" },
-      { name: "Force of Nature Cleaner", brand: "Force of Nature", emoji: "⚡", tip: "Electrolyzed water, kills 99.9% germs" },
-      { name: "Seventh Generation Dish Soap", brand: "Seventh Generation", emoji: "🌎", tip: "Plant-based, no synthetic fragrances" },
+      { name: "Branch Basics Concentrate", brand: "Branch Basics", emoji: "", tip: "One cleaner for everything, non-toxic" },
+      { name: "Blueland Cleaning Tablets", brand: "Blueland", emoji: "", tip: "Eco-friendly, zero plastic waste" },
+      { name: "Dr. Bronner's Castile Soap", brand: "Dr. Bronner's", emoji: "", tip: "Multi-use, organic, fair trade" },
+      { name: "Force of Nature Cleaner", brand: "Force of Nature", emoji: "", tip: "Electrolyzed water, kills 99.9% germs" },
+      { name: "Seventh Generation Dish Soap", brand: "Seventh Generation", emoji: "", tip: "Plant-based, no synthetic fragrances" },
     ],
   },
   {
     key: "makeup",
     label: "Makeup & Beauty",
-    emoji: "💄",
+    emoji: "",
     products: [
-      { name: "ILIA Super Serum Skin Tint", brand: "ILIA", emoji: "✨", tip: "Clean coverage with skincare benefits" },
-      { name: "Tower 28 ShineOn Lip Jelly", brand: "Tower 28", emoji: "💋", tip: "Non-toxic, great for sensitive skin" },
-      { name: "RMS Beauty Lip2Cheek", brand: "RMS", emoji: "🌹", tip: "Organic, multi-use color" },
-      { name: "Kosas Cloud Set Powder", brand: "Kosas", emoji: "☁️", tip: "Clean, lightweight, skin-friendly" },
-      { name: "Saie Dew Blush", brand: "Saie", emoji: "🎀", tip: "Clean beauty, buildable color" },
+      { name: "ILIA Super Serum Skin Tint", brand: "ILIA", emoji: "", tip: "Clean coverage with skincare benefits" },
+      { name: "Tower 28 ShineOn Lip Jelly", brand: "Tower 28", emoji: "", tip: "Non-toxic, great for sensitive skin" },
+      { name: "RMS Beauty Lip2Cheek", brand: "RMS", emoji: "", tip: "Organic, multi-use color" },
+      { name: "Kosas Cloud Set Powder", brand: "Kosas", emoji: "", tip: "Clean, lightweight, skin-friendly" },
+      { name: "Saie Dew Blush", brand: "Saie", emoji: "", tip: "Clean beauty, buildable color" },
     ],
   },
   {
     key: "wellness",
     label: "Wellness & Supplements",
-    emoji: "🌿",
+    emoji: "",
     products: [
-      { name: "Seed Daily Synbiotic", brand: "Seed", emoji: "🦠", tip: "Science-backed probiotic" },
-      { name: "Moon Juice Magnesi-Om", brand: "Moon Juice", emoji: "🌙", tip: "Magnesium for sleep + calm" },
-      { name: "Athletic Greens AG1", brand: "AG1", emoji: "🥬", tip: "All-in-one daily supplement" },
-      { name: "Vital Proteins Collagen", brand: "Vital Proteins", emoji: "💪", tip: "Grass-fed, pasture-raised collagen" },
-      { name: "Liquid IV Hydration", brand: "Liquid IV", emoji: "💧", tip: "Electrolyte mix, non-GMO" },
+      { name: "Seed Daily Synbiotic", brand: "Seed", emoji: "", tip: "Science-backed probiotic" },
+      { name: "Moon Juice Magnesi-Om", brand: "Moon Juice", emoji: "", tip: "Magnesium for sleep + calm" },
+      { name: "Athletic Greens AG1", brand: "AG1", emoji: "", tip: "All-in-one daily supplement" },
+      { name: "Vital Proteins Collagen", brand: "Vital Proteins", emoji: "", tip: "Grass-fed, pasture-raised collagen" },
+      { name: "Liquid IV Hydration", brand: "Liquid IV", emoji: "", tip: "Electrolyte mix, non-GMO" },
     ],
   },
   {
     key: "baby",
     label: "Baby & Kids",
-    emoji: "👶",
+    emoji: "",
     products: [
-      { name: "Pipette Baby Lotion", brand: "Pipette", emoji: "🧴", tip: "Dermatologist tested, clean formula" },
-      { name: "Attitude Baby Diapers", brand: "Attitude", emoji: "👶", tip: "Hypoallergenic, plant-based" },
-      { name: "Babyganics Sunscreen", brand: "Babyganics", emoji: "☀️", tip: "Mineral SPF, tear-free" },
-      { name: "Earth Mama Organic Balm", brand: "Earth Mama", emoji: "🌱", tip: "Organic herbs, gentle on skin" },
-      { name: "Honest Company Wipes", brand: "Honest", emoji: "🧻", tip: "Plant-based, hypoallergenic" },
+      { name: "Pipette Baby Lotion", brand: "Pipette", emoji: "", tip: "Dermatologist tested, clean formula" },
+      { name: "Attitude Baby Diapers", brand: "Attitude", emoji: "", tip: "Hypoallergenic, plant-based" },
+      { name: "Babyganics Sunscreen", brand: "Babyganics", emoji: "", tip: "Mineral SPF, tear-free" },
+      { name: "Earth Mama Organic Balm", brand: "Earth Mama", emoji: "", tip: "Organic herbs, gentle on skin" },
+      { name: "Honest Company Wipes", brand: "Honest", emoji: "", tip: "Plant-based, hypoallergenic" },
     ],
   },
   {
     key: "home",
     label: "Home",
-    emoji: "🏠",
+    emoji: "",
     products: [
-      { name: "Coyuchi Organic Sheets", brand: "Coyuchi", emoji: "🛏️", tip: "100% organic cotton, GOTS certified" },
-      { name: "Vitruvi Essential Oil Diffuser", brand: "Vitruvi", emoji: "🌬️", tip: "Ceramic, no plastic parts" },
-      { name: "Beeswax Candles", brand: "Various", emoji: "🕯️", tip: "No paraffin, clean burning" },
-      { name: "Molly Suds Laundry Powder", brand: "Molly Suds", emoji: "👕", tip: "Plant-based, no synthetic fragrances" },
-      { name: "Public Goods Hand Soap", brand: "Public Goods", emoji: "🧼", tip: "Essential oils, no sulfates" },
+      { name: "Coyuchi Organic Sheets", brand: "Coyuchi", emoji: "", tip: "100% organic cotton, GOTS certified" },
+      { name: "Vitruvi Essential Oil Diffuser", brand: "Vitruvi", emoji: "", tip: "Ceramic, no plastic parts" },
+      { name: "Beeswax Candles", brand: "Various", emoji: "", tip: "No paraffin, clean burning" },
+      { name: "Molly Suds Laundry Powder", brand: "Molly Suds", emoji: "", tip: "Plant-based, no synthetic fragrances" },
+      { name: "Public Goods Hand Soap", brand: "Public Goods", emoji: "", tip: "Essential oils, no sulfates" },
     ],
   },
   {
     key: "clothing",
     label: "Clothing & Fashion",
-    emoji: "👕",
+    emoji: "",
     products: [
-      { name: "Pact Organic Basics", brand: "Pact", emoji: "🌿", tip: "Fair trade, organic cotton" },
-      { name: "Girlfriend Collective Leggings", brand: "Girlfriend", emoji: "🏃‍♀️", tip: "Made from recycled materials" },
-      { name: "Allbirds Sneakers", brand: "Allbirds", emoji: "👟", tip: "Merino wool, sustainable materials" },
-      { name: "Quince Cashmere", brand: "Quince", emoji: "🧶", tip: "Affordable, sustainably sourced" },
-      { name: "Everlane Basics", brand: "Everlane", emoji: "👚", tip: "Transparent pricing, ethical factories" },
+      { name: "Pact Organic Basics", brand: "Pact", emoji: "", tip: "Fair trade, organic cotton" },
+      { name: "Girlfriend Collective Leggings", brand: "Girlfriend", emoji: "", tip: "Made from recycled materials" },
+      { name: "Allbirds Sneakers", brand: "Allbirds", emoji: "", tip: "Merino wool, sustainable materials" },
+      { name: "Quince Cashmere", brand: "Quince", emoji: "", tip: "Affordable, sustainably sourced" },
+      { name: "Everlane Basics", brand: "Everlane", emoji: "", tip: "Transparent pricing, ethical factories" },
     ],
   },
 ];
@@ -186,7 +186,7 @@ export default function ExploreScreen() {
         <View style={{ backgroundColor: "rgba(61,90,62,0.6)" }}>
           <SafeAreaView edges={["top"]}>
             <View className="px-5 pt-4 pb-5">
-              <Text className="text-3xl font-bold text-white" style={{ fontFamily: 'Georgia' }}>Explore</Text>
+              <Text className="text-3xl font-bold text-white" style={{ fontFamily: 'System', fontWeight: '700', letterSpacing: 0.3 }}>Explore</Text>
               <Text className="text-sm text-white/70 mt-0.5">
                 Browse clean products by category
               </Text>
@@ -220,7 +220,7 @@ export default function ExploreScreen() {
 
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingBottom: 32 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#3D5A3E" />
@@ -254,7 +254,7 @@ export default function ExploreScreen() {
         {/* Category Grid (when not filtering) */}
         {!searchInput.trim() && (
           <View className="px-5 mt-5">
-            <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: "Georgia" }}>
+            <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
               Browse by Category
             </Text>
             <View className="flex-row flex-wrap" style={{ gap: 10 }}>
@@ -274,7 +274,7 @@ export default function ExploreScreen() {
                       className="rounded-2xl px-4 py-5 justify-end"
                       style={{ backgroundColor: "rgba(0,0,0,0.35)", height: 100 }}
                     >
-                      <Text className="text-2xl mb-1">{cat.emoji}</Text>
+                      {cat.emoji ? <Text className="text-2xl mb-1">{cat.emoji}</Text> : null}
                       <Text className="text-white font-bold text-base">{cat.label}</Text>
                     </View>
                   </ImageBackground>
@@ -289,8 +289,8 @@ export default function ExploreScreen() {
           <View key={cat.key} className="px-5 mt-5">
             <View className="flex-row items-center justify-between mb-3">
               <View className="flex-row items-center">
-                <Text className="text-xl mr-2">{cat.emoji}</Text>
-                <Text className="text-lg font-bold text-dark" style={{ fontFamily: "Georgia" }}>
+                {cat.emoji ? <Text className="text-xl mr-2">{cat.emoji}</Text> : null}
+                <Text className="text-lg font-bold text-dark" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
                   {cat.label}
                 </Text>
               </View>
@@ -316,9 +316,9 @@ export default function ExploreScreen() {
                     onPress={() => handleProductPress(product)}
                     activeOpacity={0.7}
                     className="bg-white rounded-3xl p-4 flex-row items-center"
-                    style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.08)" }}
+                    style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.08)", shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}
                   >
-                    <Text className="text-2xl mr-3">{product.emoji}</Text>
+                    {product.emoji ? <Text className="text-2xl mr-3">{product.emoji}</Text> : null}
                     <View className="flex-1">
                       <Text className="text-sm font-semibold text-dark" numberOfLines={1}>
                         {product.name}
@@ -336,7 +336,7 @@ export default function ExploreScreen() {
         {/* Popular Products section when nothing selected/searched */}
         {!searchInput.trim() && !expandedCategory && (
           <View className="px-5 mt-6">
-            <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: "Georgia" }}>
+            <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
               Popular Clean Swaps
             </Text>
             <View style={{ gap: 10 }}>

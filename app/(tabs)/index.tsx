@@ -19,18 +19,18 @@ import { getRecentScans, getScanStats, type ScanHistoryItem } from "@/lib/scanHi
 import { CATEGORY_IMAGES } from "@/lib/categoryImages";
 
 const DAILY_TIPS = [
-  { icon: "🧴", tip: "Check your shampoo ingredients — sulfates can strip your hair of natural oils." },
-  { icon: "🥦", tip: "Frozen veggies are just as nutritious as fresh and have fewer preservatives." },
-  { icon: "🧹", tip: "Vinegar and baking soda can replace most chemical cleaning products." },
-  { icon: "🌿", tip: "Look for 'fragrance-free' instead of 'unscented' — they're not the same!" },
-  { icon: "🍎", tip: "The Dirty Dozen list highlights produce with the most pesticide residue." },
-  { icon: "🧪", tip: "Parabens in cosmetics can mimic estrogen. Check your moisturizer!" },
-  { icon: "♻️", tip: "Glass and stainless steel containers don't leach chemicals like plastic can." },
-  { icon: "🌱", tip: "Start small — swap one product at a time for a cleaner alternative." },
-  { icon: "👕", tip: "Wash new clothes before wearing — they often contain formaldehyde from manufacturing." },
-  { icon: "🍋", tip: "Lemon juice is a natural disinfectant and deodorizer for your kitchen." },
-  { icon: "🛁", tip: "Most bubble baths contain SLS. Try colloidal oatmeal for sensitive skin." },
-  { icon: "🥤", tip: "Avoid heating food in plastic containers — it increases chemical leaching." },
+  { icon: "", tip: "Check your shampoo ingredients — sulfates can strip your hair of natural oils." },
+  { icon: "", tip: "Frozen veggies are just as nutritious as fresh and have fewer preservatives." },
+  { icon: "", tip: "Vinegar and baking soda can replace most chemical cleaning products." },
+  { icon: "", tip: "Look for 'fragrance-free' instead of 'unscented' — they're not the same!" },
+  { icon: "", tip: "The Dirty Dozen list highlights produce with the most pesticide residue." },
+  { icon: "", tip: "Parabens in cosmetics can mimic estrogen. Check your moisturizer!" },
+  { icon: "", tip: "Glass and stainless steel containers don't leach chemicals like plastic can." },
+  { icon: "", tip: "Start small — swap one product at a time for a cleaner alternative." },
+  { icon: "", tip: "Wash new clothes before wearing — they often contain formaldehyde from manufacturing." },
+  { icon: "", tip: "Lemon juice is a natural disinfectant and deodorizer for your kitchen." },
+  { icon: "", tip: "Most bubble baths contain SLS. Try colloidal oatmeal for sensitive skin." },
+  { icon: "", tip: "Avoid heating food in plastic containers — it increases chemical leaching." },
 ];
 
 export default function HomeScreen() {
@@ -118,7 +118,7 @@ export default function HomeScreen() {
     <View className="flex-1 bg-ivory">
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingBottom: 40 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#fff" />
@@ -136,10 +136,10 @@ export default function HomeScreen() {
                 <Text className="text-white/70 text-sm font-medium uppercase tracking-wider">
                   {greeting}
                 </Text>
-                <Text className="text-4xl font-bold text-white mt-1" style={{ fontFamily: "Georgia" }}>
+                <Text className="text-4xl font-bold text-white mt-1" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
                   {firstName}
                 </Text>
-                <Text className="text-white/60 text-sm mt-1">Your clean living journey</Text>
+                <Text className="text-white/60 text-sm mt-1">Welcome to your clean living journey</Text>
 
                 {/* Score Badge on Hero */}
                 <TouchableOpacity
@@ -155,7 +155,7 @@ export default function HomeScreen() {
                   </View>
                   <View>
                     <View className="flex-row items-center">
-                      <Text className="text-xl mr-2">{tierInfo.emoji}</Text>
+                      <Text className="text-xl mr-2"></Text>
                       <Text className="text-white font-bold text-lg">{tierInfo.label}</Text>
                     </View>
                     <View className="flex-row items-center mt-0.5">
@@ -179,11 +179,11 @@ export default function HomeScreen() {
         {/* Quick Stats Row */}
         {scanStats.totalScans > 0 && (
           <View className="flex-row px-6 mt-4 gap-3">
-            <View className="flex-1 bg-white rounded-2xl p-3.5 items-center" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)" }}>
+            <View className="flex-1 bg-white rounded-2xl p-3.5 items-center" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)", shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}>
               <Text className="text-2xl font-bold text-forest">{scanStats.totalScans}</Text>
               <Text className="text-xs text-dark/50 mt-0.5">Products Scanned</Text>
             </View>
-            <View className="flex-1 bg-white rounded-2xl p-3.5 items-center" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)" }}>
+            <View className="flex-1 bg-white rounded-2xl p-3.5 items-center" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)", shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}>
               <Text className="text-2xl font-bold text-forest">{scanStats.averageScore}</Text>
               <Text className="text-xs text-dark/50 mt-0.5">Avg Score</Text>
             </View>
@@ -209,7 +209,7 @@ export default function HomeScreen() {
                     <Text className="text-white text-xs font-semibold uppercase tracking-wider opacity-80">
                       Get Started
                     </Text>
-                    <Text className="text-white text-xl font-bold mt-1" style={{ fontFamily: "Georgia" }}>
+                    <Text className="text-white text-xl font-bold mt-1" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
                       Take the Crunchy Quiz
                     </Text>
                     <Text className="text-white/80 text-sm mt-1.5">
@@ -236,7 +236,7 @@ export default function HomeScreen() {
         {recentScans.length > 0 && (
           <View className="mt-6">
             <View className="flex-row items-center justify-between px-6 mb-3">
-              <Text className="text-lg font-bold text-dark" style={{ fontFamily: "Georgia" }}>
+              <Text className="text-lg font-bold text-dark" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
                 Recent Scans
               </Text>
               <TouchableOpacity onPress={() => router.push("/(tabs)/scan")} hitSlop={8}>
@@ -280,6 +280,7 @@ export default function HomeScreen() {
                   style={{
                     borderWidth: 1,
                     borderColor: "rgba(0,0,0,0.12)",
+                    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3,
                   }}
                 >
                   <View
@@ -307,7 +308,7 @@ export default function HomeScreen() {
 
         {/* Daily Tip with botanical background */}
         <View className="px-6 mt-6">
-          <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: "Georgia" }}>
+          <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
             Daily Tip
           </Text>
           <ImageBackground
@@ -316,7 +317,7 @@ export default function HomeScreen() {
             imageStyle={{ borderRadius: 16 }}
           >
             <View className="rounded-2xl p-4 flex-row items-start" style={{ backgroundColor: "rgba(61,90,62,0.75)" }}>
-              <Text className="text-2xl mr-3">{dailyTip.icon}</Text>
+              {dailyTip.icon ? <Text className="text-2xl mr-3">{dailyTip.icon}</Text> : null}
               <Text className="text-sm text-white/90 flex-1 leading-5">{dailyTip.tip}</Text>
             </View>
           </ImageBackground>
@@ -324,20 +325,20 @@ export default function HomeScreen() {
 
         {/* Browse Categories */}
         <View className="mt-6 px-6">
-          <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: "Georgia" }}>
+          <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
             Browse Categories
           </Text>
           <View className="flex-row flex-wrap" style={{ gap: 10 }}>
             {[
-              { key: "food", label: "Food", emoji: "🍎" },
-              { key: "drinks", label: "Drinks", emoji: "🥤" },
-              { key: "skincare", label: "Skincare", emoji: "🧴" },
-              { key: "makeup", label: "Makeup", emoji: "💄" },
-              { key: "cleaning", label: "Cleaning", emoji: "🧹" },
-              { key: "clothing", label: "Clothing", emoji: "👕" },
-              { key: "home", label: "Home", emoji: "🏠" },
-              { key: "baby", label: "Baby", emoji: "👶" },
-              { key: "wellness", label: "Wellness", emoji: "🌿" },
+              { key: "food", label: "Food", emoji: "" },
+              { key: "drinks", label: "Drinks", emoji: "" },
+              { key: "skincare", label: "Skincare", emoji: "" },
+              { key: "makeup", label: "Makeup", emoji: "" },
+              { key: "cleaning", label: "Cleaning", emoji: "" },
+              { key: "clothing", label: "Clothing", emoji: "" },
+              { key: "home", label: "Home", emoji: "" },
+              { key: "baby", label: "Baby", emoji: "" },
+              { key: "wellness", label: "Wellness", emoji: "" },
             ].map((cat) => (
               <TouchableOpacity
                 key={cat.key}
@@ -357,7 +358,7 @@ export default function HomeScreen() {
                     className="rounded-2xl px-4 py-5 justify-end"
                     style={{ backgroundColor: "rgba(0,0,0,0.35)", height: 120 }}
                   >
-                    <Text className="text-2xl mb-1">{cat.emoji}</Text>
+                    {cat.emoji ? <Text className="text-2xl mb-1">{cat.emoji}</Text> : null}
                     <Text className="text-white font-bold text-base">{cat.label}</Text>
                   </View>
                 </ImageBackground>
@@ -370,12 +371,12 @@ export default function HomeScreen() {
         {completedCount < 3 && (
           <View className="px-6 mt-6">
             <View className="flex-row items-center justify-between mb-3">
-              <Text className="text-lg font-bold text-dark" style={{ fontFamily: "Georgia" }}>
+              <Text className="text-lg font-bold text-dark" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
                 Getting Started
               </Text>
               <Text className="text-xs text-dark/40">{completedCount}/3 complete</Text>
             </View>
-            <View className="bg-white rounded-2xl p-4" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)" }}>
+            <View className="bg-white rounded-2xl p-4" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)", shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}>
               <ChecklistItem
                 done={checklist.scanned}
                 label="Scan your first product"
@@ -404,7 +405,7 @@ export default function HomeScreen() {
               imageStyle={{ borderRadius: 16 }}
             >
               <View className="rounded-2xl items-center py-6 px-4" style={{ backgroundColor: "rgba(61,90,62,0.7)" }}>
-                <Text className="text-base font-bold text-white text-center" style={{ fontFamily: "Georgia" }}>
+                <Text className="text-base font-bold text-white text-center" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
                   Start your clean living journey!
                 </Text>
                 <Text className="text-sm text-white/70 text-center mt-2 px-4">
@@ -443,7 +444,7 @@ function QuickActionButton({
       }}
       activeOpacity={0.8}
       className="flex-1 bg-white rounded-3xl py-4 items-center"
-      style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)" }}
+      style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)", shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}
     >
       <View className="w-11 h-11 rounded-full bg-forest/8 items-center justify-center mb-2">
         <Ionicons name={icon} size={22} color="#3D5A3E" />

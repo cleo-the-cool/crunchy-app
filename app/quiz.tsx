@@ -42,10 +42,10 @@ const questions: QuizQuestion[] = [
     question: "How do you feel about seed oils?",
     category: "Food & Nutrition",
     options: [
-      { text: "Seed oils? Like sunflower? They're fine", emoji: "🤷", score: 1 },
-      { text: "I've heard they're bad but haven't changed much", emoji: "🧐", score: 2 },
-      { text: "I try to avoid them when cooking at home", emoji: "🫒", score: 3 },
-      { text: "Eliminated. Tallow, butter, and olive oil only", emoji: "🧈", score: 4 },
+      { text: "Seed oils? Like sunflower? They're fine", emoji: "", score: 1 },
+      { text: "I've heard they're bad but haven't changed much", emoji: "", score: 2 },
+      { text: "I try to avoid them when cooking at home", emoji: "", score: 3 },
+      { text: "Eliminated. Tallow, butter, and olive oil only", emoji: "", score: 4 },
     ],
   },
   {
@@ -223,7 +223,7 @@ function QuestionCard({
       <Text className="text-sm font-medium text-forest mb-2 uppercase tracking-wider">
         {question.category}
       </Text>
-      <Text className="text-2xl font-bold text-dark mb-6" style={{ fontFamily: 'Georgia' }}>
+      <Text className="text-2xl font-bold text-dark mb-6" style={{ fontFamily: 'System', fontWeight: '700', letterSpacing: 0.3 }}>
         {question.question}
       </Text>
       <View className="gap-3">

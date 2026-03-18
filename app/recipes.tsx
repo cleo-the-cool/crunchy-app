@@ -156,7 +156,7 @@ export default function RecipesScreen() {
           <Ionicons name="arrow-back" size={24} color="#3D5A3E" />
         </TouchableOpacity>
         <View className="flex-1">
-          <Text className="text-2xl font-bold text-dark" style={{ fontFamily: 'Georgia' }}>DIY Recipes</Text>
+          <Text className="text-2xl font-bold text-dark" style={{ fontFamily: 'System', fontWeight: '700', letterSpacing: 0.3 }}>DIY Recipes</Text>
           <Text className="text-sm text-dark/50 mt-0.5">
             Make your own clean products
           </Text>
@@ -227,7 +227,7 @@ export default function RecipesScreen() {
                     elevation: 1,
                   }}
                 >
-                  <Text className="text-lg mr-1.5">{cat.icon}</Text>
+                  {cat.icon ? <Text className="text-lg mr-1.5">{cat.icon}</Text> : null}
                   <Text
                     className={`text-sm font-semibold ${
                       isSelected ? "text-white" : "text-dark"
@@ -329,7 +329,7 @@ export default function RecipesScreen() {
         {/* Recipe List */}
         {filteredRecipes.length === 0 ? (
           <View className="items-center px-5 mt-12">
-            <Text className="text-5xl mb-4">🧪</Text>
+            <Ionicons name="flask-outline" size={48} color="#A8B89C" style={{ marginBottom: 16 }} />
             <Text className="text-lg font-bold text-dark text-center">
               No recipes found
             </Text>
@@ -389,7 +389,7 @@ function RecipeCard({
         className="h-32 items-center justify-center"
         style={{ backgroundColor: "#3D5A3E15" }}
       >
-        <Text className="text-5xl">{recipe.image}</Text>
+        {recipe.image ? <Text className="text-5xl">{recipe.image}</Text> : <Ionicons name="flask-outline" size={48} color="#A8B89C" />}
         <View className="absolute top-3 left-3 bg-white/90 rounded-full px-2.5 py-1 flex-row items-center">
           <Text className="text-xs font-medium text-dark/70">
             {recipe.category}

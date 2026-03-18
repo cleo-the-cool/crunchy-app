@@ -276,11 +276,23 @@ export default function ScanScreen() {
     <SafeAreaView className="flex-1 bg-ivory" edges={["top"]}>
       {/* Header */}
       <View className="px-5 pt-3 pb-2">
-        <Text className="text-3xl font-bold text-dark" style={{ fontFamily: "Georgia" }}>Scanner</Text>
+        <Text className="text-3xl font-bold text-dark" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>Scanner</Text>
       </View>
 
       {/* Scan Mode Toggle */}
-      <View className="flex-row mx-5 mb-3" style={{ gap: 8 }}>
+      <View className="flex-row mx-5 mb-3" style={{
+        backgroundColor: 'rgba(255, 253, 248, 0.85)',
+        borderRadius: 20,
+        padding: 4,
+        borderWidth: 0.5,
+        borderColor: 'rgba(255,255,255,0.3)',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        elevation: 6,
+        gap: 4,
+      }}>
         {SCAN_MODES.map((mode) => (
           <TouchableOpacity
             key={mode.key}
@@ -288,11 +300,11 @@ export default function ScanScreen() {
               setScanMode(mode.key);
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             }}
-            className="flex-1 flex-row items-center justify-center rounded-full"
+            className="flex-1 flex-row items-center justify-center rounded-2xl"
             style={
               scanMode === mode.key
                 ? { backgroundColor: "#3D5A3E", paddingVertical: 12 }
-                : { backgroundColor: "white", borderWidth: 1, borderColor: "rgba(0,0,0,0.12)", paddingVertical: 12 }
+                : { backgroundColor: "transparent", paddingVertical: 12 }
             }
           >
             <Ionicons
@@ -363,7 +375,7 @@ export default function ScanScreen() {
 
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingBottom: 32 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#3D5A3E" />
@@ -388,7 +400,7 @@ export default function ScanScreen() {
               >
                 <Ionicons name={getModeIcon(scanMode)} size={40} color="white" />
               </View>
-              <Text className="text-white text-xl font-bold" style={{ fontFamily: "Georgia" }}>
+              <Text className="text-white text-xl font-bold" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
                 {getModeTitle(scanMode)}
               </Text>
               <Text className="text-white/70 text-sm mt-1 px-8 text-center">
@@ -400,12 +412,12 @@ export default function ScanScreen() {
 
         {/* Recent Scans */}
         <View className="px-5">
-          <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: "Georgia" }}>
+          <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
             Recent Scans
           </Text>
           {recentScans.length === 0 ? (
             <View className="items-center py-8">
-              <Text className="text-4xl mb-3">📷</Text>
+              <Ionicons name="camera-outline" size={40} color="#A8B89C" style={{ marginBottom: 12 }} />
               <Text className="text-base font-bold text-dark text-center">No scans yet</Text>
               <Text className="text-sm text-dark/50 text-center mt-2 px-4">
                 Scan your first product to see it here!
@@ -444,6 +456,7 @@ export default function ScanScreen() {
                 style={{
                   borderWidth: 1,
                   borderColor: "rgba(0,0,0,0.08)",
+                  shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3,
                 }}
               >
                 <View

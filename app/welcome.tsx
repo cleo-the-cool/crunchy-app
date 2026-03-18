@@ -1,4 +1,5 @@
 import { View, Text, ImageBackground, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown, FadeInUp } from "react-native-reanimated";
@@ -21,14 +22,14 @@ export default function WelcomeScreen() {
               className="w-24 h-24 rounded-full items-center justify-center mb-8"
               style={{ backgroundColor: "rgba(255,255,255,0.2)", borderWidth: 2, borderColor: "rgba(255,255,255,0.3)" }}
             >
-              <Text className="text-5xl">🌿</Text>
+              <Ionicons name="leaf" size={48} color="white" />
             </Animated.View>
 
             {/* App Name */}
             <Animated.Text
               entering={FadeInDown.delay(200).duration(500)}
               className="text-5xl font-bold text-white mb-3"
-              style={{ fontFamily: "Georgia" }}
+              style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}
             >
               Crunchy
             </Animated.Text>

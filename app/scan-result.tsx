@@ -246,7 +246,7 @@ export default function ScanResultScreen() {
     try {
       const scoreText = product.crunchyScore ? ` (Score: ${product.crunchyScore}/100)` : "";
       await Share.share({
-        message: `I scanned ${product.name} by ${product.brand} on Crunchy and it's rated ${ratingInfo.label}${scoreText}! 🌿\n\nDownload Crunchy to check your products.`,
+        message: `I scanned ${product.name} by ${product.brand} on Crunchy and it's rated ${ratingInfo.label}${scoreText}!\n\nDownload Crunchy to check your products.`,
       });
     } catch {
       // User cancelled
@@ -362,7 +362,7 @@ export default function ScanResultScreen() {
                     <Text className="text-xs text-white/60 uppercase font-medium tracking-wide">
                       {product.category}
                     </Text>
-                    <Text className="text-lg font-bold text-white mt-0.5" style={{ fontFamily: "Georgia" }}>
+                    <Text className="text-lg font-bold text-white mt-0.5" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
                       {product.name}
                     </Text>
                     <Text className="text-sm text-white/70">{product.brand}</Text>
@@ -405,8 +405,8 @@ export default function ScanResultScreen() {
               {/* Branding for share */}
               <View className="flex-row items-center justify-center mt-3 pt-3" style={{ borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.06)" }}>
                 <Text className="text-sm text-dark/30" style={{ fontWeight: "500" }}>Scanned with </Text>
-                <Text className="text-sm text-forest" style={{ fontFamily: "Georgia", fontStyle: "italic", fontWeight: "600" }}>Crunchy</Text>
-                <Text className="text-sm ml-1">🌿</Text>
+                <Text className="text-sm text-forest" style={{ fontFamily: "System", fontStyle: "italic", fontWeight: "600", letterSpacing: 0.3 }}>Crunchy</Text>
+
               </View>
             </View>
           </Animated.View>

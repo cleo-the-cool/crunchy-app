@@ -7,10 +7,10 @@ import { Badge } from "@/components";
 import { getDefaultStats, type CrunchyStats } from "@/lib/crunchyScore";
 
 const TIER_DETAILS = [
-  { emoji: "🌱", label: "Seedling", range: "0-25", description: "Just starting your clean living journey" },
-  { emoji: "🌿", label: "Sprout", range: "26-50", description: "Building healthy habits" },
-  { emoji: "🌳", label: "Sapling", range: "51-75", description: "Making consistently clean choices" },
-  { emoji: "🌸", label: "In Bloom", range: "76-100", description: "A true clean living champion" },
+  { emoji: "", label: "Seedling", range: "0-25", description: "Just starting your clean living journey" },
+  { emoji: "", label: "Sprout", range: "26-50", description: "Building healthy habits" },
+  { emoji: "", label: "Sapling", range: "51-75", description: "Making consistently clean choices" },
+  { emoji: "", label: "In Bloom", range: "76-100", description: "A true clean living champion" },
 ];
 
 function BreakdownRow({
@@ -55,7 +55,7 @@ export default function ScoreDetailScreen() {
           <TouchableOpacity onPress={goBack} className="mr-3">
             <Ionicons name="arrow-back" size={24} color="#3D5A3E" />
           </TouchableOpacity>
-          <Text className="text-xl font-bold text-dark" style={{ fontFamily: 'Georgia' }}>Your Crunchy Score</Text>
+          <Text className="text-xl font-bold text-dark" style={{ fontFamily: 'System', fontWeight: '700', letterSpacing: 0.3 }}>Your Crunchy Score</Text>
         </View>
 
         {/* Score Card with Nature Background */}
@@ -69,7 +69,7 @@ export default function ScoreDetailScreen() {
               className="rounded-3xl p-6 items-center"
               style={{ backgroundColor: "rgba(61,90,62,0.65)" }}
             >
-              <Text className="text-5xl mb-1">{tierInfo.emoji}</Text>
+              {tierInfo.emoji ? <Text className="text-5xl mb-1">{tierInfo.emoji}</Text> : null}
               <Text className="text-5xl font-bold text-white mt-1">
                 {stats.crunchyScore}
               </Text>
@@ -83,15 +83,15 @@ export default function ScoreDetailScreen() {
 
         {/* Stats Summary */}
         <View className="flex-row px-5 mt-5 gap-3">
-          <View className="flex-1 bg-white rounded-3xl py-3 items-center">
+          <View className="flex-1 bg-white rounded-3xl py-3 items-center" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}>
             <Text className="text-lg font-bold text-dark">{stats.totalScans}</Text>
             <Text className="text-xs text-dark/50">Total Scans</Text>
           </View>
-          <View className="flex-1 bg-white rounded-3xl py-3 items-center">
+          <View className="flex-1 bg-white rounded-3xl py-3 items-center" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}>
             <Text className="text-lg font-bold text-dark">{stats.recipesMade}</Text>
             <Text className="text-xs text-dark/50">Recipes Made</Text>
           </View>
-          <View className="flex-1 bg-white rounded-3xl py-3 items-center">
+          <View className="flex-1 bg-white rounded-3xl py-3 items-center" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}>
             <Text className="text-lg font-bold text-dark">{stats.daysActive}</Text>
             <Text className="text-xs text-dark/50">{stats.daysActive === 1 ? "Day" : "Days"} Active</Text>
           </View>
@@ -99,8 +99,8 @@ export default function ScoreDetailScreen() {
 
         {/* Score Breakdown */}
         <View className="px-5 mt-6">
-          <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: 'Georgia' }}>How Your Score Works</Text>
-          <View className="bg-white rounded-3xl px-4 py-1">
+          <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: 'System', fontWeight: '700', letterSpacing: 0.3 }}>How Your Score Works</Text>
+          <View className="bg-white rounded-3xl px-4 py-1" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}>
             <BreakdownRow
               icon="barcode-outline"
               label="Scan History"
@@ -124,8 +124,8 @@ export default function ScoreDetailScreen() {
 
         {/* Tiers */}
         <View className="px-5 mt-6">
-          <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: 'Georgia' }}>Tiers</Text>
-          <View className="bg-white rounded-3xl px-4 py-2">
+          <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: 'System', fontWeight: '700', letterSpacing: 0.3 }}>Tiers</Text>
+          <View className="bg-white rounded-3xl px-4 py-2" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}>
             {TIER_DETAILS.map((t, i) => {
               const isCurrentTier = t.label === tierInfo.label;
               return (
@@ -133,7 +133,7 @@ export default function ScoreDetailScreen() {
                   key={t.label}
                   className={`flex-row items-center py-3 ${i < TIER_DETAILS.length - 1 ? "border-b border-dark/5" : ""}`}
                 >
-                  <Text className="text-2xl mr-3">{t.emoji}</Text>
+                  {t.emoji ? <Text className="text-2xl mr-3">{t.emoji}</Text> : null}
                   <View className="flex-1">
                     <View className="flex-row items-center">
                       <Text className={`text-sm font-semibold ${isCurrentTier ? "text-forest" : "text-dark"}`}>
@@ -156,8 +156,8 @@ export default function ScoreDetailScreen() {
 
         {/* Tips */}
         <View className="px-5 mt-6">
-          <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: 'Georgia' }}>Level Up Your Score</Text>
-          <View className="bg-white rounded-3xl p-4">
+          <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: 'System', fontWeight: '700', letterSpacing: 0.3 }}>Level Up Your Score</Text>
+          <View className="bg-white rounded-3xl p-4" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}>
             <View className="flex-row items-start mb-3">
               <Ionicons name="scan-outline" size={18} color="#3D5A3E" />
               <Text className="text-sm text-dark/70 ml-2 flex-1">

@@ -27,15 +27,15 @@ import type { GeminiAnalysis } from "@/services/gemini";
 import { CATEGORY_IMAGES } from "@/lib/categoryImages";
 
 const SAVED_CATEGORIES = [
-  { key: "All", emoji: "📋" },
-  { key: "Food", emoji: "🍎" },
-  { key: "Drinks", emoji: "🥤" },
-  { key: "Skincare", emoji: "🧴" },
-  { key: "Makeup", emoji: "💄" },
-  { key: "Cleaning", emoji: "🧹" },
-  { key: "Clothing", emoji: "👕" },
-  { key: "Home", emoji: "🏠" },
-  { key: "Other", emoji: "📦" },
+  { key: "All", emoji: "" },
+  { key: "Food", emoji: "" },
+  { key: "Drinks", emoji: "" },
+  { key: "Skincare", emoji: "" },
+  { key: "Makeup", emoji: "" },
+  { key: "Cleaning", emoji: "" },
+  { key: "Clothing", emoji: "" },
+  { key: "Home", emoji: "" },
+  { key: "Other", emoji: "" },
 ] as const;
 
 const RISK_CONFIG = {
@@ -45,10 +45,10 @@ const RISK_CONFIG = {
 };
 
 function getCategoryEmoji(category?: string): string {
-  if (!category) return "📦";
+  if (!category) return "";
   const key = normalizeCategoryKey(category);
   const found = SAVED_CATEGORIES.find((c) => c.key === key);
-  return found?.emoji || "📦";
+  return found?.emoji || "";
 }
 
 function normalizeCategoryKey(cat?: string): string {
@@ -114,7 +114,7 @@ export default function ProfileScreen() {
     <View className="flex-1 bg-ivory">
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingBottom: 32 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -133,7 +133,7 @@ export default function ProfileScreen() {
             <SafeAreaView edges={["top"]}>
               {/* Header with Settings */}
               <View className="flex-row items-center justify-between px-6 pt-2 pb-1">
-                <Text className="text-2xl font-bold text-white" style={{ fontFamily: 'Georgia' }}>Profile</Text>
+                <Text className="text-2xl font-bold text-white" style={{ fontFamily: 'System', fontWeight: '700', letterSpacing: 0.3 }}>Profile</Text>
                 <TouchableOpacity
                   onPress={() => router.push("/settings")}
                   hitSlop={8}
@@ -156,14 +156,14 @@ export default function ProfileScreen() {
                 </View>
 
                 {/* Display Name */}
-                <Text className="text-2xl font-bold text-white" style={{ fontFamily: 'Georgia' }}>{displayName}</Text>
+                <Text className="text-2xl font-bold text-white" style={{ fontFamily: 'System', fontWeight: '700', letterSpacing: 0.3 }}>{displayName}</Text>
 
                 {/* Tier Badge */}
                 <View
                   className="flex-row items-center mt-2 px-4 py-1.5 rounded-full"
                   style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
                 >
-                  <Text className="text-base mr-1">{tier.emoji}</Text>
+                  {tier.emoji ? <Text className="text-base mr-1">{tier.emoji}</Text> : null}
                   <Text className="text-sm font-semibold text-white">
                     {tier.label}
                   </Text>
@@ -205,7 +205,8 @@ export default function ProfileScreen() {
           className="mx-6 mt-5 bg-white rounded-3xl flex-row py-4"
           style={{
             borderWidth: 1,
-        borderColor: "rgba(0,0,0,0.12)",
+            borderColor: "rgba(0,0,0,0.12)",
+            shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3,
           }}
         >
           <View className="flex-1 items-center">
@@ -227,7 +228,7 @@ export default function ProfileScreen() {
 
         {/* Screenshotable Score Card */}
         <View className="mt-6">
-          <Text className="text-lg font-bold text-dark px-6 mb-3" style={{ fontFamily: 'Georgia' }}>Your Crunchy Card</Text>
+          <Text className="text-lg font-bold text-dark px-6 mb-3" style={{ fontFamily: 'System', fontWeight: '700', letterSpacing: 0.3 }}>Your Crunchy Card</Text>
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={() => router.push("/score-detail")}
@@ -239,7 +240,7 @@ export default function ProfileScreen() {
         {/* My Recent Scans - Horizontal Scroll */}
         <View className="mt-6">
           <View className="flex-row items-center justify-between px-6 mb-3">
-            <Text className="text-lg font-bold text-dark" style={{ fontFamily: 'Georgia' }}>Recent Scans</Text>
+            <Text className="text-lg font-bold text-dark" style={{ fontFamily: 'System', fontWeight: '700', letterSpacing: 0.3 }}>Recent Scans</Text>
             <TouchableOpacity
               onPress={() => router.push("/(tabs)/scan")}
               hitSlop={8}
@@ -288,7 +289,7 @@ export default function ProfileScreen() {
                       borderColor: "rgba(0,0,0,0.12)",
                     }}
                   >
-                    <Text className="text-3xl mb-2">{getCategoryEmoji(item.category)}</Text>
+                    {getCategoryEmoji(item.category) ? <Text className="text-3xl mb-2">{getCategoryEmoji(item.category)}</Text> : <Ionicons name="cube-outline" size={28} color="#A8B89C" style={{ marginBottom: 8 }} />}
                     <Text className="text-xs font-medium text-dark text-center" numberOfLines={2}>
                       {item.productName}
                     </Text>
@@ -309,7 +310,7 @@ export default function ProfileScreen() {
               borderWidth: 1,
         borderColor: "rgba(0,0,0,0.12)",
             }}>
-              <Text className="text-3xl mb-2">{"\u{1F4F7}"}</Text>
+              <Ionicons name="camera-outline" size={32} color="#A8B89C" style={{ marginBottom: 8 }} />
               <Text className="text-sm font-medium text-dark">No scans yet</Text>
               <Text className="text-xs text-dark/50 mt-1 text-center">
                 Scan your first product to start tracking!
@@ -327,7 +328,7 @@ export default function ProfileScreen() {
         {/* Saved Products with Category Tabs */}
         <View className="mt-6">
           <View className="flex-row items-center justify-between px-6 mb-3">
-            <Text className="text-lg font-bold text-dark" style={{ fontFamily: 'Georgia' }}>Saved Products</Text>
+            <Text className="text-lg font-bold text-dark" style={{ fontFamily: 'System', fontWeight: '700', letterSpacing: 0.3 }}>Saved Products</Text>
             {savedProducts.length > 0 && (
               <TouchableOpacity onPress={() => router.push("/(tabs)/explore")} hitSlop={8}>
                 <Text className="text-sm font-medium text-forest">Browse More</Text>
@@ -379,7 +380,7 @@ export default function ProfileScreen() {
                               borderRadius: 14,
                             }}
                           >
-                            <Text className="text-lg">{cat.emoji}</Text>
+                            {cat.emoji ? <Text className="text-lg">{cat.emoji}</Text> : null}
                             <Text className="text-white text-xs font-bold mt-0.5">
                               {cat.key} ({count})
                             </Text>
@@ -399,7 +400,7 @@ export default function ProfileScreen() {
                       className={`flex-row items-center px-3 py-1.5 rounded-full self-center ${isActive ? "bg-forest" : "bg-white"}`}
                       style={{ borderWidth: 1, borderColor: isActive ? "#3D5A3E" : "rgba(0,0,0,0.12)", height: 34 }}
                     >
-                      <Text className="text-sm mr-1">{cat.emoji}</Text>
+                      {cat.emoji ? <Text className="text-sm mr-1">{cat.emoji}</Text> : null}
                       <Text className={`text-xs font-semibold ${isActive ? "text-white" : "text-dark"}`}>
                         {cat.key} ({count})
                       </Text>
@@ -427,7 +428,7 @@ export default function ProfileScreen() {
                         className="bg-white rounded-3xl p-4 flex-row items-center"
                         style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)" }}
                       >
-                        <Text className="text-2xl mr-3">{item.image || getCategoryEmoji(item.category)}</Text>
+                        {(item.image || getCategoryEmoji(item.category)) ? <Text className="text-2xl mr-3">{item.image || getCategoryEmoji(item.category)}</Text> : <Ionicons name="cube-outline" size={24} color="#A8B89C" style={{ marginRight: 12 }} />}
                         <View className="flex-1">
                           <Text className="text-sm font-semibold text-dark" numberOfLines={1}>{item.name}</Text>
                           {item.brand && <Text className="text-xs text-dark/50 mt-0.5">{item.brand}</Text>}
@@ -456,7 +457,7 @@ export default function ProfileScreen() {
               borderWidth: 1,
               borderColor: "rgba(0,0,0,0.12)",
             }}>
-              <Text className="text-3xl mb-2">🔖</Text>
+              <Ionicons name="bookmark-outline" size={32} color="#A8B89C" style={{ marginBottom: 8 }} />
               <Text className="text-sm font-medium text-dark">No saved products</Text>
               <Text className="text-xs text-dark/50 mt-1 text-center">
                 Bookmark products from scan results to save them here!
@@ -479,7 +480,7 @@ export default function ProfileScreen() {
         {/* My Lists Section */}
         <View className="mt-6">
           <View className="flex-row items-center justify-between px-6 mb-3">
-            <Text className="text-lg font-bold text-dark" style={{ fontFamily: 'Georgia' }}>My Lists</Text>
+            <Text className="text-lg font-bold text-dark" style={{ fontFamily: 'System', fontWeight: '700', letterSpacing: 0.3 }}>My Lists</Text>
             <TouchableOpacity
               onPress={() => router.push("/lists")}
               hitSlop={8}
@@ -519,7 +520,7 @@ export default function ProfileScreen() {
               borderWidth: 1,
         borderColor: "rgba(0,0,0,0.12)",
             }}>
-              <Text className="text-3xl mb-2">{"\u{1F4CB}"}</Text>
+              <Ionicons name="list-outline" size={32} color="#A8B89C" style={{ marginBottom: 8 }} />
               <Text className="text-sm font-medium text-dark">No lists yet</Text>
               <Text className="text-xs text-dark/50 mt-1 text-center">
                 Create lists to organize your favorite products!
@@ -568,7 +569,7 @@ function SavedProductDetailModal({
           {/* Header */}
           <View className="flex-row items-center justify-between px-5 pb-3">
             <View className="flex-1">
-              <Text className="text-lg font-bold text-dark" style={{ fontFamily: "Georgia" }}>
+              <Text className="text-lg font-bold text-dark" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
                 {product.name}
               </Text>
               {product.brand && <Text className="text-sm text-dark/50">{product.brand}</Text>}
@@ -603,7 +604,7 @@ function SavedProductDetailModal({
             {/* Ingredients */}
             {scan?.ingredients && scan.ingredients.length > 0 && (
               <View className="mb-4">
-                <Text className="text-base font-bold text-dark mb-2" style={{ fontFamily: "Georgia" }}>Ingredients</Text>
+                <Text className="text-base font-bold text-dark mb-2" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>Ingredients</Text>
                 <View className="bg-white rounded-2xl overflow-hidden" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)" }}>
                   {scan.ingredients.map((ing, i) => {
                     const risk = RISK_CONFIG[ing.risk] || RISK_CONFIG.concern;
@@ -628,7 +629,7 @@ function SavedProductDetailModal({
             {/* Concerns */}
             {scan?.concerns && scan.concerns.length > 0 && (
               <View className="mb-4">
-                <Text className="text-base font-bold text-dark mb-2" style={{ fontFamily: "Georgia" }}>Concerns</Text>
+                <Text className="text-base font-bold text-dark mb-2" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>Concerns</Text>
                 <View className="bg-white rounded-2xl p-3" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)" }}>
                   {scan.concerns.map((c, i) => (
                     <View key={i} className="flex-row items-start mb-1.5">
@@ -643,7 +644,7 @@ function SavedProductDetailModal({
             {/* Clean Alternatives */}
             {scan?.cleanAlternatives && scan.cleanAlternatives.length > 0 && (
               <View className="mb-4">
-                <Text className="text-base font-bold text-dark mb-2" style={{ fontFamily: "Georgia" }}>Clean Alternatives</Text>
+                <Text className="text-base font-bold text-dark mb-2" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>Clean Alternatives</Text>
                 <View className="bg-white rounded-2xl p-3" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)" }}>
                   {scan.cleanAlternatives.map((alt, i) => (
                     <View key={i} className="flex-row items-center mb-1.5">
