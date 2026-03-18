@@ -8,6 +8,7 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   ImageBackground,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -21,7 +22,7 @@ import {
   type ProductList,
   type ListCategory,
 } from "@/data/lists";
-import { getSavedProducts, type SavedProduct } from "@/lib/savedProducts";
+import { getSavedProducts, unsaveProduct, type SavedProduct } from "@/lib/savedProducts";
 
 const LISTS_STORAGE_KEY = "@crunchy_user_lists";
 
@@ -76,6 +77,29 @@ export default function ListsScreen() {
       loadMyLists();
       loadSavedProducts();
     }, [loadMyLists, loadSavedProducts])
+  );
+
+  const handleDeleteSaved = useCallback(
+    (product: SavedProduct) => {
+      Alert.alert(
+        "Remove Product",
+        `Remove "${product.name}" from saved products?`,
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Remove",
+            style: "destructive",
+            onPress: async () => {
+              await unsaveProduct(product.id, user?.id);
+              setSavedProducts((prev) =>
+                prev.filter((p) => p.id !== product.id)
+              );
+            },
+          },
+        ]
+      );
+    },
+    [user]
   );
 
   // Group saved products by category
@@ -348,11 +372,17 @@ export default function ListsScreen() {
                                 </Text>
                               ) : null}
                             </View>
-                            <Ionicons
-                              name="chevron-forward"
-                              size={16}
-                              color="#CCC"
-                            />
+                            <TouchableOpacity
+                              onPress={() => handleDeleteSaved(product)}
+                              hitSlop={8}
+                              className="ml-2 p-1"
+                            >
+                              <Ionicons
+                                name="trash-outline"
+                                size={16}
+                                color="#E57373"
+                              />
+                            </TouchableOpacity>
                           </TouchableOpacity>
                         ))}
                       </View>
