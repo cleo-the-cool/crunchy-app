@@ -14,7 +14,7 @@ export default function TabLayout() {
           <BlurView
             tint="light"
             intensity={80}
-            style={{ ...StyleSheet.absoluteFillObject, borderRadius: 28, overflow: "hidden" }}
+            style={{ ...StyleSheet.absoluteFillObject, borderRadius: 20, overflow: "hidden" }}
           />
         ),
         tabBarStyle: {
@@ -23,7 +23,7 @@ export default function TabLayout() {
           left: 16,
           right: 16,
           backgroundColor: 'rgba(255, 253, 248, 0.7)',
-          borderRadius: 28,
+          borderRadius: 20,
           height: 70,
           paddingTop: 12,
           paddingBottom: 12,
