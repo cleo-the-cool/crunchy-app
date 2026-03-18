@@ -132,7 +132,7 @@ export default function HomeScreen() {
         >
           <View style={{ backgroundColor: "rgba(61,90,62,0.55)" }}>
             <SafeAreaView edges={["top"]}>
-              <View className="px-6 pt-6 pb-8">
+              <View className="px-6 pt-6 pb-8" style={{ minHeight: 180 }}>
                 <Text className="text-white/70 text-sm font-medium uppercase tracking-wider">
                   {greeting}
                 </Text>

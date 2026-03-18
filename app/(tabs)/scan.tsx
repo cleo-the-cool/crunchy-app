@@ -281,7 +281,7 @@ export default function ScanScreen() {
       >
         <View style={{ backgroundColor: "rgba(61,90,62,0.55)" }}>
           <SafeAreaView edges={["top"]}>
-            <View className="px-6 pt-6 pb-8">
+            <View className="px-6 pt-6 pb-10" style={{ minHeight: 180 }}>
               <Text className="text-3xl font-bold text-white">Scanner</Text>
               <Text className="text-sm text-white/70 mt-0.5">Analyze any product instantly</Text>
             </View>

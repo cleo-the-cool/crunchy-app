@@ -143,7 +143,7 @@ export default function SearchScreen() {
       >
         <View style={{ backgroundColor: "rgba(61,90,62,0.55)" }}>
           <SafeAreaView edges={["top"]}>
-            <View className="px-6 pt-6 pb-8">
+            <View className="px-6 pt-6 pb-8" style={{ minHeight: 180 }}>
               <Text className="text-3xl font-bold text-white">Search</Text>
               <Text className="text-sm text-white/70 mt-0.5">
                 Search any product to analyze it

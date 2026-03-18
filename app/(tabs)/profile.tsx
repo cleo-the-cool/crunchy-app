@@ -114,6 +114,7 @@ export default function ProfileScreen() {
         >
           <View style={{ backgroundColor: "rgba(61,90,62,0.55)" }}>
             <SafeAreaView edges={["top"]}>
+              <View style={{ minHeight: 180 }}>
               {/* Header with Settings */}
               <View className="flex-row items-center justify-between px-6 pt-6 pb-1">
                 <Text className="text-2xl font-bold text-white">Profile</Text>
@@ -171,6 +172,7 @@ export default function ProfileScreen() {
                   <Ionicons name="pencil-outline" size={16} color="white" />
                   <Text className="text-sm font-semibold text-white ml-2">Edit Profile</Text>
                 </TouchableOpacity>
+              </View>
               </View>
             </SafeAreaView>
           </View>
