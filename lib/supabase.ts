@@ -12,14 +12,23 @@ const supabaseAnonKey =
   process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ??
   "";
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    storage: AsyncStorage,
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: false,
-  },
-});
+// Guard against missing env vars (e.g. production builds without EAS secrets).
+// createClient("", "") throws immediately and crashes the app on launch.
+const PLACEHOLDER_URL = "https://placeholder.supabase.co";
+const PLACEHOLDER_KEY = "placeholder";
+
+export const supabase = createClient(
+  supabaseUrl || PLACEHOLDER_URL,
+  supabaseAnonKey || PLACEHOLDER_KEY,
+  {
+    auth: {
+      storage: AsyncStorage,
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: false,
+    },
+  }
+);
 
 export function isSupabaseConfigured(): boolean {
   return Boolean(supabaseUrl && supabaseAnonKey);
