@@ -97,7 +97,7 @@ export default function OnboardingPreferencesScreen() {
                 </View>
 
                 <View className="flex-row items-center mt-1">
-                  <Text className="text-xs text-dark/30 w-16">Don't care</Text>
+                  <Text numberOfLines={1} style={{ fontSize: 10, color: "rgba(45,45,45,0.3)", width: 56 }}>Don't care</Text>
                   <View className="flex-1 mx-2">
                     <RNSlider
                       value={value}
@@ -111,7 +111,7 @@ export default function OnboardingPreferencesScreen() {
                       style={{ flex: 1 }}
                     />
                   </View>
-                  <Text className="text-xs text-dark/30 w-12 text-right">Very important</Text>
+                  <Text numberOfLines={1} style={{ fontSize: 10, color: "rgba(45,45,45,0.3)", width: 56, textAlign: "right" }}>Very important</Text>
                 </View>
               </Animated.View>
             );

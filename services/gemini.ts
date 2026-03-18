@@ -191,11 +191,11 @@ For flagged ingredients, cite the specific authority (EFSA, ANSES, IARC, NIH) an
 
 Return ONLY valid JSON, no markdown:
 {
-  "toxins_score": 0,
+  "toxins_score": "number 0-100 where 100 means no harmful additives found",
   "ingredients": [
     { "name": "string", "tier": "high|moderate|limited|safe", "concern": "string or null", "source": "string or null" }
   ],
-  "flagged_count": { "high": 0, "moderate": 0, "limited": 0, "safe": 0 },
+  "flagged_count": { "high": "count of high-risk ingredients", "moderate": "count of moderate-risk ingredients", "limited": "count of limited-risk ingredients", "safe": "count of safe ingredients" },
   "summary": "string"
 }`,
       },
@@ -218,13 +218,13 @@ DO NOT consider additives, ethics, sourcing, or anything not directly nutritiona
 
 Return ONLY valid JSON:
 {
-  "nutrition_score": 0,
-  "nova_level": 1,
+  "nutrition_score": "number 0-100 where 100 means excellent nutritional quality",
+  "nova_level": "1-4 where 1=whole food and 4=ultra-processed",
   "breakdown": {
     "added_sugar": "low|moderate|high",
     "fiber": "low|moderate|high",
     "processing_level": "minimal|processed|ultra-processed",
-    "artificial_sweeteners": false
+    "artificial_sweeteners": "true or false"
   },
   "summary": "string"
 }`,
@@ -249,11 +249,11 @@ If product-specific data is unavailable, use brand-level data and note this in d
 
 Return ONLY valid JSON:
 {
-  "animal_welfare_score": null,
-  "sustainability_score": null,
-  "fair_trade_score": null,
-  "certifications": [],
-  "findings": [],
+  "animal_welfare_score": "number 0-100 or null if unknown",
+  "sustainability_score": "number 0-100 or null if unknown",
+  "fair_trade_score": "number 0-100 or null if unknown",
+  "certifications": ["list of certification names found"],
+  "findings": ["list of factual findings about ethics"],
   "data_confidence": "product|brand|limited",
   "summary": "string"
 }`,
@@ -410,20 +410,36 @@ function buildAnalysisFromCategories(
     }
   );
 
-  // Compile concerns from all analyses
+  // Compile concerns: only actual negative findings
   const concerns: string[] = [];
-  if (toxinsResult?.summary) concerns.push(toxinsResult.summary);
-  if (nutritionResult?.summary) concerns.push(nutritionResult.summary);
+  // Only add toxin-related concerns from flagged ingredients
+  if (toxinsResult?.ingredients) {
+    const flagged = toxinsResult.ingredients.filter((i: any) => i.tier === "high" || i.tier === "moderate");
+    for (const ing of flagged) {
+      if (ing.concern) concerns.push(`${ing.name}: ${ing.concern}${ing.source ? ` (${ing.source})` : ""}`);
+    }
+  }
+  // Only add nutrition concerns if score is low
+  if (nutritionResult && nutritionResult.nutrition_score < 50) {
+    concerns.push(nutritionResult.summary);
+  }
+  // Only add negative ethics findings (filter out positive ones)
   if (ethicsResult?.findings) {
-    concerns.push(...ethicsResult.findings);
+    const negativeKeywords = ["controversy", "concern", "violation", "accused", "lawsuit", "poor", "low score", "no certification", "unknown", "insufficient"];
+    const positiveKeywords = ["recyclable", "certified", "vegan", "cruelty-free", "organic", "fair trade", "no major", "no known", "committed", "sustainable"];
+    for (const finding of ethicsResult.findings) {
+      const lower = finding.toLowerCase();
+      const isPositive = positiveKeywords.some((kw) => lower.includes(kw));
+      const isNegative = negativeKeywords.some((kw) => lower.includes(kw));
+      if (isNegative && !isPositive) concerns.push(finding);
+    }
   }
 
-  // Build combined summary
-  const summaryParts: string[] = [];
-  if (toxinsResult?.summary) summaryParts.push(toxinsResult.summary);
-  if (nutritionResult?.summary) summaryParts.push(nutritionResult.summary);
-  if (ethicsResult?.summary) summaryParts.push(ethicsResult.summary);
-  const summary = summaryParts.join(" ") || "Analysis complete.";
+  // Build concise summary (toxins-first, max 2 sentences)
+  let summary = toxinsResult?.summary || "Analysis complete.";
+  if (nutritionResult?.summary && summary.length < 150) {
+    summary += " " + nutritionResult.summary;
+  }
 
   return {
     productName: productInfo.productName,
@@ -591,6 +607,18 @@ export async function analyzeAndSaveScan(
   const toxinsResult = results[0];
   const ethicsResult = results[1];
   const nutritionResult = isFoodOrDrinks ? results[2] : null;
+
+  // Post-process: ensure obviously safe ingredients aren't misclassified
+  const OBVIOUSLY_SAFE = ["water", "carbonated water", "purified water", "filtered water", "spring water", "sparkling water", "salt", "sea salt"];
+  if (toxinsResult?.ingredients) {
+    for (const ing of toxinsResult.ingredients) {
+      if (OBVIOUSLY_SAFE.some((s) => ing.name.toLowerCase().includes(s))) {
+        ing.tier = "safe";
+        ing.concern = null;
+        ing.source = null;
+      }
+    }
+  }
 
   await incrementDailyCount();
 
