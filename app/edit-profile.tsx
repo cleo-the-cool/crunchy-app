@@ -58,7 +58,7 @@ export default function EditProfileScreen() {
 
   async function handleSave() {
     if (!displayName.trim()) {
-      Alert.alert("Missing Name", "Please enter a display name.");
+      Alert.alert("Missing Name", "Please enter your name.");
       return;
     }
 
@@ -122,29 +122,10 @@ export default function EditProfileScreen() {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            {/* Initial Circle Preview */}
-            <View className="items-center px-6 pt-4 pb-6">
-              <View
-                className="w-24 h-24 rounded-full bg-forest items-center justify-center mb-3"
-                style={{
-                  shadowColor: "#3D5A3E",
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.2,
-                  shadowRadius: 8,
-                  elevation: 4,
-                }}
-              >
-                <Text className="text-4xl font-bold text-white">
-                  {displayName.charAt(0).toUpperCase() || "?"}
-                </Text>
-              </View>
-              <Text className="text-xs text-dark/40">Your initial is shown as your avatar</Text>
-            </View>
-
-            {/* Display Name */}
-            <View className="px-6 mb-5">
+            {/* Name */}
+            <View className="px-6 mt-4 mb-5">
               <Text className="text-sm font-medium text-dark mb-1.5">
-                Display Name
+                Your Name
               </Text>
               <TextInput
                 value={displayName}

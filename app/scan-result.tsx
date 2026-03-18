@@ -35,6 +35,7 @@ import { Badge } from "@/components";
 import { addToHistory } from "@/lib/scanHistory";
 import { getRatingFromScore } from "@/lib/savedProducts";
 import { getCategoryImage } from "@/lib/categoryImages";
+import { useAuth } from "@/contexts/AuthContext";
 
 const RATING_CONFIG: Record<Rating, { icon: keyof typeof Ionicons.glyphMap; color: string; bg: string; label: string; description: string }> = {
   clean: {
@@ -128,6 +129,7 @@ interface DisplayProduct {
 
 export default function ScanResultScreen() {
   const router = useRouter();
+  const { user } = useAuth();
   const { barcode, type, barcodeData, source } = useLocalSearchParams<{
     barcode?: string;
     type?: string;
@@ -197,7 +199,7 @@ export default function ScanResultScreen() {
         ingredients: product.ingredients.map(i => ({ name: i.name, risk: i.risk })),
         concerns: product.concerns,
         summary: product.summary,
-      }).catch(() => {});
+      }, user?.id).catch(() => {});
     }
   }, []);
 

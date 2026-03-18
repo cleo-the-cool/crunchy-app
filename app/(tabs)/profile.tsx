@@ -114,7 +114,6 @@ export default function ProfileScreen() {
         >
           <View style={{ backgroundColor: "rgba(61,90,62,0.55)" }}>
             <SafeAreaView edges={["top"]}>
-              <View style={{ minHeight: 180 }}>
               {/* Header with Settings */}
               <View className="flex-row items-center justify-between px-6 pt-6 pb-1">
                 <Text className="text-2xl font-bold text-white">Profile</Text>
@@ -126,28 +125,15 @@ export default function ProfileScreen() {
                 </TouchableOpacity>
               </View>
 
-              {/* Profile Header - Initial Circle */}
-              <View className="items-center px-6 pt-4 pb-8">
-                <View
-                  className="w-28 h-28 rounded-full items-center justify-center mb-4"
-                  style={{
-                    backgroundColor: "rgba(255,255,255,0.2)",
-                    borderWidth: 3,
-                    borderColor: "rgba(255,255,255,0.3)",
-                  }}
-                >
-                  <Text className="text-5xl font-bold text-white">{firstInitial}</Text>
-                </View>
-
-                {/* Display Name */}
+              {/* Profile Info */}
+              <View className="px-6 pt-4 pb-8" style={{ minHeight: 140 }}>
                 <Text className="text-2xl font-bold text-white">{displayName}</Text>
 
                 {/* Tier Badge */}
                 <View
-                  className="flex-row items-center mt-2 px-4 py-1.5 rounded-full"
+                  className="flex-row items-center mt-3 px-4 py-1.5 rounded-full self-start"
                   style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
                 >
-                  {tier.emoji ? <Text className="text-base mr-1">{tier.emoji}</Text> : null}
                   <Text className="text-sm font-semibold text-white">
                     {tier.label}
                   </Text>
@@ -155,24 +141,6 @@ export default function ProfileScreen() {
                     Score: {stats.crunchyScore}
                   </Text>
                 </View>
-
-                {/* Edit Profile Button */}
-                <TouchableOpacity
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    router.push("/edit-profile");
-                  }}
-                  className="mt-4 flex-row items-center rounded-3xl px-5 py-2.5"
-                  style={{
-                    backgroundColor: "rgba(255,255,255,0.2)",
-                    borderWidth: 1,
-                    borderColor: "rgba(255,255,255,0.3)",
-                  }}
-                >
-                  <Ionicons name="pencil-outline" size={16} color="white" />
-                  <Text className="text-sm font-semibold text-white ml-2">Edit Profile</Text>
-                </TouchableOpacity>
-              </View>
               </View>
             </SafeAreaView>
           </View>
