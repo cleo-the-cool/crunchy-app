@@ -32,10 +32,11 @@ import {
   type Alternative,
 } from "@/data/products";
 import { Badge } from "@/components";
-import { addToHistory } from "@/lib/scanHistory";
 import { getRatingFromScore } from "@/lib/savedProducts";
 import { getCategoryImage } from "@/lib/categoryImages";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePreferences, PREFERENCE_OPTIONS } from "@/contexts/PreferencesContext";
+import { getScoreBreakdown, TIER_CONFIG, type CategoryScores } from "@/lib/scoring";
 
 const RATING_CONFIG: Record<Rating, { icon: keyof typeof Ionicons.glyphMap; color: string; bg: string; label: string; description: string }> = {
   clean: {
@@ -61,11 +62,35 @@ const RATING_CONFIG: Record<Rating, { icon: keyof typeof Ionicons.glyphMap; colo
   },
 };
 
-const RISK_CONFIG: Record<IngredientRisk, { color: string; icon: keyof typeof Ionicons.glyphMap; label: string }> = {
+// 4-tier risk config for ingredient badges
+const RISK_CONFIG_4TIER = {
+  high: { color: "#F44336", icon: "warning" as const, label: "High Risk" },
+  moderate: { color: "#FF9800", icon: "alert-circle" as const, label: "Moderate" },
+  limited: { color: "#FFC107", icon: "information-circle" as const, label: "Limited" },
+  safe: { color: "#4CAF50", icon: "checkmark-circle" as const, label: "Safe" },
+};
+
+// Legacy 3-tier config for backward compatibility
+const RISK_CONFIG_LEGACY: Record<IngredientRisk, { color: string; icon: keyof typeof Ionicons.glyphMap; label: string }> = {
   safe: { color: "#4CAF50", icon: "checkmark-circle", label: "Safe" },
   concern: { color: "#FFC107", icon: "alert-circle", label: "Concern" },
   toxic: { color: "#F44336", icon: "warning", label: "Toxic" },
 };
+
+function getIngredientDisplay(ingredient: any): { color: string; icon: keyof typeof Ionicons.glyphMap; label: string } {
+  // If ingredient has a tier field (new 4-tier system), use it
+  if (ingredient.tier && RISK_CONFIG_4TIER[ingredient.tier as keyof typeof RISK_CONFIG_4TIER]) {
+    return RISK_CONFIG_4TIER[ingredient.tier as keyof typeof RISK_CONFIG_4TIER];
+  }
+  // Legacy 3-tier fallback with mapping
+  const legacyToTier: Record<string, keyof typeof RISK_CONFIG_4TIER> = {
+    safe: "safe",
+    concern: "limited",
+    toxic: "high",
+  };
+  const tier = legacyToTier[ingredient.risk] || "limited";
+  return RISK_CONFIG_4TIER[tier];
+}
 
 function ScanSuccessAnimation({ color }: { color: string }) {
   const scale = useSharedValue(0);
@@ -120,16 +145,27 @@ interface DisplayProduct {
   rating: Rating;
   crunchyScore?: number;
   barcode: string;
-  ingredients: Array<{ name: string; risk: IngredientRisk; explanation: string }>;
+  ingredients: Array<{ name: string; risk: IngredientRisk; explanation: string; tier?: string; source?: string | null }>;
   alternatives: Alternative[];
   diyRecipeId?: string;
   concerns?: string[];
   summary?: string;
+  categoryScores?: CategoryScores;
 }
+
+// Icon map for preference categories
+const PREF_ICONS: Record<string, string> = {
+  toxins_additives: "🧪",
+  nutrition: "🥗",
+  animal_welfare: "🐰",
+  sustainability: "🌍",
+  fair_trade: "🤝",
+};
 
 export default function ScanResultScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { preferences } = usePreferences();
   const { barcode, type, barcodeData, source } = useLocalSearchParams<{
     barcode?: string;
     type?: string;
@@ -140,8 +176,8 @@ export default function ScanResultScreen() {
   const [expandedIngredient, setExpandedIngredient] = useState<string | null>(null);
   const [isSaved, setIsSaved] = useState(false);
   const [showSuccess, setShowSuccess] = useState(true);
+  const [showScoreBreakdown, setShowScoreBreakdown] = useState(false);
   const shareCardRef = useRef<ViewShot>(null);
-  const [historySaved, setHistorySaved] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowSuccess(false), 2000);
@@ -168,10 +204,13 @@ export default function ScanResultScreen() {
           name: i.name || "",
           risk: (i.risk || "concern") as IngredientRisk,
           explanation: i.explanation || "",
+          tier: i.tier || undefined,
+          source: i.source || null,
         })),
         alternatives: [],
         concerns: analysis.concerns || [],
         summary: analysis.summary || "",
+        categoryScores: analysis.categoryScores || undefined,
       };
     } catch {
       const fallback = getDefaultProduct("unknown");
@@ -183,25 +222,6 @@ export default function ScanResultScreen() {
       : getDefaultProduct("unknown");
     product = { ...fallbackProduct, concerns: [], summary: "" };
   }
-
-  // Auto-save to scan history (only once per mount, skip for history views)
-  useEffect(() => {
-    if (!historySaved && source !== "history") {
-      setHistorySaved(true);
-      addToHistory({
-        productName: product.name,
-        brand: product.brand,
-        category: product.category,
-        rating: product.rating,
-        crunchyScore: product.crunchyScore || 50,
-        barcode: product.barcode,
-        scanMode: source || "item",
-        ingredients: product.ingredients.map(i => ({ name: i.name, risk: i.risk })),
-        concerns: product.concerns,
-        summary: product.summary,
-      }, user?.id).catch(() => {});
-    }
-  }, []);
 
   const ratingInfo = RATING_CONFIG[product.rating];
 
@@ -242,17 +262,13 @@ export default function ScanResultScreen() {
           return;
         }
       }
-    } catch {
-      // Fallback to text share
-    }
+    } catch {}
     try {
       const scoreText = product.crunchyScore ? ` (Score: ${product.crunchyScore}/100)` : "";
       await Share.share({
         message: `I scanned ${product.name} by ${product.brand} on Crunchy and it's rated ${ratingInfo.label}${scoreText}!\n\nDownload Crunchy to check your products.`,
       });
-    } catch {
-      // User cancelled
-    }
+    } catch {}
   };
 
   const handleDIY = () => {
@@ -271,11 +287,18 @@ export default function ScanResultScreen() {
     );
   };
 
+  // Compute 4-tier ingredient counts
   const ingredientCounts = {
-    safe: product.ingredients.filter((i) => i.risk === "safe").length,
-    concern: product.ingredients.filter((i) => i.risk === "concern").length,
-    toxic: product.ingredients.filter((i) => i.risk === "toxic").length,
+    high: product.ingredients.filter((i) => (i.tier === "high") || (!i.tier && i.risk === "toxic")).length,
+    moderate: product.ingredients.filter((i) => i.tier === "moderate").length,
+    limited: product.ingredients.filter((i) => (i.tier === "limited") || (!i.tier && i.risk === "concern")).length,
+    safe: product.ingredients.filter((i) => (i.tier === "safe") || (!i.tier && i.risk === "safe")).length,
   };
+
+  // Score breakdown for "Why this score?" section
+  const scoreBreakdown = product.categoryScores
+    ? getScoreBreakdown(product.categoryScores, preferences)
+    : null;
 
   return (
     <SafeAreaView className="flex-1 bg-cream">
@@ -337,9 +360,8 @@ export default function ScanResultScreen() {
         contentContainerStyle={{ paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Shareable Card - captured by ViewShot */}
+        {/* Shareable Card */}
         <ViewShot ref={shareCardRef} options={{ format: "png", quality: 1 }}>
-          {/* Product Header with botanical accent */}
           <Animated.View entering={FadeIn.delay(200).duration(400)} className="mx-5 mt-2 rounded-3xl overflow-hidden" style={{
             shadowColor: "#000",
             shadowOffset: { width: 0, height: 4 },
@@ -347,7 +369,6 @@ export default function ScanResultScreen() {
             shadowRadius: 12,
             elevation: 4,
           }}>
-            {/* Botanical header strip */}
             <ImageBackground
               source={getCategoryImage(product.category)}
               resizeMode="cover"
@@ -373,9 +394,7 @@ export default function ScanResultScreen() {
               </View>
             </ImageBackground>
 
-            {/* White card body */}
             <View className="bg-white px-5 pb-5">
-              {/* Overall Rating */}
               <View
                 className="mt-4 rounded-2xl p-4 flex-row items-center"
                 style={{ backgroundColor: ratingInfo.color + "12" }}
@@ -404,17 +423,91 @@ export default function ScanResultScreen() {
                 </View>
               </View>
 
-              {/* Branding for share */}
               <View className="flex-row items-center justify-center mt-3 pt-3" style={{ borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.06)" }}>
                 <Text className="text-sm text-dark/30" style={{ fontWeight: "500" }}>Scanned with </Text>
                 <Text className="text-sm text-forest" style={{ fontStyle: "italic", fontWeight: "600" }}>Crunchy</Text>
-
               </View>
             </View>
           </Animated.View>
         </ViewShot>
 
-        {/* Concerns (if from Gemini analysis) */}
+        {/* "Why this score?" expandable card */}
+        {scoreBreakdown && scoreBreakdown.length > 0 && (
+          <TouchableOpacity
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setShowScoreBreakdown(!showScoreBreakdown);
+            }}
+            activeOpacity={0.8}
+            className="mx-5 mt-4 bg-white rounded-2xl overflow-hidden"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.05,
+              shadowRadius: 6,
+              elevation: 2,
+            }}
+          >
+            <View className="flex-row items-center justify-between p-4">
+              <View className="flex-row items-center">
+                <Ionicons name="help-circle-outline" size={20} color="#3D5A3E" />
+                <Text className="text-base font-bold text-dark ml-2">Why this score?</Text>
+              </View>
+              <Ionicons
+                name={showScoreBreakdown ? "chevron-up" : "chevron-down"}
+                size={18}
+                color="#999"
+              />
+            </View>
+
+            {showScoreBreakdown && (
+              <View className="px-4 pb-4" style={{ borderTopWidth: 1, borderTopColor: "#f0f0f0" }}>
+                {scoreBreakdown.map((item) => {
+                  if (item.weight === 0) return null;
+                  const scoreColor = item.score === null ? "#999" : item.score >= 70 ? "#4CAF50" : item.score >= 40 ? "#FFC107" : "#F44336";
+                  const icon = PREF_ICONS[item.category] || "📊";
+                  return (
+                    <View key={item.category} className="mt-3">
+                      <View className="flex-row items-center justify-between mb-1">
+                        <View className="flex-row items-center flex-1">
+                          <Text className="text-base mr-2">{icon}</Text>
+                          <Text className="text-sm font-medium text-dark">{item.label}</Text>
+                        </View>
+                        <View className="flex-row items-center">
+                          <Text className="text-xs text-dark/40 mr-2">Weight: {Math.round(item.weight * 100)}%</Text>
+                          <Text className="text-sm font-bold" style={{ color: scoreColor }}>
+                            {item.score !== null ? `${item.score}` : "No data"}
+                          </Text>
+                        </View>
+                      </View>
+                      {/* Score bar */}
+                      <View className="h-1.5 bg-dark/5 rounded-full overflow-hidden">
+                        <View
+                          className="h-full rounded-full"
+                          style={{
+                            width: `${item.score ?? 50}%`,
+                            backgroundColor: scoreColor,
+                          }}
+                        />
+                      </View>
+                    </View>
+                  );
+                })}
+
+                <TouchableOpacity
+                  onPress={() => router.push({ pathname: "/onboarding-preferences", params: { from: "settings" } })}
+                  className="flex-row items-center justify-center mt-4 pt-3"
+                  style={{ borderTopWidth: 1, borderTopColor: "#f0f0f0" }}
+                >
+                  <Ionicons name="settings-outline" size={14} color="#3D5A3E" />
+                  <Text className="text-sm text-forest font-medium ml-1">Adjust in Settings</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </TouchableOpacity>
+        )}
+
+        {/* Concerns */}
         {product.concerns && product.concerns.length > 0 && (
           <View className="mx-5 mt-4 bg-white rounded-2xl p-4" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.15)" }}>
             <Text className="text-sm font-bold text-dark mb-2">Key Concerns</Text>
@@ -427,42 +520,35 @@ export default function ScanResultScreen() {
           </View>
         )}
 
-        {/* Ingredient Summary */}
+        {/* 4-Tier Ingredient Summary */}
         <View className="flex-row mx-5 mt-4 gap-2">
-          <View className="flex-1 bg-white rounded-2xl p-3 items-center" style={{
-            shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
-          }}>
-            <Text className="text-lg font-bold" style={{ color: "#4CAF50" }}>
-              {ingredientCounts.safe}
-            </Text>
-            <Text className="text-xs text-dark/50">Safe</Text>
-          </View>
-          <View className="flex-1 bg-white rounded-2xl p-3 items-center" style={{
-            shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
-          }}>
-            <Text className="text-lg font-bold" style={{ color: "#FFC107" }}>
-              {ingredientCounts.concern}
-            </Text>
-            <Text className="text-xs text-dark/50">Concern</Text>
-          </View>
-          <View className="flex-1 bg-white rounded-2xl p-3 items-center" style={{
-            shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
-          }}>
-            <Text className="text-lg font-bold" style={{ color: "#F44336" }}>
-              {ingredientCounts.toxic}
-            </Text>
-            <Text className="text-xs text-dark/50">Toxic</Text>
-          </View>
+          {(["high", "moderate", "limited", "safe"] as const).map((tier) => {
+            const count = ingredientCounts[tier];
+            const config = RISK_CONFIG_4TIER[tier];
+            return (
+              <View key={tier} className="flex-1 bg-white rounded-2xl p-3 items-center" style={{
+                shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
+              }}>
+                <Text className="text-lg font-bold" style={{ color: config.color }}>
+                  {count}
+                </Text>
+                <Text className="text-xs text-dark/50">{config.label}</Text>
+              </View>
+            );
+          })}
         </View>
 
         {/* Ingredients List */}
         <View className="mx-5 mt-4">
           <Text className="text-lg font-bold text-dark mb-3">Ingredients</Text>
           {[...product.ingredients].sort((a, b) => {
-            const order = { toxic: 0, concern: 1, safe: 2 };
-            return (order[a.risk] ?? 1) - (order[b.risk] ?? 1);
+            const tierOrder: Record<string, number> = { high: 0, moderate: 1, limited: 2, safe: 3 };
+            const riskToTier: Record<string, string> = { toxic: "high", concern: "limited", safe: "safe" };
+            const aTier = a.tier || riskToTier[a.risk] || "limited";
+            const bTier = b.tier || riskToTier[b.risk] || "limited";
+            return (tierOrder[aTier] ?? 2) - (tierOrder[bTier] ?? 2);
           }).map((ingredient) => {
-            const risk = RISK_CONFIG[ingredient.risk];
+            const display = getIngredientDisplay(ingredient);
             const isExpanded = expandedIngredient === ingredient.name;
             return (
               <TouchableOpacity
@@ -481,9 +567,9 @@ export default function ScanResultScreen() {
                 <View className="flex-row items-center p-3.5">
                   <View
                     className="w-8 h-8 rounded-full items-center justify-center mr-3"
-                    style={{ backgroundColor: risk.color + "18" }}
+                    style={{ backgroundColor: display.color + "18" }}
                   >
-                    <Ionicons name={risk.icon} size={16} color={risk.color} />
+                    <Ionicons name={display.icon} size={16} color={display.color} />
                   </View>
                   <Text className="flex-1 text-base text-dark font-medium">
                     {ingredient.name}
@@ -491,9 +577,9 @@ export default function ScanResultScreen() {
                   <View className="flex-row items-center">
                     <Text
                       className="text-xs font-semibold mr-2"
-                      style={{ color: risk.color }}
+                      style={{ color: display.color }}
                     >
-                      {risk.label}
+                      {display.label}
                     </Text>
                     <Ionicons
                       name={isExpanded ? "chevron-up" : "chevron-down"}
@@ -502,7 +588,7 @@ export default function ScanResultScreen() {
                     />
                   </View>
                 </View>
-                {isExpanded && ingredient.explanation && (
+                {isExpanded && (
                   <View
                     className="px-3.5 pb-3.5 pt-0"
                     style={{ borderTopWidth: 1, borderTopColor: "#f0f0f0" }}
@@ -510,6 +596,11 @@ export default function ScanResultScreen() {
                     <Text className="text-sm text-dark/60 leading-5 mt-2.5">
                       {ingredient.explanation}
                     </Text>
+                    {ingredient.source && (
+                      <Text className="text-xs text-dark/35 mt-1.5 italic">
+                        Source: {ingredient.source}
+                      </Text>
+                    )}
                   </View>
                 )}
               </TouchableOpacity>

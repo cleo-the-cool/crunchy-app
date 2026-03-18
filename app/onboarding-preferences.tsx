@@ -1,119 +1,35 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   ScrollView,
 } from "react-native";
+import RNSlider from "@react-native-community/slider";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as Haptics from "../utils/haptics";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  FadeIn,
-} from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { SafeAreaWrapper, Button } from "@/components";
 import { Ionicons } from "@expo/vector-icons";
 import {
-  CONCERN_OPTIONS,
+  PREFERENCE_OPTIONS,
   usePreferences,
-  type CrunchyConcerns,
 } from "@/contexts/PreferencesContext";
-
-const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
-
-function ConcernCard({
-  option,
-  enabled,
-  onToggle,
-  index,
-}: {
-  option: (typeof CONCERN_OPTIONS)[number];
-  enabled: boolean;
-  onToggle: () => void;
-  index: number;
-}) {
-  const scale = useSharedValue(1);
-
-  const animStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
-  const handlePress = () => {
-    scale.value = withSpring(0.95, { damping: 15, stiffness: 400 });
-    setTimeout(() => {
-      scale.value = withSpring(1, { damping: 15, stiffness: 400 });
-    }, 100);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    onToggle();
-  };
-
-  return (
-    <Animated.View entering={FadeIn.delay(index * 60).duration(300)}>
-      <AnimatedTouchable
-        onPress={handlePress}
-        activeOpacity={0.8}
-        style={[
-          animStyle,
-          {
-            borderWidth: 1,
-            borderColor: enabled ? "#3D5A3E" : "rgba(0,0,0,0.12)",
-            shadowColor: "#3D5A3E",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: enabled ? 0.15 : 0.04,
-            shadowRadius: enabled ? 8 : 4,
-            elevation: enabled ? 4 : 1,
-          },
-        ]}
-        className={`flex-row items-center rounded-3xl px-4 py-4 mb-3 ${
-          enabled ? "bg-forest" : "bg-white"
-        }`}
-      >
-        <Text className="text-2xl mr-3">{option.icon}</Text>
-        <View className="flex-1">
-          <Text
-            className={`text-base font-semibold ${
-              enabled ? "text-white" : "text-dark"
-            }`}
-          >
-            {option.label}
-          </Text>
-          <Text
-            className={`text-xs mt-0.5 ${
-              enabled ? "text-white/70" : "text-dark/50"
-            }`}
-          >
-            {option.description}
-          </Text>
-        </View>
-        <View
-          className={`w-6 h-6 rounded-full items-center justify-center ${
-            enabled ? "bg-cream/30" : "border-2 border-dark/15"
-          }`}
-        >
-          {enabled && <Ionicons name="checkmark" size={16} color="white" />}
-        </View>
-      </AnimatedTouchable>
-    </Animated.View>
-  );
-}
+import { DEFAULT_PREFERENCES, type UserPreferences } from "@/lib/scoring";
 
 export default function OnboardingPreferencesScreen() {
   const router = useRouter();
   const { from } = useLocalSearchParams<{ from?: string }>();
-  const { concerns, setConcerns } = usePreferences();
-  const [localConcerns, setLocalConcerns] = React.useState<CrunchyConcerns>(concerns);
+  const { preferences, setAllPreferences } = usePreferences();
+  const [localPrefs, setLocalPrefs] = useState<UserPreferences>(preferences);
   const isEditing = from === "settings";
 
-  const toggleConcern = (key: keyof CrunchyConcerns) => {
-    setLocalConcerns((prev) => ({ ...prev, [key]: !prev[key] }));
+  const updatePref = (key: keyof UserPreferences, value: number) => {
+    setLocalPrefs((prev) => ({ ...prev, [key]: Math.round(value * 100) / 100 }));
   };
 
-  const enabledCount = Object.values(localConcerns).filter(Boolean).length;
-
   const handleFinish = async () => {
-    await setConcerns(localConcerns);
+    await setAllPreferences(localPrefs);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     if (isEditing) {
       router.back();
@@ -135,19 +51,13 @@ export default function OnboardingPreferencesScreen() {
         </TouchableOpacity>
 
         <Animated.View entering={FadeIn.duration(400)}>
-          <Text
-            className="text-2xl font-bold text-dark"
-          >
+          <Text className="text-2xl font-bold text-dark">
             {isEditing ? "Edit Scan Preferences" : "What matters to you?"}
           </Text>
-          <Text className="text-base text-dark/50 mt-2 mb-1">
+          <Text className="text-base text-dark/50 mt-2 mb-5">
             {isEditing
-              ? "Update what the scanner focuses on when analyzing products."
-              : "Tell us your concerns and we'll personalize your scan results and scores."}
-          </Text>
-          <Text className="text-sm text-forest font-medium mb-5">
-            {enabledCount} of {CONCERN_OPTIONS.length} selected
-            {enabledCount < 1 ? " (select at least 1)" : " ✓"}
+              ? "Adjust how much each category affects your product scores."
+              : "Set how important each category is to you. We'll personalize your scores accordingly."}
           </Text>
         </Animated.View>
 
@@ -155,15 +65,57 @@ export default function OnboardingPreferencesScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 120 }}
         >
-          {CONCERN_OPTIONS.map((option, index) => (
-            <ConcernCard
-              key={option.key}
-              option={option}
-              enabled={localConcerns[option.key]}
-              onToggle={() => toggleConcern(option.key)}
-              index={index}
-            />
-          ))}
+          {PREFERENCE_OPTIONS.map((option, index) => {
+            const value = localPrefs[option.key];
+            const pct = Math.round(value * 100);
+            return (
+              <Animated.View
+                key={option.key}
+                entering={FadeIn.delay(index * 60).duration(300)}
+                className="bg-white rounded-3xl px-5 py-4 mb-3"
+                style={{
+                  shadowColor: "#3D5A3E",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.06,
+                  shadowRadius: 6,
+                  elevation: 2,
+                }}
+              >
+                <View className="flex-row items-center mb-2">
+                  <Text className="text-2xl mr-3">{option.icon}</Text>
+                  <View className="flex-1">
+                    <Text className="text-base font-semibold text-dark">
+                      {option.label}
+                    </Text>
+                    <Text className="text-xs text-dark/50 mt-0.5">
+                      {option.description}
+                    </Text>
+                  </View>
+                  <View className="bg-forest/10 rounded-full px-2.5 py-1">
+                    <Text className="text-forest text-sm font-bold">{pct}%</Text>
+                  </View>
+                </View>
+
+                <View className="flex-row items-center mt-1">
+                  <Text className="text-xs text-dark/30 w-16">Don't care</Text>
+                  <View className="flex-1 mx-2">
+                    <RNSlider
+                      value={value}
+                      onValueChange={(v: number) => updatePref(option.key, v)}
+                      minimumValue={0}
+                      maximumValue={1}
+                      step={0.05}
+                      minimumTrackTintColor="#3D5A3E"
+                      maximumTrackTintColor="#E5E7EB"
+                      thumbTintColor="#3D5A3E"
+                      style={{ flex: 1 }}
+                    />
+                  </View>
+                  <Text className="text-xs text-dark/30 w-12 text-right">Very important</Text>
+                </View>
+              </Animated.View>
+            );
+          })}
         </ScrollView>
 
         <View
@@ -176,15 +128,8 @@ export default function OnboardingPreferencesScreen() {
           }}
         >
           <Button
-            title={
-              enabledCount < 1
-                ? "Select at least 1"
-                : isEditing
-                ? "Save Preferences"
-                : "Continue"
-            }
+            title={isEditing ? "Save Preferences" : "Continue"}
             onPress={handleFinish}
-            disabled={enabledCount < 1}
           />
           {!isEditing && (
             <TouchableOpacity

@@ -15,7 +15,7 @@ import { useRouter } from "expo-router";
 import * as Haptics from "../../utils/haptics";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { usePreferences, buildConcernsPrompt } from "@/contexts/PreferencesContext";
+import { usePreferences } from "@/contexts/PreferencesContext";
 import { CameraView, useCameraPermissions } from "../../utils/camera";
 import type { ScanMode } from "@/services/gemini";
 import { analyzeBarcodeScan } from "@/services/gemini";
@@ -37,7 +37,7 @@ export default function ScanScreen() {
   const router = useRouter();
   const { canScan, dailyScansUsed, dailyScanLimit, tier, recordScan } = useSubscription();
   const { user } = useAuth();
-  const { concerns } = usePreferences();
+  const { preferences } = usePreferences();
   const [scanMode, setScanMode] = useState<ExtendedScanMode>("item");
 
   const [refreshing, setRefreshing] = useState(false);
@@ -104,9 +104,7 @@ export default function ScanScreen() {
       // Look up in Open Food Facts
       const offResult = await lookupBarcode(result.data);
       const prompt = buildGeminiPromptFromBarcode(result.data, offResult);
-      const concernsPrompt = buildConcernsPrompt(concerns);
-
-      const analysis = await analyzeBarcodeScan(prompt, user?.id ?? null, concernsPrompt);
+      const analysis = await analyzeBarcodeScan(prompt, user?.id ?? null);
       recordScan();
 
       // Save to history

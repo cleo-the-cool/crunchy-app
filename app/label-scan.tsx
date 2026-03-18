@@ -22,7 +22,7 @@ import { CameraView, useCameraPermissions } from "../utils/camera";
 import * as Haptics from "../utils/haptics";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { usePreferences, buildConcernsPrompt } from "@/contexts/PreferencesContext";
+import { usePreferences } from "@/contexts/PreferencesContext";
 import {
   analyzeAndSaveScan,
   type ScanMode,
@@ -84,7 +84,7 @@ export default function LabelScanScreen() {
   const scanMode: ScanMode = modeParam === "label" ? "label" : "ingredients";
   const { canScan, recordScan } = useSubscription();
   const { user } = useAuth();
-  const { concerns } = usePreferences();
+  const { preferences } = usePreferences();
   const [permission, requestPermission] = useCameraPermissions();
   const [state, setState] = useState<LabelScanState>("camera");
   const [flashOn, setFlashOn] = useState(false);
@@ -94,6 +94,7 @@ export default function LabelScanScreen() {
   const [expandedIngredient, setExpandedIngredient] = useState<string | null>(null);
   const [isSaved, setIsSaved] = useState(false);
   const [countdown, setCountdown] = useState(0);
+  const [progressText, setProgressText] = useState("");
   const cameraRef = useRef<CameraView>(null);
 
   const handleCapture = async () => {
@@ -129,26 +130,11 @@ export default function LabelScanScreen() {
         return;
       }
 
-      const concernsPrompt = buildConcernsPrompt(concerns);
-      const result = await analyzeAndSaveScan(base64Image, scanMode, user?.id ?? null, concernsPrompt);
+      const result = await analyzeAndSaveScan(base64Image, scanMode, user?.id ?? null, (step) => setProgressText(step));
       recordScan();
       setAnalysis(result);
       setState("result");
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
-      // Save to scan history
-      const { addToHistory } = await import("@/lib/scanHistory");
-      addToHistory({
-        productName: result.productName,
-        brand: result.brand,
-        category: result.category,
-        rating: result.rating,
-        crunchyScore: result.crunchyScore,
-        scanMode: scanMode,
-        ingredients: result.ingredients.map(i => ({ name: i.name, risk: i.risk })),
-        concerns: result.concerns,
-        summary: result.summary,
-      }).catch(() => {});
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : "Something went wrong");
       setState("error");
@@ -219,7 +205,7 @@ export default function LabelScanScreen() {
               <Ionicons name="document-text" size={36} color="#8B9E7C" />
             </View>
             <Text className="text-xl font-bold text-dark mb-2">
-              {processingText}
+              {progressText || processingText}
             </Text>
             <Text className="text-sm text-dark/50 text-center mb-4">
               {processingSubtext}

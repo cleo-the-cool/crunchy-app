@@ -54,71 +54,10 @@ function mapRowToHistoryItem(row: any): ScanHistoryItem {
   };
 }
 
-async function saveToSupabase(item: ScanHistoryItem, userId: string): Promise<void> {
-  const geminiResponse = {
-    productName: item.productName,
-    brand: item.brand,
-    category: item.category,
-    rating: item.rating,
-    crunchyScore: item.crunchyScore,
-    barcode: item.barcode,
-    ingredients: item.ingredients,
-    concerns: item.concerns,
-    summary: item.summary,
-  };
-
-  // Insert into scans table
-  await supabase.from('scans').insert({
-    id: item.id,
-    user_id: userId,
-    scan_type: item.scanMode,
-    gemini_response: geminiResponse,
-    score: item.crunchyScore,
-    created_at: item.scannedAt,
-  });
-
-  // Upsert into products table by name+brand
-  if (item.productName && item.productName !== 'Unknown') {
-    const ingredientNames = (item.ingredients || []).map((i) => i.name);
-    // Try to find existing product
-    const { data: existing } = await supabase
-      .from('products')
-      .select('id, scan_count')
-      .eq('name', item.productName)
-      .eq('brand', item.brand || '')
-      .limit(1)
-      .single();
-
-    if (existing) {
-      await supabase
-        .from('products')
-        .update({
-          overall_score: item.crunchyScore,
-          gemini_analysis: geminiResponse,
-          ingredients: ingredientNames,
-          scan_count: (existing.scan_count || 0) + 1,
-          category: item.category || 'Other',
-        })
-        .eq('id', existing.id);
-    } else {
-      await supabase.from('products').insert({
-        name: item.productName,
-        brand: item.brand || null,
-        category: item.category || 'Other',
-        ingredients: ingredientNames,
-        overall_score: item.crunchyScore,
-        gemini_analysis: geminiResponse,
-        scan_count: 1,
-      });
-    }
-  }
-}
-
 // --- Public API ---
 
 export async function addToHistory(
-  item: Omit<ScanHistoryItem, 'id' | 'scannedAt'>,
-  userId?: string
+  item: Omit<ScanHistoryItem, 'id' | 'scannedAt'>
 ): Promise<ScanHistoryItem> {
   const newItem: ScanHistoryItem = {
     ...item,
@@ -126,19 +65,10 @@ export async function addToHistory(
     scannedAt: new Date().toISOString(),
   };
 
-  // Always save to AsyncStorage (cache/offline fallback)
+  // Only save to AsyncStorage (Supabase writes handled by gemini.ts saveScan)
   const history = await getLocalHistory();
   const updated = [newItem, ...history].slice(0, MAX_HISTORY_ITEMS);
   await saveLocalHistory(updated);
-
-  // Also save to Supabase if configured and user is authenticated
-  if (isSupabaseConfigured() && userId) {
-    try {
-      await saveToSupabase(newItem, userId);
-    } catch {
-      // Supabase failed (RLS, network, etc.) - local storage is the fallback
-    }
-  }
 
   return newItem;
 }
