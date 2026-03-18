@@ -14,6 +14,7 @@ import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useGoBack } from "@/lib/useGoBack";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   getPublicLists,
   searchLists,
@@ -21,6 +22,7 @@ import {
   type ProductList,
   type ListCategory,
 } from "@/data/lists";
+import { getSavedProducts, type SavedProduct } from "@/lib/savedProducts";
 
 const LISTS_STORAGE_KEY = "@crunchy_user_lists";
 
@@ -49,12 +51,14 @@ type TabKey = "my-lists" | "browse";
 export default function ListsScreen() {
   const router = useRouter();
   const goBack = useGoBack();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<"all" | ListCategory>(
     "all"
   );
   const [activeTab, setActiveTab] = useState<TabKey>("my-lists");
   const [myLists, setMyLists] = useState<ProductList[]>([]);
+  const [savedProducts, setSavedProducts] = useState<SavedProduct[]>([]);
 
   const loadMyLists = useCallback(async () => {
     try {
@@ -67,16 +71,35 @@ export default function ListsScreen() {
     }
   }, []);
 
+  const loadSavedProducts = useCallback(async () => {
+    try {
+      const products = await getSavedProducts(user?.id);
+      setSavedProducts(products);
+    } catch {
+      // ignore
+    }
+  }, [user]);
+
   useEffect(() => {
     loadMyLists();
-  }, [loadMyLists]);
+    loadSavedProducts();
+  }, [loadMyLists, loadSavedProducts]);
 
   // Reload lists when screen comes back into focus (e.g. after creating a list)
   useFocusEffect(
     useCallback(() => {
       loadMyLists();
-    }, [loadMyLists])
+      loadSavedProducts();
+    }, [loadMyLists, loadSavedProducts])
   );
+
+  // Group saved products by category
+  const savedByCategory = savedProducts.reduce<Record<string, SavedProduct[]>>((acc, p) => {
+    const cat = p.category || "Other";
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(p);
+    return acc;
+  }, {});
 
   // Browse lists come from the public data source
   const browseLists = getPublicLists();
@@ -238,7 +261,62 @@ export default function ListsScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {filteredLists.length === 0 ? (
+        {/* Saved Products Section (My Lists tab only) */}
+        {activeTab === "my-lists" && savedProducts.length > 0 && !searchQuery && (
+          <View className="mb-4">
+            <View className="bg-white rounded-3xl p-4" style={cardShadow}>
+              <View className="flex-row items-center mb-3">
+                <View className="w-9 h-9 rounded-full bg-forest/10 items-center justify-center mr-3">
+                  <Ionicons name="bookmark" size={18} color="#3D5A3E" />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-base font-bold text-dark">Saved Products</Text>
+                  <Text className="text-xs text-dark/50">{savedProducts.length} product{savedProducts.length !== 1 ? "s" : ""}</Text>
+                </View>
+              </View>
+
+              {Object.entries(savedByCategory)
+                .sort(([a], [b]) => a.localeCompare(b))
+                .map(([category, products]) => (
+                <View key={category} className="mt-2">
+                  <Text className="text-xs font-semibold text-dark/40 uppercase tracking-wide mb-1.5">{category}</Text>
+                  {products.slice(0, 3).map((product) => (
+                    <TouchableOpacity
+                      key={product.id}
+                      onPress={() => router.push(`/product-detail?id=${product.id}`)}
+                      className="flex-row items-center py-2 border-b border-dark/5"
+                    >
+                      <View
+                        className="w-8 h-8 rounded-xl items-center justify-center mr-3"
+                        style={{
+                          backgroundColor:
+                            product.rating === "clean" ? "#E8F5E9" :
+                            product.rating === "caution" ? "#FFF8E1" : "#FFEBEE",
+                        }}
+                      >
+                        <Text className="text-sm">
+                          {product.rating === "clean" ? "✅" : product.rating === "caution" ? "⚠️" : "🚫"}
+                        </Text>
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-sm font-medium text-dark" numberOfLines={1}>{product.name}</Text>
+                        {product.brand ? <Text className="text-xs text-dark/40">{product.brand}</Text> : null}
+                      </View>
+                      <Ionicons name="chevron-forward" size={16} color="#CCC" />
+                    </TouchableOpacity>
+                  ))}
+                  {products.length > 3 && (
+                    <Text className="text-xs text-forest font-medium mt-1.5">
+                      +{products.length - 3} more
+                    </Text>
+                  )}
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {filteredLists.length === 0 && (activeTab !== "my-lists" || savedProducts.length === 0) ? (
           <View className="items-center py-16">
             <Ionicons name="list-outline" size={48} color="#A8B89C" style={{ marginBottom: 16 }} />
             <Text className="text-lg font-bold text-dark text-center">

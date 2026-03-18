@@ -179,7 +179,7 @@ export default function HomeScreen() {
         <View className="flex-row px-6 mt-5 gap-3">
           <QuickActionButton icon="scan" label="Scan" onPress={handleScan} />
           <QuickActionButton icon="leaf-outline" label="Score" onPress={() => router.push("/score-detail")} />
-          <QuickActionButton icon="bookmark-outline" label="Saved" onPress={() => router.push("/(tabs)/profile")} />
+          <QuickActionButton icon="bookmark-outline" label="Saved" onPress={() => router.push("/lists")} />
         </View>
 
         {/* Quick Stats Row */}
