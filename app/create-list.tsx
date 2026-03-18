@@ -5,7 +5,6 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  Switch,
   Alert,
   KeyboardAvoidingView,
   Platform,
@@ -49,7 +48,6 @@ export default function CreateListScreen() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<ListCategory>("general");
-  const [isPublic, setIsPublic] = useState(true);
   const [errors, setErrors] = useState<{ title?: string }>({});
   const [saving, setSaving] = useState(false);
 
@@ -105,7 +103,7 @@ export default function CreateListScreen() {
         title: title.trim(),
         description: description.trim(),
         category,
-        isPublic,
+        isPublic: false,
         products: selectedProducts,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -232,38 +230,6 @@ export default function CreateListScreen() {
                 </Text>
               </TouchableOpacity>
             ))}
-          </View>
-        </View>
-
-        {/* Visibility */}
-        <View className="px-5 mb-5">
-          <View
-            className="bg-white rounded-3xl px-4 py-4 flex-row items-center justify-between"
-            style={cardShadow}
-          >
-            <View className="flex-row items-center flex-1">
-              <Ionicons
-                name={isPublic ? "globe-outline" : "lock-closed-outline"}
-                size={20}
-                color="#3D5A3E"
-              />
-              <View className="ml-3 flex-1">
-                <Text className="text-sm font-semibold text-dark">
-                  {isPublic ? "Public" : "Private"}
-                </Text>
-                <Text className="text-xs text-dark/50 mt-0.5">
-                  {isPublic
-                    ? "Anyone can discover and view this list"
-                    : "Only you can see this list"}
-                </Text>
-              </View>
-            </View>
-            <Switch
-              value={isPublic}
-              onValueChange={setIsPublic}
-              trackColor={{ false: "#DDD", true: "#3D5A3E" }}
-              thumbColor="#FFF"
-            />
           </View>
         </View>
 

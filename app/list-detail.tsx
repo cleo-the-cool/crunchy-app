@@ -17,7 +17,7 @@ import {
   type ProductList,
   type ListProduct,
 } from "@/data/lists";
-import { getUserById } from "@/data/community";
+
 import { Badge } from "@/components";
 import * as Haptics from "../utils/haptics";
 
@@ -161,19 +161,13 @@ export default function ListDetailScreen() {
     );
   }
 
-  const owner = getUserById(list.userId);
   const catConfig = LIST_CATEGORY_CONFIG[list.category];
 
   const handleSaveList = () => {
     setSaved(!saved);
   };
 
-  const handleShareList = () => {
-    Alert.alert("Share List", `Share "${list.title}" with friends?`, [
-      { text: "Cancel", style: "cancel" },
-      { text: "Share", onPress: () => {} },
-    ]);
-  };
+
 
   return (
     <SafeAreaView className="flex-1 bg-ivory">
@@ -192,9 +186,7 @@ export default function ListDetailScreen() {
             color={saved ? "#3D5A3E" : "#3D5A3E"}
           />
         </TouchableOpacity>
-        <TouchableOpacity onPress={handleShareList} hitSlop={8} className="ml-3">
-          <Ionicons name="share-outline" size={22} color="#3D5A3E" />
-        </TouchableOpacity>
+
       </View>
 
       <ScrollView
@@ -225,51 +217,14 @@ export default function ListDetailScreen() {
             </Text>
           ) : null}
 
-          {/* Owner row (for public/browse lists) */}
-          {owner && !isOwnList && (
-            <TouchableOpacity
-              onPress={() =>
-                router.push(`/user-profile?userId=${owner.id}`)
-              }
-              className="flex-row items-center mt-4 pt-3"
-              style={{ borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.05)" }}
-            >
-              <View className="w-8 h-8 rounded-full bg-forest/10 items-center justify-center mr-2.5">
-                <Text className="text-sm">{owner.avatar}</Text>
-              </View>
-              <View>
-                <Text className="text-sm font-semibold text-dark">
-                  {owner.username}
-                </Text>
-                <Text className="text-xs text-dark/40">
-                  {list.products.length} product
-                  {list.products.length !== 1 ? "s" : ""} curated
-                </Text>
-              </View>
-              <Ionicons
-                name="chevron-forward"
-                size={16}
-                color="#CCC"
-                style={{ marginLeft: "auto" }}
-              />
-            </TouchableOpacity>
-          )}
-
-          {/* Own list info */}
+          {/* List info */}
           {isOwnList && (
             <View
               className="flex-row items-center mt-4 pt-3"
               style={{ borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.05)" }}
             >
-              <Ionicons
-                name={list.isPublic ? "globe-outline" : "lock-closed-outline"}
-                size={14}
-                color="#A8B89C"
-              />
+              <Ionicons name="time-outline" size={14} color="#A8B89C" />
               <Text className="text-xs text-dark/40 ml-1.5">
-                {list.isPublic ? "Public" : "Private"}
-              </Text>
-              <Text className="text-xs text-dark/30 ml-auto">
                 Updated {new Date(list.updatedAt).toLocaleDateString()}
               </Text>
             </View>

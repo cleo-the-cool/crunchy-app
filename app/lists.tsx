@@ -476,15 +476,8 @@ function ListCard({ list }: { list: ProductList }) {
 
         {/* Footer */}
         <View className="flex-row items-center mt-3 pt-2.5 border-t border-dark/5">
-          <Ionicons
-            name={list.isPublic ? "globe-outline" : "lock-closed-outline"}
-            size={14}
-            color="#A8B89C"
-          />
+          <Ionicons name="time-outline" size={14} color="#A8B89C" />
           <Text className="text-xs text-dark/40 ml-1.5">
-            {list.isPublic ? "Public" : "Private"}
-          </Text>
-          <Text className="text-xs text-dark/30 ml-auto">
             Updated {formatDate(list.updatedAt)}
           </Text>
         </View>
