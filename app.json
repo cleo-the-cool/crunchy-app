@@ -17,6 +17,9 @@
       "bundleIdentifier": "com.crunchyapp.ios",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
+      },
+      "entitlements": {
+        "com.apple.developer.applesignin": ["Default"]
       }
     },
     "android": {
@@ -33,7 +36,8 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-apple-authentication"
     ],
     "owner": "cleothecooldev",
     "runtimeVersion": "exposdk:55.0.0",
