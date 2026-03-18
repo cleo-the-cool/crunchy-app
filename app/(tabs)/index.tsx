@@ -14,7 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "../../utils/haptics";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components";
-import { getDefaultStats } from "@/lib/crunchyScore";
+import { fetchCrunchyScore, getTierInfo, type TierInfo } from "@/lib/crunchyScore";
 import { getRecentScans, getScanStats, type ScanHistoryItem } from "@/lib/scanHistory";
 import { CATEGORY_IMAGES } from "@/lib/categoryImages";
 
@@ -41,6 +41,8 @@ export default function HomeScreen() {
   const [recentScans, setRecentScans] = useState<ScanHistoryItem[]>([]);
   const [scanStats, setScanStats] = useState({ totalScans: 0, averageScore: 0 });
   const [checklist, setChecklist] = useState({ scanned: false, quiz: false, saved: false });
+  const [crunchyScore, setCrunchyScore] = useState(0);
+  const [crunchyTier, setCrunchyTier] = useState<TierInfo>(getTierInfo(0));
 
   useEffect(() => {
     loadData();
@@ -48,11 +50,13 @@ export default function HomeScreen() {
 
   async function loadData() {
     try {
-      const [quizData, scans, stats, savedData] = await Promise.all([
+      const userId = user?.id;
+      const [quizData, scans, stats, savedData, scoreData] = await Promise.all([
         AsyncStorage.getItem("@crunchy_quiz_score"),
-        getRecentScans(5),
-        getScanStats(),
+        getRecentScans(5, userId),
+        getScanStats(userId),
         AsyncStorage.getItem("@crunchy_saved_products"),
+        fetchCrunchyScore(userId),
       ]);
       setHasTakenQuiz(quizData !== null);
       setRecentScans(scans);
@@ -62,6 +66,10 @@ export default function HomeScreen() {
         quiz: quizData !== null,
         saved: savedData !== null && JSON.parse(savedData).length > 0,
       });
+      if (scoreData) {
+        setCrunchyScore(scoreData.score);
+        setCrunchyTier(scoreData.tier);
+      }
     } catch {
       setHasTakenQuiz(false);
     }
@@ -78,8 +86,6 @@ export default function HomeScreen() {
   };
 
   const firstName = user?.name?.split(" ")[0] ?? "Friend";
-  const stats = getDefaultStats();
-  const tierInfo = stats.tier;
 
   // Daily tip — rotates based on day of year
   const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
@@ -151,12 +157,12 @@ export default function HomeScreen() {
                     className="w-16 h-16 rounded-full items-center justify-center mr-4"
                     style={{ backgroundColor: "rgba(255,255,255,0.2)", borderWidth: 2, borderColor: "rgba(255,255,255,0.4)" }}
                   >
-                    <Text className="text-2xl font-bold text-white">{stats.crunchyScore}</Text>
+                    <Text className="text-2xl font-bold text-white">{crunchyScore}</Text>
                   </View>
                   <View>
                     <View className="flex-row items-center">
                       <Text className="text-xl mr-2"></Text>
-                      <Text className="text-white font-bold text-lg">{tierInfo.label}</Text>
+                      <Text className="text-white font-bold text-lg">{crunchyTier.label}</Text>
                     </View>
                     <View className="flex-row items-center mt-0.5">
                       <Text className="text-white/50 text-xs">View Score Details</Text>

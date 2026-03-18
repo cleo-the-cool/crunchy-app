@@ -214,7 +214,7 @@ export default function ScanResultScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const { saveProduct, unsaveProduct } = await import("@/lib/savedProducts");
     if (isSaved) {
-      await unsaveProduct(product.id);
+      await unsaveProduct(product.id, user?.id);
     } else {
       await saveProduct({
         id: product.id,
@@ -226,7 +226,7 @@ export default function ScanResultScreen() {
         category: product.category,
         scanData: barcodeData ? JSON.parse(barcodeData) : undefined,
         savedAt: new Date().toISOString(),
-      });
+      }, user?.id);
     }
     setIsSaved(!isSaved);
   };

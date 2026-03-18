@@ -15,13 +15,10 @@ import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
 import * as Haptics from "../../utils/haptics";
 import { useAuth } from "@/contexts/AuthContext";
-import { ScoreCard } from "@/components";
-import { getDefaultStats, getTierInfo, type CrunchyStats } from "@/lib/crunchyScore";
-
+import { getTierInfo, fetchCrunchyScore, type TierInfo } from "@/lib/crunchyScore";
 import { getSavedProducts, unsaveProduct, getRatingFromScore, type SavedProduct } from "@/lib/savedProducts";
-import { getRecentScans, type ScanHistoryItem } from "@/lib/scanHistory";
+import { getRecentScans, getScanStats, type ScanHistoryItem } from "@/lib/scanHistory";
 import type { GeminiAnalysis } from "@/services/gemini";
-import { CATEGORY_IMAGES } from "@/lib/categoryImages";
 
 const RISK_CONFIG = {
   safe: { color: "#4CAF50", icon: "checkmark-circle" as const, label: "Safe" },
@@ -50,24 +47,37 @@ export default function ProfileScreen() {
   const [recentScans, setRecentScans] = useState<ScanHistoryItem[]>([]);
   const [detailProduct, setDetailProduct] = useState<SavedProduct | null>(null);
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
+  const [crunchyScore, setCrunchyScore] = useState(0);
+  const [crunchyTier, setCrunchyTier] = useState<TierInfo>(getTierInfo(0));
+  const [totalScans, setTotalScans] = useState(0);
 
-  const stats: CrunchyStats = getDefaultStats();
-  const tier = getTierInfo(stats.crunchyScore);
+  const loadData = useCallback(async () => {
+    const userId = user?.id;
+    const [saved, scans, stats, scoreData] = await Promise.all([
+      getSavedProducts(userId),
+      getRecentScans(10, userId),
+      getScanStats(userId),
+      fetchCrunchyScore(userId),
+    ]);
+    setSavedProducts(saved);
+    setRecentScans(scans);
+    setTotalScans(stats.totalScans);
+    if (scoreData) {
+      setCrunchyScore(scoreData.score);
+      setCrunchyTier(scoreData.tier);
+    }
+  }, [user?.id]);
 
   useFocusEffect(
     useCallback(() => {
-      getSavedProducts().then(setSavedProducts);
-      getRecentScans(5).then(setRecentScans);
-    }, [])
+      loadData();
+    }, [loadData])
   );
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    Promise.all([
-      getSavedProducts().then(setSavedProducts),
-      getRecentScans(5).then(setRecentScans),
-    ]).then(() => setRefreshing(false));
-  }, []);
+    loadData().then(() => setRefreshing(false));
+  }, [loadData]);
 
   const displayName = user?.name ?? "Crunchy User";
   const firstInitial = displayName.charAt(0).toUpperCase();
@@ -114,6 +124,7 @@ export default function ProfileScreen() {
         >
           <View style={{ backgroundColor: "rgba(61,90,62,0.55)" }}>
             <SafeAreaView edges={["top"]}>
+              <View style={{ minHeight: 160 }}>
               {/* Header with Settings */}
               <View className="flex-row items-center justify-between px-6 pt-6 pb-1">
                 <Text className="text-2xl font-bold text-white">Profile</Text>
@@ -125,22 +136,36 @@ export default function ProfileScreen() {
                 </TouchableOpacity>
               </View>
 
-              {/* Profile Info */}
-              <View className="px-6 pt-4 pb-8" style={{ minHeight: 140 }}>
-                <Text className="text-2xl font-bold text-white">{displayName}</Text>
-
-                {/* Tier Badge */}
+              {/* Profile Header - Initial Circle + Name + Score */}
+              <View className="flex-row items-center px-6 pt-4 pb-6">
                 <View
-                  className="flex-row items-center mt-3 px-4 py-1.5 rounded-full self-start"
-                  style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
+                  className="w-20 h-20 rounded-full items-center justify-center"
+                  style={{
+                    backgroundColor: "rgba(255,255,255,0.2)",
+                    borderWidth: 2,
+                    borderColor: "rgba(255,255,255,0.3)",
+                  }}
                 >
-                  <Text className="text-sm font-semibold text-white">
-                    {tier.label}
-                  </Text>
-                  <Text className="text-sm text-white/60 ml-2">
-                    Score: {stats.crunchyScore}
-                  </Text>
+                  <Text className="text-3xl font-bold text-white">{firstInitial}</Text>
                 </View>
+
+                <View className="ml-4 flex-1">
+                  <Text className="text-xl font-bold text-white">{displayName}</Text>
+                  {/* Tier Badge */}
+                  <View
+                    className="flex-row items-center mt-1.5 px-3 py-1 rounded-full self-start"
+                    style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
+                  >
+                    {crunchyTier.emoji ? <Text className="text-sm mr-1">{crunchyTier.emoji}</Text> : null}
+                    <Text className="text-xs font-semibold text-white">
+                      {crunchyTier.label}
+                    </Text>
+                    <Text className="text-xs text-white/60 ml-2">
+                      Score: {crunchyScore}
+                    </Text>
+                  </View>
+                </View>
+              </View>
               </View>
             </SafeAreaView>
           </View>
@@ -156,31 +181,20 @@ export default function ProfileScreen() {
           }}
         >
           <View className="flex-1 items-center">
-            <Text className="text-xl font-bold text-dark">{stats.totalScans}</Text>
+            <Text className="text-xl font-bold text-dark">{totalScans}</Text>
             <Text className="text-xs text-dark/50 mt-0.5">Total Scans</Text>
           </View>
           <View
             className="flex-1 items-center"
             style={{ borderLeftWidth: 1, borderRightWidth: 1, borderColor: "rgba(0,0,0,0.05)" }}
           >
-            <Text className="text-xl font-bold text-dark">{stats.recipesMade}</Text>
-            <Text className="text-xs text-dark/50 mt-0.5">Recipes Tried</Text>
+            <Text className="text-xl font-bold text-dark">{crunchyScore}</Text>
+            <Text className="text-xs text-dark/50 mt-0.5">Crunchy Score</Text>
           </View>
           <View className="flex-1 items-center">
             <Text className="text-xl font-bold text-dark">{savedProducts.length}</Text>
             <Text className="text-xs text-dark/50 mt-0.5">Saved</Text>
           </View>
-        </View>
-
-        {/* Screenshotable Score Card */}
-        <View className="mt-6">
-          <Text className="text-lg font-bold text-dark px-6 mb-3">Your Crunchy Card</Text>
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => router.push("/score-detail")}
-          >
-            <ScoreCard stats={stats} userName={displayName} />
-          </TouchableOpacity>
         </View>
 
         {/* My Recent Scans - Horizontal Scroll */}
@@ -307,7 +321,7 @@ export default function ProfileScreen() {
                     </TouchableOpacity>
 
                     {/* Products */}
-                    {!isCollapsed && items.map((item, idx) => {
+                    {!isCollapsed && items.map((item) => {
                       const score = item.scanData?.crunchyScore;
                       const derivedRating = score != null ? getRatingFromScore(score) : item.rating;
                       const ratingColor = derivedRating === "clean" ? "#4CAF50" : derivedRating === "caution" ? "#FFC107" : "#F44336";
@@ -320,7 +334,7 @@ export default function ProfileScreen() {
                             setDetailProduct(item);
                           }}
                           className="flex-row items-center px-4 py-2.5"
-                          style={idx > 0 || true ? { borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.05)" } : undefined}
+                          style={{ borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.05)" }}
                         >
                           <View className="flex-1">
                             <Text className="text-sm font-medium text-dark" numberOfLines={1}>{item.name}</Text>
@@ -365,7 +379,7 @@ export default function ProfileScreen() {
           product={detailProduct}
           onClose={() => setDetailProduct(null)}
           onUnsave={async (id) => {
-            await unsaveProduct(id);
+            await unsaveProduct(id, user?.id);
             setSavedProducts((prev) => prev.filter((p) => p.id !== id));
             setDetailProduct(null);
           }}

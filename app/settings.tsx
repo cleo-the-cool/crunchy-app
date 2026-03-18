@@ -62,7 +62,6 @@ export default function SettingsScreen() {
     }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     await updateName(newName.trim());
-    // Also update local profile storage
     const stored = await AsyncStorage.getItem("@crunchy_onboarding_profile");
     const profile = stored ? JSON.parse(stored) : {};
     profile.displayName = newName.trim();
@@ -117,47 +116,34 @@ export default function SettingsScreen() {
         contentContainerStyle={{ paddingBottom: 48 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Account ── */}
+        {/* Change Name */}
         <SectionHeader title="Account" />
         <View className="mx-6 bg-white rounded-3xl overflow-hidden" style={cardShadow}>
           <TouchableOpacity onPress={handleChangeName}>
             <SettingsRow
               icon="person-outline"
-              label="Name"
+              label="Change Name"
               value={user?.name ?? "Not set"}
               chevron
             />
           </TouchableOpacity>
-          <Divider />
-          <SettingsRow
-            icon="mail-outline"
-            label="Email"
-            value={user?.email ?? "Not set"}
-          />
-          <Divider />
-          <SettingsRow
-            icon="star-outline"
-            label="Subscription"
-            value="Free Plan"
-            valueColor="#3D5A3E"
-          />
         </View>
 
-        {/* ── Preferences ── */}
+        {/* Scan Preferences / Concerns */}
         <SectionHeader title="Preferences" />
         <View className="mx-6 bg-white rounded-3xl overflow-hidden" style={cardShadow}>
-          <TouchableOpacity onPress={() => router.push("/edit-profile")}>
-            <SettingsRow icon="create-outline" label="Edit Profile" chevron />
+          <TouchableOpacity onPress={() => router.push({ pathname: "/onboarding-preferences", params: { from: "settings" } })}>
+            <SettingsRow icon="shield-outline" label="Scan Preferences / Concerns" chevron />
           </TouchableOpacity>
           <Divider />
           <TouchableOpacity onPress={() => router.push({ pathname: "/interests", params: { from: "settings" } })}>
             <SettingsRow icon="heart-outline" label="My Interests" chevron />
           </TouchableOpacity>
-          <Divider />
-          <TouchableOpacity onPress={() => router.push({ pathname: "/onboarding-preferences", params: { from: "settings" } })}>
-            <SettingsRow icon="shield-outline" label="Scan Preferences" chevron />
-          </TouchableOpacity>
-          <Divider />
+        </View>
+
+        {/* Notifications */}
+        <SectionHeader title="Notifications" />
+        <View className="mx-6 bg-white rounded-3xl overflow-hidden" style={cardShadow}>
           <SettingsToggle
             icon="people-outline"
             label="Community Notifications"
@@ -192,7 +178,15 @@ export default function SettingsScreen() {
           />
         </View>
 
-        {/* ── Legal ── */}
+        {/* Help & Support */}
+        <SectionHeader title="Support" />
+        <View className="mx-6 bg-white rounded-3xl overflow-hidden" style={cardShadow}>
+          <TouchableOpacity onPress={() => router.push("/help-support")}>
+            <SettingsRow icon="help-circle-outline" label="Help & Support" chevron />
+          </TouchableOpacity>
+        </View>
+
+        {/* Legal */}
         <SectionHeader title="Legal" />
         <View className="mx-6 bg-white rounded-3xl overflow-hidden" style={cardShadow}>
           <TouchableOpacity onPress={() => router.push("/privacy-policy")}>
@@ -204,25 +198,7 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* ── Support ── */}
-        <SectionHeader title="Support" />
-        <View className="mx-6 bg-white rounded-3xl overflow-hidden" style={cardShadow}>
-          <TouchableOpacity onPress={() => router.push("/help-support")}>
-            <SettingsRow icon="help-circle-outline" label="Help & Support" chevron />
-          </TouchableOpacity>
-          <Divider />
-          <SettingsRow icon="chatbubble-outline" label="Send Feedback" chevron />
-        </View>
-
-        {/* ── About Crunchy ── */}
-        <SectionHeader title="About Crunchy" />
-        <View className="mx-6 bg-white rounded-3xl overflow-hidden" style={cardShadow}>
-          <SettingsRow icon="leaf-outline" label="App" value="Crunchy" valueColor="#3D5A3E" />
-          <Divider />
-          <SettingsRow icon="information-circle-outline" label="Version" value="1.0.0" />
-        </View>
-
-        {/* ── Log Out ── */}
+        {/* Sign Out */}
         <View className="mx-6 mt-6">
           <TouchableOpacity
             onPress={handleLogout}
@@ -232,13 +208,13 @@ export default function SettingsScreen() {
             <View className="flex-row items-center">
               <Ionicons name="log-out-outline" size={20} color="#3D5A3E" />
               <Text className="text-base font-semibold text-forest ml-2">
-                Log Out
+                Sign Out
               </Text>
             </View>
           </TouchableOpacity>
         </View>
 
-        {/* ── Danger Zone ── */}
+        {/* Danger Zone - Delete Account */}
         <DangerZoneHeader />
         <View className="mx-6 bg-white rounded-3xl overflow-hidden" style={dangerCardShadow}>
           <TouchableOpacity
