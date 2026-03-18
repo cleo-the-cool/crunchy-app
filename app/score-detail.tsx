@@ -83,15 +83,15 @@ export default function ScoreDetailScreen() {
 
         {/* Stats Summary */}
         <View className="flex-row px-5 mt-5 gap-3">
-          <View className="flex-1 bg-white rounded-3xl py-3 items-center" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}>
+          <View className="flex-1 bg-white rounded-3xl py-3 items-center" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 3, borderWidth: 1, borderColor: "rgba(0,0,0,0.15)" }}>
             <Text className="text-lg font-bold text-dark">{stats.totalScans}</Text>
             <Text className="text-xs text-dark/50">Total Scans</Text>
           </View>
-          <View className="flex-1 bg-white rounded-3xl py-3 items-center" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}>
+          <View className="flex-1 bg-white rounded-3xl py-3 items-center" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 3, borderWidth: 1, borderColor: "rgba(0,0,0,0.15)" }}>
             <Text className="text-lg font-bold text-dark">{stats.recipesMade}</Text>
             <Text className="text-xs text-dark/50">Recipes Made</Text>
           </View>
-          <View className="flex-1 bg-white rounded-3xl py-3 items-center" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}>
+          <View className="flex-1 bg-white rounded-3xl py-3 items-center" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 3, borderWidth: 1, borderColor: "rgba(0,0,0,0.15)" }}>
             <Text className="text-lg font-bold text-dark">{stats.daysActive}</Text>
             <Text className="text-xs text-dark/50">{stats.daysActive === 1 ? "Day" : "Days"} Active</Text>
           </View>
@@ -100,7 +100,7 @@ export default function ScoreDetailScreen() {
         {/* Score Breakdown */}
         <View className="px-5 mt-6">
           <Text className="text-lg font-bold text-dark mb-3">How Your Score Works</Text>
-          <View className="bg-white rounded-3xl px-4 py-1" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}>
+          <View className="bg-white rounded-3xl px-4 py-1" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 3, borderWidth: 1, borderColor: "rgba(0,0,0,0.15)" }}>
             <BreakdownRow
               icon="barcode-outline"
               label="Scan History"
@@ -125,7 +125,7 @@ export default function ScoreDetailScreen() {
         {/* Tiers */}
         <View className="px-5 mt-6">
           <Text className="text-lg font-bold text-dark mb-3">Tiers</Text>
-          <View className="bg-white rounded-3xl px-4 py-2" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}>
+          <View className="bg-white rounded-3xl px-4 py-2" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 3, borderWidth: 1, borderColor: "rgba(0,0,0,0.15)" }}>
             {TIER_DETAILS.map((t, i) => {
               const isCurrentTier = t.label === tierInfo.label;
               return (
@@ -157,7 +157,7 @@ export default function ScoreDetailScreen() {
         {/* Tips */}
         <View className="px-5 mt-6">
           <Text className="text-lg font-bold text-dark mb-3">Level Up Your Score</Text>
-          <View className="bg-white rounded-3xl p-4" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}>
+          <View className="bg-white rounded-3xl p-4" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 3, borderWidth: 1, borderColor: "rgba(0,0,0,0.15)" }}>
             <View className="flex-row items-start mb-3">
               <Ionicons name="scan-outline" size={18} color="#3D5A3E" />
               <Text className="text-sm text-dark/70 ml-2 flex-1">

@@ -139,7 +139,7 @@ export default function HomeScreen() {
                 <Text className="text-4xl font-bold text-white mt-1">
                   {firstName}
                 </Text>
-                <Text className="text-white/60 text-sm mt-1">Welcome to your clean living journey</Text>
+                <Text className="text-white/60 text-sm mt-1">welcome to your clean living journey.</Text>
 
                 {/* Score Badge on Hero */}
                 <TouchableOpacity
@@ -179,11 +179,11 @@ export default function HomeScreen() {
         {/* Quick Stats Row */}
         {scanStats.totalScans > 0 && (
           <View className="flex-row px-6 mt-4 gap-3">
-            <View className="flex-1 bg-white rounded-2xl p-3.5 items-center" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)", shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}>
+            <View className="flex-1 bg-white rounded-2xl p-3.5 items-center" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.15)", shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 3 }}>
               <Text className="text-2xl font-bold text-forest">{scanStats.totalScans}</Text>
               <Text className="text-xs text-dark/50 mt-0.5">Products Scanned</Text>
             </View>
-            <View className="flex-1 bg-white rounded-2xl p-3.5 items-center" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)", shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}>
+            <View className="flex-1 bg-white rounded-2xl p-3.5 items-center" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.15)", shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 3 }}>
               <Text className="text-2xl font-bold text-forest">{scanStats.averageScore}</Text>
               <Text className="text-xs text-dark/50 mt-0.5">Avg Score</Text>
             </View>
@@ -279,8 +279,8 @@ export default function HomeScreen() {
                   className="bg-white rounded-2xl w-40 p-3.5"
                   style={{
                     borderWidth: 1,
-                    borderColor: "rgba(0,0,0,0.12)",
-                    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3,
+                    borderColor: "rgba(0,0,0,0.15)",
+                    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 3,
                   }}
                 >
                   <View
@@ -376,7 +376,7 @@ export default function HomeScreen() {
               </Text>
               <Text className="text-xs text-dark/40">{completedCount}/3 complete</Text>
             </View>
-            <View className="bg-white rounded-2xl p-4" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)", shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}>
+            <View className="bg-white rounded-2xl p-4" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.15)", shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 3 }}>
               <ChecklistItem
                 done={checklist.scanned}
                 label="Scan your first product"
@@ -444,7 +444,7 @@ function QuickActionButton({
       }}
       activeOpacity={0.8}
       className="flex-1 bg-white rounded-3xl py-4 items-center"
-      style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)", shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}
+      style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.15)", shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 3 }}
     >
       <View className="w-11 h-11 rounded-full bg-forest/8 items-center justify-center mb-2">
         <Ionicons name={icon} size={22} color="#3D5A3E" />

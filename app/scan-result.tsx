@@ -287,7 +287,7 @@ export default function ScanResultScreen() {
             style={{
               shadowColor: "#000",
               shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.06,
+              shadowOpacity: 0.1,
               shadowRadius: 6,
               elevation: 2,
             }}
@@ -303,7 +303,7 @@ export default function ScanResultScreen() {
             style={{
               shadowColor: "#000",
               shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.06,
+              shadowOpacity: 0.1,
               shadowRadius: 6,
               elevation: 2,
             }}
@@ -320,7 +320,7 @@ export default function ScanResultScreen() {
             style={{
               shadowColor: "#000",
               shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.06,
+              shadowOpacity: 0.1,
               shadowRadius: 6,
               elevation: 2,
             }}
@@ -414,7 +414,7 @@ export default function ScanResultScreen() {
 
         {/* Concerns (if from Gemini analysis) */}
         {product.concerns && product.concerns.length > 0 && (
-          <View className="mx-5 mt-4 bg-white rounded-2xl p-4" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.08)" }}>
+          <View className="mx-5 mt-4 bg-white rounded-2xl p-4" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.15)" }}>
             <Text className="text-sm font-bold text-dark mb-2">Key Concerns</Text>
             {product.concerns.map((concern, idx) => (
               <View key={idx} className="flex-row items-start mb-1.5">
@@ -535,8 +535,8 @@ export default function ScanResultScreen() {
                   style={{
                     shadowColor: "#000",
                     shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.06,
-                    shadowRadius: 8,
+                    shadowOpacity: 0.1,
+                    shadowRadius: 10,
                     elevation: 3,
                   }}
                 >

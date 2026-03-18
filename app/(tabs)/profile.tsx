@@ -129,10 +129,10 @@ export default function ProfileScreen() {
           source={require("@/assets/images/aesthetic/forest-canopy.jpg")}
           resizeMode="cover"
         >
-          <View style={{ backgroundColor: "rgba(61,90,62,0.65)" }}>
+          <View style={{ backgroundColor: "rgba(61,90,62,0.55)" }}>
             <SafeAreaView edges={["top"]}>
               {/* Header with Settings */}
-              <View className="flex-row items-center justify-between px-6 pt-2 pb-1">
+              <View className="flex-row items-center justify-between px-6 pt-6 pb-1">
                 <Text className="text-2xl font-bold text-white">Profile</Text>
                 <TouchableOpacity
                   onPress={() => router.push("/settings")}
@@ -143,7 +143,7 @@ export default function ProfileScreen() {
               </View>
 
               {/* Profile Header - Large Avatar */}
-              <View className="items-center px-6 pt-4 pb-6">
+              <View className="items-center px-6 pt-4 pb-8">
                 <View
                   className="w-28 h-28 rounded-full items-center justify-center mb-4"
                   style={{
@@ -205,8 +205,8 @@ export default function ProfileScreen() {
           className="mx-6 mt-5 bg-white rounded-3xl flex-row py-4"
           style={{
             borderWidth: 1,
-            borderColor: "rgba(0,0,0,0.12)",
-            shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3,
+            borderColor: "rgba(0,0,0,0.15)",
+            shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 3,
           }}
         >
           <View className="flex-1 items-center">
@@ -286,7 +286,7 @@ export default function ProfileScreen() {
                     style={{
                       width: 110,
                       borderWidth: 1,
-                      borderColor: "rgba(0,0,0,0.12)",
+                      borderColor: "rgba(0,0,0,0.15)",
                     }}
                   >
                     {getCategoryEmoji(item.category) ? <Text className="text-3xl mb-2">{getCategoryEmoji(item.category)}</Text> : <Ionicons name="cube-outline" size={28} color="#A8B89C" style={{ marginBottom: 8 }} />}
@@ -308,7 +308,7 @@ export default function ProfileScreen() {
           ) : (
             <View className="mx-6 bg-white rounded-3xl p-6 items-center" style={{
               borderWidth: 1,
-        borderColor: "rgba(0,0,0,0.12)",
+        borderColor: "rgba(0,0,0,0.15)",
             }}>
               <Ionicons name="camera-outline" size={32} color="#A8B89C" style={{ marginBottom: 8 }} />
               <Text className="text-sm font-medium text-dark">No scans yet</Text>
@@ -426,7 +426,7 @@ export default function ProfileScreen() {
                           setDetailProduct(item);
                         }}
                         className="bg-white rounded-3xl p-4 flex-row items-center"
-                        style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)" }}
+                        style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.15)" }}
                       >
                         {(item.image || getCategoryEmoji(item.category)) ? <Text className="text-2xl mr-3">{item.image || getCategoryEmoji(item.category)}</Text> : <Ionicons name="cube-outline" size={24} color="#A8B89C" style={{ marginRight: 12 }} />}
                         <View className="flex-1">
@@ -455,7 +455,7 @@ export default function ProfileScreen() {
             <View className="mx-6 rounded-3xl p-6 items-center" style={{
               backgroundColor: "#fff",
               borderWidth: 1,
-              borderColor: "rgba(0,0,0,0.12)",
+              borderColor: "rgba(0,0,0,0.15)",
             }}>
               <Ionicons name="bookmark-outline" size={32} color="#A8B89C" style={{ marginBottom: 8 }} />
               <Text className="text-sm font-medium text-dark">No saved products</Text>
@@ -499,7 +499,7 @@ export default function ProfileScreen() {
                   className="bg-white rounded-3xl p-4 flex-row items-center"
                   style={{
                     borderWidth: 1,
-        borderColor: "rgba(0,0,0,0.12)",
+        borderColor: "rgba(0,0,0,0.15)",
                   }}
                 >
                   <View className="w-11 h-11 rounded-xl bg-forest/8 items-center justify-center mr-3">
@@ -518,7 +518,7 @@ export default function ProfileScreen() {
           ) : (
             <View className="mx-6 bg-white rounded-3xl p-6 items-center" style={{
               borderWidth: 1,
-        borderColor: "rgba(0,0,0,0.12)",
+        borderColor: "rgba(0,0,0,0.15)",
             }}>
               <Ionicons name="list-outline" size={32} color="#A8B89C" style={{ marginBottom: 8 }} />
               <Text className="text-sm font-medium text-dark">No lists yet</Text>
@@ -605,7 +605,7 @@ function SavedProductDetailModal({
             {scan?.ingredients && scan.ingredients.length > 0 && (
               <View className="mb-4">
                 <Text className="text-base font-bold text-dark mb-2">Ingredients</Text>
-                <View className="bg-white rounded-2xl overflow-hidden" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)" }}>
+                <View className="bg-white rounded-2xl overflow-hidden" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.15)" }}>
                   {scan.ingredients.map((ing, i) => {
                     const risk = RISK_CONFIG[ing.risk] || RISK_CONFIG.concern;
                     return (
@@ -630,7 +630,7 @@ function SavedProductDetailModal({
             {scan?.concerns && scan.concerns.length > 0 && (
               <View className="mb-4">
                 <Text className="text-base font-bold text-dark mb-2">Concerns</Text>
-                <View className="bg-white rounded-2xl p-3" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)" }}>
+                <View className="bg-white rounded-2xl p-3" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.15)" }}>
                   {scan.concerns.map((c, i) => (
                     <View key={i} className="flex-row items-start mb-1.5">
                       <Ionicons name="alert-circle" size={14} color="#F44336" style={{ marginTop: 2 }} />
@@ -645,7 +645,7 @@ function SavedProductDetailModal({
             {scan?.cleanAlternatives && scan.cleanAlternatives.length > 0 && (
               <View className="mb-4">
                 <Text className="text-base font-bold text-dark mb-2">Clean Alternatives</Text>
-                <View className="bg-white rounded-2xl p-3" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)" }}>
+                <View className="bg-white rounded-2xl p-3" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.15)" }}>
                   {scan.cleanAlternatives.map((alt, i) => (
                     <View key={i} className="flex-row items-center mb-1.5">
                       <Ionicons name="leaf" size={14} color="#4CAF50" style={{ marginTop: 1 }} />

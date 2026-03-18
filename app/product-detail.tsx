@@ -85,7 +85,7 @@ export default function ProductDetailScreen() {
             className="w-10 h-10 rounded-full bg-cream items-center justify-center mr-3"
             style={{
               borderWidth: 1,
-        borderColor: "rgba(0,0,0,0.12)",
+        borderColor: "rgba(0,0,0,0.15)",
             }}
           >
             <Ionicons name="arrow-back" size={20} color="#3D5A3E" />
@@ -97,7 +97,7 @@ export default function ProductDetailScreen() {
           className="w-10 h-10 rounded-full bg-cream items-center justify-center"
           style={{
             borderWidth: 1,
-        borderColor: "rgba(0,0,0,0.12)",
+        borderColor: "rgba(0,0,0,0.15)",
           }}
         >
           <Ionicons name="share-outline" size={20} color="#3D5A3E" />

@@ -11,9 +11,9 @@ export default function TabLayout() {
         tabBarStyle: {
           position: 'absolute',
           bottom: 24,
-          left: 20,
-          right: 20,
-          backgroundColor: 'rgba(255, 253, 248, 0.85)',
+          left: 40,
+          right: 40,
+          backgroundColor: '#FFFDF8',
           borderRadius: 28,
           height: 70,
           paddingTop: 12,

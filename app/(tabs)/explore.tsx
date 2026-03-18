@@ -183,9 +183,9 @@ export default function ExploreScreen() {
         source={require("@/assets/images/aesthetic/forest-canopy.jpg")}
         resizeMode="cover"
       >
-        <View style={{ backgroundColor: "rgba(61,90,62,0.6)" }}>
+        <View style={{ backgroundColor: "rgba(61,90,62,0.55)" }}>
           <SafeAreaView edges={["top"]}>
-            <View className="px-5 pt-4 pb-5">
+            <View className="px-6 pt-6 pb-8">
               <Text className="text-3xl font-bold text-white">Explore</Text>
               <Text className="text-sm text-white/70 mt-0.5">
                 Browse clean products by category
@@ -195,7 +195,7 @@ export default function ExploreScreen() {
               <View className="mt-4">
                 <View
                   className="bg-white rounded-3xl flex-row items-center px-4 py-3"
-                  style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)" }}
+                  style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.15)" }}
                 >
                   <Ionicons name="search" size={20} color="#A8B89C" />
                   <TextInput
@@ -240,7 +240,7 @@ export default function ExploreScreen() {
               shadowColor: "#3D5A3E",
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.15,
-              shadowRadius: 8,
+              shadowRadius: 10,
               elevation: 4,
             }}
           >
@@ -316,7 +316,7 @@ export default function ExploreScreen() {
                     onPress={() => handleProductPress(product)}
                     activeOpacity={0.7}
                     className="bg-white rounded-3xl p-4 flex-row items-center"
-                    style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.08)", shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}
+                    style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.15)", shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 3 }}
                   >
                     {product.emoji ? <Text className="text-2xl mr-3">{product.emoji}</Text> : null}
                     <View className="flex-1">
@@ -353,7 +353,7 @@ export default function ExploreScreen() {
                   onPress={() => handleProductPress(product)}
                   activeOpacity={0.7}
                   className="bg-white rounded-3xl p-4 flex-row items-center"
-                  style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.08)" }}
+                  style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.15)" }}
                 >
                   <Text className="text-2xl mr-3">{product.emoji}</Text>
                   <View className="flex-1">

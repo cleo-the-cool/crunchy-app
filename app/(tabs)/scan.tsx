@@ -281,7 +281,7 @@ export default function ScanScreen() {
       >
         <View style={{ backgroundColor: "rgba(61,90,62,0.55)" }}>
           <SafeAreaView edges={["top"]}>
-            <View className="px-5 pt-4 pb-5">
+            <View className="px-6 pt-6 pb-8">
               <Text className="text-3xl font-bold text-white">Scanner</Text>
               <Text className="text-sm text-white/70 mt-0.5">Analyze any product instantly</Text>
             </View>
@@ -290,47 +290,50 @@ export default function ScanScreen() {
       </ImageBackground>
 
       {/* Scan Mode Toggle */}
-      <View className="flex-row mx-5 mb-3" style={{
-        backgroundColor: 'rgba(255, 253, 248, 0.85)',
+      <View style={{
+        backgroundColor: '#FFFDF8',
         borderRadius: 20,
         padding: 4,
-        borderWidth: 0.5,
-        borderColor: 'rgba(255,255,255,0.3)',
+        marginHorizontal: 40,
+        marginBottom: 12,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.08,
-        shadowRadius: 12,
-        elevation: 6,
-        gap: 4,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 3,
+        borderWidth: 1,
+        borderColor: 'rgba(0,0,0,0.08)',
       }}>
-        {SCAN_MODES.map((mode) => (
-          <TouchableOpacity
-            key={mode.key}
-            onPress={() => {
-              setScanMode(mode.key);
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            }}
-            className="flex-1 flex-row items-center justify-center rounded-2xl"
-            style={
-              scanMode === mode.key
-                ? { backgroundColor: "#3D5A3E", paddingVertical: 12 }
-                : { backgroundColor: "transparent", paddingVertical: 12 }
-            }
-          >
-            <Ionicons
-              name={mode.icon}
-              size={16}
-              color={scanMode === mode.key ? "white" : "#2D2D2D"}
-            />
-            <Text
-              className="ml-1 text-xs font-semibold"
-              style={{ color: scanMode === mode.key ? "white" : "#2D2D2D" }}
-              numberOfLines={1}
+        <View className="flex-row" style={{ gap: 4 }}>
+          {SCAN_MODES.map((mode) => (
+            <TouchableOpacity
+              key={mode.key}
+              onPress={() => {
+                setScanMode(mode.key);
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              }}
+              className="flex-1 flex-row items-center justify-center rounded-2xl"
+              style={
+                scanMode === mode.key
+                  ? { backgroundColor: "#3D5A3E", paddingVertical: 12 }
+                  : { backgroundColor: "transparent", paddingVertical: 12 }
+              }
             >
-              {mode.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Ionicons
+                name={mode.icon}
+                size={16}
+                color={scanMode === mode.key ? "white" : "#2D2D2D"}
+              />
+              <Text
+                className="ml-1 text-xs font-semibold"
+                style={{ color: scanMode === mode.key ? "white" : "#2D2D2D" }}
+                numberOfLines={1}
+              >
+                {mode.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
 
       {/* Concern Focus Chips */}
@@ -465,8 +468,8 @@ export default function ScanScreen() {
                 className="bg-white rounded-2xl mb-2.5 p-4 flex-row items-center"
                 style={{
                   borderWidth: 1,
-                  borderColor: "rgba(0,0,0,0.08)",
-                  shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3,
+                  borderColor: "rgba(0,0,0,0.15)",
+                  shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 3,
                 }}
               >
                 <View

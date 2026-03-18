@@ -169,7 +169,7 @@ export default function RecipesScreen() {
           className="bg-white rounded-3xl flex-row items-center px-4 py-3"
           style={{
             borderWidth: 1,
-        borderColor: "rgba(0,0,0,0.12)",
+        borderColor: "rgba(0,0,0,0.15)",
           }}
         >
           <Ionicons name="search" size={20} color="#A8B89C" />
@@ -381,11 +381,11 @@ function RecipeCard({
       className="bg-white rounded-3xl overflow-hidden"
       style={{
         borderWidth: 1,
-        borderColor: "rgba(0,0,0,0.12)",
+        borderColor: "rgba(0,0,0,0.15)",
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 8,
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
         elevation: 3,
       }}
     >

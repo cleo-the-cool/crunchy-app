@@ -26,11 +26,11 @@ const LISTS_STORAGE_KEY = "@crunchy_user_lists";
 
 const cardShadow = {
   borderWidth: 1,
-        borderColor: "rgba(0,0,0,0.12)",
+        borderColor: "rgba(0,0,0,0.15)",
   shadowColor: '#000',
   shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.06,
-  shadowRadius: 8,
+  shadowOpacity: 0.1,
+  shadowRadius: 10,
   elevation: 3,
 };
 
