@@ -294,7 +294,7 @@ export default function ScanScreen() {
         backgroundColor: '#FFFDF8',
         borderRadius: 20,
         padding: 4,
-        marginHorizontal: 40,
+        marginHorizontal: 24,
         marginBottom: 12,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
