@@ -1,10 +1,22 @@
-import { View, Text, ScrollView, ImageBackground } from "react-native";
+import { useState, useEffect, useCallback } from "react";
+import { View, Text, ScrollView, ImageBackground, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
 import { useGoBack } from "@/lib/useGoBack";
 import { Badge } from "@/components";
-import { getDefaultStats, type CrunchyStats } from "@/lib/crunchyScore";
+import {
+  buildCrunchyStats,
+  fetchCrunchyScore,
+  getTierInfo,
+  calcDaysActive,
+  getDefaultStats,
+  type CrunchyStats,
+  type ScoreInput,
+} from "@/lib/crunchyScore";
+import { getScanStats } from "@/lib/scanHistory";
+import { useAuth } from "@/contexts/AuthContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const TIER_DETAILS = [
   { emoji: "", label: "Seedling", range: "0-25", description: "Just starting your clean living journey" },
@@ -40,7 +52,57 @@ function BreakdownRow({
 
 export default function ScoreDetailScreen() {
   const goBack = useGoBack();
-  const stats: CrunchyStats = getDefaultStats();
+  const { user } = useAuth();
+  const [stats, setStats] = useState<CrunchyStats>(getDefaultStats());
+  const [loading, setLoading] = useState(true);
+
+  const loadStats = useCallback(async () => {
+    try {
+      const userId = user?.id;
+
+      // Fetch scan stats and quiz data in parallel
+      const [scanData, quizRaw] = await Promise.all([
+        getScanStats(userId),
+        AsyncStorage.getItem("@crunchy_quiz_score"),
+      ]);
+
+      // Parse quiz data
+      let quizScore: number | null = null;
+      let quizCompletedAt: Date | null = null;
+      if (quizRaw) {
+        try {
+          const parsed = JSON.parse(quizRaw);
+          quizScore = parsed.score ?? null;
+          quizCompletedAt = parsed.completedAt ? new Date(parsed.completedAt) : null;
+        } catch {
+          // ignore parse errors
+        }
+      }
+
+      // Get account creation date (use user metadata or fallback to now)
+      const createdAt = user?.created_at ? new Date(user.created_at) : new Date();
+
+      const input: ScoreInput = {
+        scanScoreAvg: scanData.averageScore,
+        totalScans: scanData.totalScans,
+        recipesMade: 0, // TODO: wire up when recipe tracking is built
+        quizScore,
+        quizCompletedAt,
+        createdAt,
+      };
+
+      setStats(buildCrunchyStats(input));
+    } catch {
+      // Keep default stats on error
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    loadStats();
+  }, [loadStats]);
+
   const tierInfo = stats.tier;
 
   return (
@@ -69,14 +131,20 @@ export default function ScoreDetailScreen() {
               className="rounded-3xl p-6 items-center"
               style={{ backgroundColor: "rgba(61,90,62,0.65)" }}
             >
-              {tierInfo.emoji ? <Text className="text-5xl mb-1">{tierInfo.emoji}</Text> : null}
-              <Text className="text-5xl font-bold text-white mt-1">
-                {stats.crunchyScore}
-              </Text>
-              <Text className="text-white/80 text-base mt-1">{tierInfo.label}</Text>
-              <View className="mt-3">
-                <Badge rating={tierInfo.badge} size="md" label={tierInfo.label} />
-              </View>
+              {loading ? (
+                <ActivityIndicator size="large" color="#fff" />
+              ) : (
+                <>
+                  {tierInfo.emoji ? <Text className="text-5xl mb-1">{tierInfo.emoji}</Text> : null}
+                  <Text className="text-5xl font-bold text-white mt-1">
+                    {stats.crunchyScore}
+                  </Text>
+                  <Text className="text-white/80 text-base mt-1">{tierInfo.label}</Text>
+                  <View className="mt-3">
+                    <Badge rating={tierInfo.badge} size="md" label={tierInfo.label} />
+                  </View>
+                </>
+              )}
             </View>
           </ImageBackground>
         </View>
