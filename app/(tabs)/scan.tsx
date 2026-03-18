@@ -18,18 +18,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePreferences, buildConcernsPrompt } from "@/contexts/PreferencesContext";
 import { CameraView, useCameraPermissions } from "../../utils/camera";
 import type { ScanMode } from "@/services/gemini";
-import { analyzeBarcodeScan, buildFocusPrompt } from "@/services/gemini";
+import { analyzeBarcodeScan } from "@/services/gemini";
 import { lookupBarcode, buildGeminiPromptFromBarcode } from "@/lib/barcodeLookup";
 import { getRecentScans, type ScanHistoryItem } from "@/lib/scanHistory";
 import { Badge } from "@/components";
 
-type ScanFocus = "all" | "body" | "environmental" | "quick";
-const SCAN_FOCUS_OPTIONS: { key: ScanFocus; label: string }[] = [
-  { key: "all", label: "All Concerns" },
-  { key: "body", label: "Body Toxins" },
-  { key: "environmental", label: "Environmental" },
-  { key: "quick", label: "Quick Scan" },
-];
+
 
 type ExtendedScanMode = ScanMode;
 
@@ -45,7 +39,7 @@ export default function ScanScreen() {
   const { user } = useAuth();
   const { concerns } = usePreferences();
   const [scanMode, setScanMode] = useState<ExtendedScanMode>("item");
-  const [scanFocus, setScanFocus] = useState<ScanFocus>("all");
+
   const [refreshing, setRefreshing] = useState(false);
   const [recentScans, setRecentScans] = useState<ScanHistoryItem[]>([]);
   const [permission, requestPermission] = useCameraPermissions();
@@ -91,11 +85,11 @@ export default function ScanScreen() {
     }
 
     if (scanMode === "item") {
-      router.push({ pathname: "/product-scan", params: { focus: scanFocus } });
+      router.push({ pathname: "/product-scan" });
     } else if (scanMode === "ingredients") {
-      router.push({ pathname: "/label-scan", params: { focus: scanFocus } });
+      router.push({ pathname: "/label-scan" });
     } else {
-      router.push({ pathname: "/label-scan", params: { mode: "label", focus: scanFocus } });
+      router.push({ pathname: "/label-scan", params: { mode: "label" } });
     }
   };
 
@@ -110,7 +104,7 @@ export default function ScanScreen() {
       // Look up in Open Food Facts
       const offResult = await lookupBarcode(result.data);
       const prompt = buildGeminiPromptFromBarcode(result.data, offResult);
-      const concernsPrompt = buildConcernsPrompt(concerns) + buildFocusPrompt(scanFocus);
+      const concernsPrompt = buildConcernsPrompt(concerns);
 
       const analysis = await analyzeBarcodeScan(prompt, user?.id ?? null, concernsPrompt);
       recordScan();
@@ -336,42 +330,7 @@ export default function ScanScreen() {
         </View>
       </View>
 
-      {/* Concern Focus Chips */}
-      <View style={{ height: 36, marginBottom: 12 }}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 20, gap: 8, alignItems: "center" }}
-          style={{ flexGrow: 0 }}
-        >
-          {SCAN_FOCUS_OPTIONS.map((opt) => (
-            <TouchableOpacity
-              key={opt.key}
-              onPress={() => {
-                setScanFocus(opt.key);
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              }}
-              style={[
-                {
-                  paddingHorizontal: 16,
-                  paddingVertical: 8,
-                  borderRadius: 9999,
-                },
-                scanFocus === opt.key
-                  ? { backgroundColor: "#3D5A3E" }
-                  : { backgroundColor: "white", borderWidth: 1, borderColor: "rgba(0,0,0,0.12)" },
-              ]}
-            >
-              <Text
-                className="text-xs font-semibold"
-                style={{ color: scanFocus === opt.key ? "white" : "#2D2D2D" }}
-              >
-                {opt.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
+
 
       {/* Scan Limit Indicator (free tier) */}
       {tier === "free" && (
