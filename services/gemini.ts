@@ -290,7 +290,8 @@ async function findCachedProduct(
   if (!isSupabaseConfigured()) return null;
 
   try {
-    const { data } = await supabase
+    // Strategy 1: Try exact match first (fastest)
+    const { data: exactMatch } = await supabase
       .from("products")
       .select("id, gemini_analysis, category_scores, scan_count")
       .eq("name", name)
@@ -298,12 +299,51 @@ async function findCachedProduct(
       .limit(1)
       .single();
 
-    if (data) {
+    if (exactMatch) {
       return {
-        analysis: data.gemini_analysis as GeminiAnalysis | null,
-        categoryScores: data.category_scores as CategoryScores | null,
-        productId: data.id,
+        analysis: exactMatch.gemini_analysis as GeminiAnalysis | null,
+        categoryScores: exactMatch.category_scores as CategoryScores | null,
+        productId: exactMatch.id,
       };
+    }
+
+    // Strategy 2: Case-insensitive brand match + name word similarity (fuzzy)
+    // Handles Gemini returning "LaCroix Lime Sparkling Water" vs "Lime Sparkling Water" vs "LaCroix Lime"
+    const normalizedName = name.toLowerCase().trim();
+    const normalizedBrand = brand.toLowerCase().trim();
+
+    const { data: fuzzyMatches } = await supabase
+      .from("products")
+      .select("id, name, brand, gemini_analysis, category_scores, scan_count")
+      .ilike("brand", normalizedBrand)
+      .limit(20);
+
+    if (fuzzyMatches && fuzzyMatches.length > 0) {
+      // Score each match by name word overlap
+      const bestMatch = fuzzyMatches
+        .map((row) => {
+          const dbName = (row.name || "").toLowerCase().trim();
+          const nameWords = normalizedName.split(/\s+/).filter((w: string) => w.length > 2);
+          const dbWords = dbName.split(/\s+/).filter((w: string) => w.length > 2);
+          const commonWords = nameWords.filter((w: string) =>
+            dbWords.some((dw: string) => dw.includes(w) || w.includes(dw))
+          );
+          const similarity =
+            nameWords.length > 0
+              ? commonWords.length / Math.max(nameWords.length, dbWords.length)
+              : 0;
+          return { ...row, similarity };
+        })
+        .filter((row) => row.similarity >= 0.5) // At least 50% word overlap
+        .sort((a, b) => b.similarity - a.similarity)[0];
+
+      if (bestMatch) {
+        return {
+          analysis: bestMatch.gemini_analysis as GeminiAnalysis | null,
+          categoryScores: bestMatch.category_scores as CategoryScores | null,
+          productId: bestMatch.id,
+        };
+      }
     }
   } catch {
     // Not found or error
