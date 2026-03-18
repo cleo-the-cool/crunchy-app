@@ -16,8 +16,7 @@ import { useRouter } from "expo-router";
 import * as Haptics from "../../utils/haptics";
 import { CATEGORY_IMAGES } from "@/lib/categoryImages";
 import { analyzeProductByName } from "@/services/gemini";
-import { getRecipesByCategory } from "@/data/recipes";
-import { getSavedProducts, type SavedProduct } from "@/lib/savedProducts";
+
 
 interface BrowseCategory {
   key: string;
@@ -34,41 +33,12 @@ const BROWSE_CATEGORIES: BrowseCategory[] = [
   { key: "baby", label: "Baby & Kids" },
 ];
 
-// Map browse category keys to recipe category names
-function getRecipeCategoryName(key: string): string | null {
-  const map: Record<string, string> = {
-    skincare: "Skincare",
-    cleaning: "Cleaning",
-    food: "Home",
-    drinks: "Home",
-    baby: "Personal Care",
-    makeup: "Skincare",
-    wellness: "Personal Care",
-  };
-  return map[key] || null;
-}
-
-function normalizeCategoryKey(cat?: string): string {
-  if (!cat) return "other";
-  const lower = cat.toLowerCase();
-  if (lower.includes("food") || lower.includes("cooking") || lower.includes("pantry")) return "food";
-  if (lower.includes("drink") || lower.includes("beverage")) return "drinks";
-  if (lower.includes("skin") || lower.includes("personal care")) return "skincare";
-  if (lower.includes("makeup") || lower.includes("cosmetic") || lower.includes("beauty")) return "makeup";
-  if (lower.includes("clean")) return "cleaning";
-  if (lower.includes("wellness") || lower.includes("supplement")) return "wellness";
-  if (lower.includes("baby") || lower.includes("kid")) return "baby";
-  return "other";
-}
-
 export default function SearchScreen() {
   const router = useRouter();
   const [searchInput, setSearchInput] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [searching, setSearching] = useState(false);
-  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
-  const [categoryRecipes, setCategoryRecipes] = useState<any[]>([]);
-  const [categorySavedProducts, setCategorySavedProducts] = useState<SavedProduct[]>([]);
+
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -102,36 +72,9 @@ export default function SearchScreen() {
     }
   };
 
-  const handleCategoryPress = async (key: string) => {
+  const handleCategoryPress = (key: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-    if (expandedCategory === key) {
-      setExpandedCategory(null);
-      setCategoryRecipes([]);
-      setCategorySavedProducts([]);
-      return;
-    }
-
-    setExpandedCategory(key);
-
-    // Load recipes for category
-    const recipeCat = getRecipeCategoryName(key);
-    const recipes = recipeCat ? getRecipesByCategory(recipeCat as any) : [];
-    setCategoryRecipes(recipes.slice(0, 5));
-
-    // Load saved products for category
-    const saved = await getSavedProducts();
-    const filtered = saved.filter((p) => normalizeCategoryKey(p.category) === key);
-    setCategorySavedProducts(filtered);
-  };
-
-  const getRatingColor = (rating: string) => {
-    switch (rating) {
-      case "clean": return "#4CAF50";
-      case "caution": return "#FFC107";
-      case "avoid": return "#F44336";
-      default: return "#999";
-    }
+    router.push({ pathname: "/category", params: { key } });
   };
 
   return (
@@ -222,10 +165,8 @@ export default function SearchScreen() {
                     <View
                       className="rounded-2xl px-4 py-5 justify-end"
                       style={{
-                        backgroundColor: expandedCategory === cat.key ? "rgba(61,90,62,0.6)" : "rgba(0,0,0,0.35)",
+                        backgroundColor: "rgba(0,0,0,0.35)",
                         height: 100,
-                        borderWidth: expandedCategory === cat.key ? 2 : 0,
-                        borderColor: "#fff",
                         borderRadius: 16,
                       }}
                     >
@@ -238,94 +179,7 @@ export default function SearchScreen() {
           </View>
         )}
 
-        {/* Expanded Category Content */}
-        {!searching && expandedCategory && (
-          <View className="px-5 mt-5">
-            <View className="flex-row items-center justify-between mb-3">
-              <Text className="text-lg font-bold text-dark">
-                {BROWSE_CATEGORIES.find((c) => c.key === expandedCategory)?.label}
-              </Text>
-              <TouchableOpacity onPress={() => { setExpandedCategory(null); setCategoryRecipes([]); setCategorySavedProducts([]); }}>
-                <Text className="text-sm text-forest font-medium">Close</Text>
-              </TouchableOpacity>
-            </View>
 
-            {/* Saved Products in this Category */}
-            {categorySavedProducts.length > 0 && (
-              <View className="mb-4">
-                <Text className="text-sm font-semibold text-dark/60 mb-2">Saved Products</Text>
-                <View style={{ gap: 8 }}>
-                  {categorySavedProducts.map((item) => {
-                    const score = item.scanData?.crunchyScore;
-                    const rating = score != null ? (score >= 70 ? "clean" : score >= 40 ? "caution" : "avoid") : item.rating;
-                    const ratingColor = getRatingColor(rating || "caution");
-                    return (
-                      <TouchableOpacity
-                        key={item.id}
-                        onPress={() => {
-                          if (item.scanData) {
-                            router.push({
-                              pathname: "/scan-result",
-                              params: { barcodeData: JSON.stringify(item.scanData), source: "saved" },
-                            });
-                          }
-                        }}
-                        activeOpacity={0.7}
-                        className="bg-white rounded-2xl p-3.5 flex-row items-center"
-                        style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.15)" }}
-                      >
-                        <View className="flex-1">
-                          <Text className="text-sm font-semibold text-dark" numberOfLines={1}>{item.name}</Text>
-                          {item.brand && <Text className="text-xs text-dark/50 mt-0.5">{item.brand}</Text>}
-                        </View>
-                        {score != null && (
-                          <View className="px-2 py-1 rounded-full mr-2" style={{ backgroundColor: ratingColor + "18" }}>
-                            <Text className="text-xs font-bold" style={{ color: ratingColor }}>{score}</Text>
-                          </View>
-                        )}
-                        <Ionicons name="chevron-forward" size={16} color="#A8B89C" />
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              </View>
-            )}
-
-            {/* Recipes in this Category */}
-            {categoryRecipes.length > 0 && (
-              <View>
-                <Text className="text-sm font-semibold text-dark/60 mb-2">DIY Recipes</Text>
-                <View style={{ gap: 8 }}>
-                  {categoryRecipes.map((recipe) => (
-                    <TouchableOpacity
-                      key={recipe.id}
-                      onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        router.push({ pathname: "/recipe-detail", params: { id: recipe.id } });
-                      }}
-                      activeOpacity={0.7}
-                      className="bg-white rounded-2xl p-3.5 flex-row items-center"
-                      style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.15)" }}
-                    >
-                      <View className="flex-1">
-                        <Text className="text-sm font-semibold text-dark" numberOfLines={1}>{recipe.title}</Text>
-                        <Text className="text-xs text-dark/50 mt-0.5">{recipe.difficulty} · {recipe.time}</Text>
-                      </View>
-                      <Ionicons name="chevron-forward" size={16} color="#A8B89C" />
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-            )}
-
-            {categorySavedProducts.length === 0 && categoryRecipes.length === 0 && (
-              <View className="items-center py-6">
-                <Ionicons name="leaf-outline" size={32} color="#A8B89C" />
-                <Text className="text-sm text-dark/40 mt-2">No saved products or recipes in this category yet</Text>
-              </View>
-            )}
-          </View>
-        )}
       </ScrollView>
     </View>
   );

@@ -348,7 +348,7 @@ export default function HomeScreen() {
                 key={cat.key}
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  router.push({ pathname: "/(tabs)/explore", params: { category: cat.label } });
+                  router.push({ pathname: "/category", params: { key: cat.key } });
                 }}
                 activeOpacity={0.8}
                 style={{ width: "48%", flexGrow: 1 }}
