@@ -109,8 +109,9 @@ function ShareableCard({
 export default function QuizResultScreen() {
   const router = useRouter();
   const { user } = useAuth();
-  const { score: scoreParam } = useLocalSearchParams<{ score: string }>();
+  const { score: scoreParam, quizAnswers: quizAnswersParam } = useLocalSearchParams<{ score: string; quizAnswers?: string }>();
   const score = parseInt(scoreParam || "50", 10);
+  const quizAnswers = quizAnswersParam ? JSON.parse(quizAnswersParam) : null;
   const tier = getTierInfo(score);
   const viewShotRef = useRef<ViewShot>(null);
   const color = TIER_COLORS[tier.tier] || "#8B9E7C";
@@ -152,25 +153,36 @@ export default function QuizResultScreen() {
 
   async function saveQuizScore() {
     try {
+      const now = new Date().toISOString();
       // Save to AsyncStorage for local score calculation
       await AsyncStorage.setItem(
         "@crunchy_quiz_score",
         JSON.stringify({
           score,
-          completedAt: new Date().toISOString(),
+          completedAt: now,
+          quizAnswers,
+          tier: tier.tier,
+          tierLabel: tier.label,
         })
       );
 
-      // Save to Supabase if configured
+      // Save to Supabase profiles if configured
       if (isSupabaseConfigured() && user) {
-        await supabase
-          .from("profiles")
-          .update({
-            quiz_score: score,
-            quiz_completed_at: new Date().toISOString(),
-          })
-          .eq("id", user.id)
-          .then(() => {}); // silently ignore errors
+        try {
+          // Try upsert - insert if profile doesn't exist, update if it does
+          await supabase
+            .from("profiles")
+            .upsert({
+              id: user.id,
+              quiz_answers: quizAnswers,
+              quiz_completed_at: now,
+              crunchy_score: score,
+              crunchy_tier: tier.tier,
+              display_name: user.name || null,
+            }, { onConflict: "id" });
+        } catch {
+          // RLS or network error - local storage is the fallback
+        }
       }
     } catch {
       // Never block the user from seeing results

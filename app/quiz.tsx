@@ -321,9 +321,24 @@ export default function QuizScreen() {
     const normalizedScore = Math.round(((totalScore - 15) / 45) * 99) + 1;
     const clampedScore = Math.max(1, Math.min(100, normalizedScore));
 
+    // Build quiz answers object for Supabase storage
+    const quizAnswers: Record<string, { question: string; category: string; answer: string; score: number }> = {};
+    answers.forEach((answerIdx, qIdx) => {
+      if (answerIdx !== null) {
+        const q = questions[qIdx];
+        const opt = q.options[answerIdx];
+        quizAnswers[`q${q.id}`] = {
+          question: q.question,
+          category: q.category,
+          answer: opt.text,
+          score: opt.score,
+        };
+      }
+    });
+
     router.push({
       pathname: "/quiz-result",
-      params: { score: clampedScore.toString() },
+      params: { score: clampedScore.toString(), quizAnswers: JSON.stringify(quizAnswers) },
     });
   };
 

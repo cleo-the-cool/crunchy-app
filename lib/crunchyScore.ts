@@ -5,11 +5,14 @@
  *   scan history (80%) + recipes tried (20%) + quiz baseline (decays over 1 year)
  *
  * Tiers:
- *   🌱 Seedling  (0-25)
- *   🌿 Sprout    (26-50)
- *   🌳 Sapling   (51-75)
- *   🌸 In Bloom  (76-100)
+ *   Seedling  (0-25)
+ *   Sprout    (26-50)
+ *   Sapling   (51-75)
+ *   In Bloom  (76-100)
  */
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { supabase, isSupabaseConfigured } from "./supabase";
 
 export type CrunchyTier = "seedling" | "sprout" | "sapling" | "bloom";
 
@@ -162,4 +165,43 @@ export function getMockStats(): CrunchyStats {
     crunchyScore: score,
     tier: getTierInfo(score),
   };
+}
+
+/**
+ * Fetch the user's crunchy score and tier, trying Supabase first then local storage.
+ */
+export async function fetchCrunchyScore(userId?: string): Promise<{ score: number; tier: TierInfo } | null> {
+  // Try Supabase first
+  if (isSupabaseConfigured() && userId) {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("crunchy_score, crunchy_tier, quiz_completed_at")
+        .eq("id", userId)
+        .single();
+
+      if (!error && data && data.crunchy_score != null) {
+        return {
+          score: data.crunchy_score,
+          tier: getTierInfo(data.crunchy_score),
+        };
+      }
+    } catch {
+      // Fall through to local
+    }
+  }
+
+  // Try local AsyncStorage
+  try {
+    const stored = await AsyncStorage.getItem("@crunchy_quiz_score");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      const score = parsed.score || 0;
+      return { score, tier: getTierInfo(score) };
+    }
+  } catch {
+    // ignore
+  }
+
+  return null;
 }
