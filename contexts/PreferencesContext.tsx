@@ -33,37 +33,37 @@ export const CONCERN_OPTIONS: ConcernOption[] = [
     key: "toxinsToBody",
     label: "Toxins & Chemicals",
     description: "Chemicals that can harm your body",
-    icon: "☠️",
+    icon: "",
   },
   {
     key: "environmentalHarm",
     label: "Environmental Impact",
     description: "Pollution, deforestation, carbon footprint",
-    icon: "🌍",
+    icon: "",
   },
   {
     key: "animalTesting",
     label: "Animal Welfare",
     description: "Animal testing and cruelty",
-    icon: "🐰",
+    icon: "",
   },
   {
     key: "processedIngredients",
     label: "Processed Ingredients",
     description: "Highly processed or artificial ingredients",
-    icon: "🧪",
+    icon: "",
   },
   {
     key: "allergens",
     label: "Allergens",
     description: "Common allergens and sensitivities",
-    icon: "⚠️",
+    icon: "",
   },
   {
     key: "sustainability",
     label: "Sustainability",
     description: "Packaging, sourcing, and supply chain",
-    icon: "♻️",
+    icon: "",
   },
 ];
 

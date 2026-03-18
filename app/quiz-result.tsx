@@ -88,7 +88,7 @@ function ShareableCard({
         </View>
 
         {/* Label */}
-        <Text className="text-2xl font-bold text-dark mb-2" style={{ fontFamily: 'Georgia' }}>
+        <Text className="text-2xl font-bold text-dark mb-2">
           {tier.label}
         </Text>
         <Text className="text-sm text-dark-light text-center px-4 mb-4">
@@ -222,7 +222,7 @@ export default function QuizResultScreen() {
       <View className="flex-1 px-6 pt-4">
         {/* Header */}
         <Animated.View style={labelAnimStyle} className="items-center mb-4">
-          <Text className="text-lg font-semibold text-dark" style={{ fontFamily: 'Georgia' }}>Your Crunchy Score</Text>
+          <Text className="text-lg font-semibold text-dark">Your Crunchy Score</Text>
         </Animated.View>
 
         {/* Shareable Result Card */}

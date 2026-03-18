@@ -59,7 +59,7 @@ export default function RecipeDetailScreen() {
   if (!recipe) {
     return (
       <SafeAreaView className="flex-1 bg-ivory items-center justify-center">
-        <Text className="text-5xl mb-4">🤔</Text>
+        <Ionicons name="help-circle-outline" size={48} color="#A8B89C" style={{ marginBottom: 16 }} />
         <Text className="text-lg font-bold text-dark">Recipe not found</Text>
         <TouchableOpacity
           onPress={goBack}
@@ -153,12 +153,12 @@ export default function RecipeDetailScreen() {
           className="mx-5 h-48 rounded-3xl items-center justify-center"
           style={{ backgroundColor: "#3D5A3E15" }}
         >
-          <Text className="text-7xl">{recipe.image}</Text>
+          {recipe.image ? <Text className="text-7xl">{recipe.image}</Text> : <Ionicons name="flask-outline" size={64} color="#A8B89C" />}
         </View>
 
         {/* Title & Meta */}
         <View className="px-5 mt-4">
-          <Text className="text-2xl font-bold text-dark" style={{ fontFamily: 'Georgia' }}>{recipe.title}</Text>
+          <Text className="text-2xl font-bold text-dark">{recipe.title}</Text>
           <Text className="text-sm text-dark/50 mt-1 leading-5">
             {recipe.description}
           </Text>
@@ -167,8 +167,13 @@ export default function RecipeDetailScreen() {
           <View
             className="flex-row mt-4 bg-white rounded-3xl p-4"
             style={{
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.06,
+              shadowRadius: 8,
+              elevation: 3,
               borderWidth: 1,
-        borderColor: "rgba(0,0,0,0.12)",
+              borderColor: "rgba(0,0,0,0.12)",
             }}
           >
             <View className="flex-1 items-center">
@@ -217,14 +222,19 @@ export default function RecipeDetailScreen() {
 
         {/* Ingredients */}
         <View className="px-5 mt-6">
-          <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: 'Georgia' }}>
+          <Text className="text-lg font-bold text-dark mb-3">
             Ingredients
           </Text>
           <View
             className="bg-white rounded-3xl p-4"
             style={{
               borderWidth: 1,
-        borderColor: "rgba(0,0,0,0.12)",
+              borderColor: "rgba(0,0,0,0.12)",
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.06,
+              shadowRadius: 8,
+              elevation: 3,
             }}
           >
             {recipe.ingredients.map((ing, index) => {
@@ -278,7 +288,7 @@ export default function RecipeDetailScreen() {
 
         {/* Steps */}
         <View className="px-5 mt-6">
-          <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: 'Georgia' }}>
+          <Text className="text-lg font-bold text-dark mb-3">
             Instructions
           </Text>
           <View style={{ gap: 12 }}>
@@ -288,7 +298,12 @@ export default function RecipeDetailScreen() {
                 className="bg-white rounded-3xl p-4"
                 style={{
                   borderWidth: 1,
-        borderColor: "rgba(0,0,0,0.12)",
+                  borderColor: "rgba(0,0,0,0.12)",
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.06,
+                  shadowRadius: 8,
+                  elevation: 3,
                 }}
               >
                 <View className="flex-row items-start">
@@ -325,14 +340,19 @@ export default function RecipeDetailScreen() {
         {/* Tips */}
         {recipe.tips.length > 0 && (
           <View className="px-5 mt-6">
-            <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: 'Georgia' }}>
+            <Text className="text-lg font-bold text-dark mb-3">
               Tips
             </Text>
             <View
               className="bg-white rounded-3xl p-4"
               style={{
                 borderWidth: 1,
-        borderColor: "rgba(0,0,0,0.12)",
+                borderColor: "rgba(0,0,0,0.12)",
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.06,
+                shadowRadius: 8,
+                elevation: 3,
               }}
             >
               {recipe.tips.map((tip, index) => (

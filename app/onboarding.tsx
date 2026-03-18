@@ -138,7 +138,6 @@ export default function OnboardingScreen() {
                 <View className="flex-1 justify-end px-10 pb-8">
                   <Text
                     className="text-4xl font-bold text-white mb-4"
-                    style={{ fontFamily: "Georgia" }}
                   >
                     {slide.title}
                   </Text>

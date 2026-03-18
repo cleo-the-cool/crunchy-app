@@ -356,13 +356,13 @@ export default function ScanResultScreen() {
                     className="w-16 h-16 rounded-2xl items-center justify-center mr-4"
                     style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
                   >
-                    <Text className="text-3xl">{product.image}</Text>
+                    {product.image ? <Text className="text-3xl">{product.image}</Text> : <Ionicons name="cube-outline" size={28} color="rgba(255,255,255,0.7)" />}
                   </View>
                   <View className="flex-1">
                     <Text className="text-xs text-white/60 uppercase font-medium tracking-wide">
                       {product.category}
                     </Text>
-                    <Text className="text-lg font-bold text-white mt-0.5" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
+                    <Text className="text-lg font-bold text-white mt-0.5">
                       {product.name}
                     </Text>
                     <Text className="text-sm text-white/70">{product.brand}</Text>
@@ -405,7 +405,7 @@ export default function ScanResultScreen() {
               {/* Branding for share */}
               <View className="flex-row items-center justify-center mt-3 pt-3" style={{ borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.06)" }}>
                 <Text className="text-sm text-dark/30" style={{ fontWeight: "500" }}>Scanned with </Text>
-                <Text className="text-sm text-forest" style={{ fontFamily: "System", fontStyle: "italic", fontWeight: "600", letterSpacing: 0.3 }}>Crunchy</Text>
+                <Text className="text-sm text-forest" style={{ fontStyle: "italic", fontWeight: "600" }}>Crunchy</Text>
 
               </View>
             </View>
@@ -544,7 +544,7 @@ export default function ScanResultScreen() {
                     className="h-28 items-center justify-center"
                     style={{ backgroundColor: "#4CAF50" + "10" }}
                   >
-                    <Text className="text-5xl">{alt.image}</Text>
+                    {alt.image ? <Text className="text-5xl">{alt.image}</Text> : <Ionicons name="cube-outline" size={48} color="#A8B89C" />}
                   </View>
                   <View className="p-3">
                     <Text className="text-sm font-semibold text-dark" numberOfLines={1}>
@@ -637,17 +637,17 @@ export default function ScanResultScreen() {
 
 function getCategoryEmoji(category: string): string {
   const map: Record<string, string> = {
-    Food: "🍎",
-    Drinks: "🥤",
-    Skincare: "🧴",
-    Makeup: "💄",
-    Cleaning: "🧹",
-    "Personal Care": "🪥",
-    Clothing: "👕",
-    Home: "🏠",
-    Baby: "👶",
-    Cookware: "🍳",
-    Drinkware: "🥤",
+    Food: "",
+    Drinks: "",
+    Skincare: "",
+    Makeup: "",
+    Cleaning: "",
+    "Personal Care": "",
+    Clothing: "",
+    Home: "",
+    Baby: "",
+    Cookware: "",
+    Drinkware: "",
   };
-  return map[category] || "📦";
+  return map[category] || "";
 }

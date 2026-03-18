@@ -273,11 +273,21 @@ export default function ScanScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-ivory" edges={["top"]}>
-      {/* Header */}
-      <View className="px-5 pt-3 pb-2">
-        <Text className="text-3xl font-bold text-dark" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>Scanner</Text>
-      </View>
+    <View className="flex-1 bg-ivory">
+      {/* Header with Nature Image */}
+      <ImageBackground
+        source={require("@/assets/images/aesthetic/forest-canopy.jpg")}
+        resizeMode="cover"
+      >
+        <View style={{ backgroundColor: "rgba(61,90,62,0.55)" }}>
+          <SafeAreaView edges={["top"]}>
+            <View className="px-5 pt-4 pb-5">
+              <Text className="text-3xl font-bold text-white">Scanner</Text>
+              <Text className="text-sm text-white/70 mt-0.5">Analyze any product instantly</Text>
+            </View>
+          </SafeAreaView>
+        </View>
+      </ImageBackground>
 
       {/* Scan Mode Toggle */}
       <View className="flex-row mx-5 mb-3" style={{
@@ -400,7 +410,7 @@ export default function ScanScreen() {
               >
                 <Ionicons name={getModeIcon(scanMode)} size={40} color="white" />
               </View>
-              <Text className="text-white text-xl font-bold" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
+              <Text className="text-white text-xl font-bold">
                 {getModeTitle(scanMode)}
               </Text>
               <Text className="text-white/70 text-sm mt-1 px-8 text-center">
@@ -412,7 +422,7 @@ export default function ScanScreen() {
 
         {/* Recent Scans */}
         <View className="px-5">
-          <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
+          <Text className="text-lg font-bold text-dark mb-3">
             Recent Scans
           </Text>
           {recentScans.length === 0 ? (
@@ -488,6 +498,6 @@ export default function ScanScreen() {
           )}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

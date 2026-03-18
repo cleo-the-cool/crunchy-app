@@ -65,8 +65,7 @@ export default function OnboardingProfileScreen() {
             </View>
             <Text
               className="text-2xl font-bold text-dark mb-1"
-              style={{ fontFamily: 'Georgia' }}
-            >
+                         >
               Set Up Your Profile
             </Text>
             <Text className="text-base text-dark-light text-center">

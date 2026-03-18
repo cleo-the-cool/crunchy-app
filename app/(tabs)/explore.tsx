@@ -180,13 +180,13 @@ export default function ExploreScreen() {
     <View className="flex-1 bg-ivory">
       {/* Hero Header with Nature Image */}
       <ImageBackground
-        source={require("@/assets/images/aesthetic/fresh-produce.jpg")}
+        source={require("@/assets/images/aesthetic/forest-canopy.jpg")}
         resizeMode="cover"
       >
         <View style={{ backgroundColor: "rgba(61,90,62,0.6)" }}>
           <SafeAreaView edges={["top"]}>
             <View className="px-5 pt-4 pb-5">
-              <Text className="text-3xl font-bold text-white" style={{ fontFamily: 'System', fontWeight: '700', letterSpacing: 0.3 }}>Explore</Text>
+              <Text className="text-3xl font-bold text-white">Explore</Text>
               <Text className="text-sm text-white/70 mt-0.5">
                 Browse clean products by category
               </Text>
@@ -254,7 +254,7 @@ export default function ExploreScreen() {
         {/* Category Grid (when not filtering) */}
         {!searchInput.trim() && (
           <View className="px-5 mt-5">
-            <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
+            <Text className="text-lg font-bold text-dark mb-3">
               Browse by Category
             </Text>
             <View className="flex-row flex-wrap" style={{ gap: 10 }}>
@@ -290,7 +290,7 @@ export default function ExploreScreen() {
             <View className="flex-row items-center justify-between mb-3">
               <View className="flex-row items-center">
                 {cat.emoji ? <Text className="text-xl mr-2">{cat.emoji}</Text> : null}
-                <Text className="text-lg font-bold text-dark" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
+                <Text className="text-lg font-bold text-dark">
                   {cat.label}
                 </Text>
               </View>
@@ -336,7 +336,7 @@ export default function ExploreScreen() {
         {/* Popular Products section when nothing selected/searched */}
         {!searchInput.trim() && !expandedCategory && (
           <View className="px-5 mt-6">
-            <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
+            <Text className="text-lg font-bold text-dark mb-3">
               Popular Clean Swaps
             </Text>
             <View style={{ gap: 10 }}>

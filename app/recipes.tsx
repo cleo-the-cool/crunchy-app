@@ -156,7 +156,7 @@ export default function RecipesScreen() {
           <Ionicons name="arrow-back" size={24} color="#3D5A3E" />
         </TouchableOpacity>
         <View className="flex-1">
-          <Text className="text-2xl font-bold text-dark" style={{ fontFamily: 'System', fontWeight: '700', letterSpacing: 0.3 }}>DIY Recipes</Text>
+          <Text className="text-2xl font-bold text-dark">DIY Recipes</Text>
           <Text className="text-sm text-dark/50 mt-0.5">
             Make your own clean products
           </Text>
@@ -382,6 +382,11 @@ function RecipeCard({
       style={{
         borderWidth: 1,
         borderColor: "rgba(0,0,0,0.12)",
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+        elevation: 3,
       }}
     >
       {/* Hero Image Area */}

@@ -178,7 +178,7 @@ export default function PaywallScreen() {
           <View className="bg-forest/10 rounded-full w-16 h-16 items-center justify-center mb-4">
             <Ionicons name="leaf" size={32} color="#3D5A3E" />
           </View>
-          <Text className="text-2xl font-bold text-dark text-center" style={{ fontFamily: 'Georgia' }}>
+          <Text className="text-2xl font-bold text-dark text-center">
             Unlock Your Full{"\n"}Clean Living Journey
           </Text>
           <Text className="text-base text-dark/60 text-center mt-2">
@@ -316,7 +316,7 @@ export default function PaywallScreen() {
             borderWidth: 1,
         borderColor: "rgba(0,0,0,0.12)",
           }}>
-            <Text className="text-base font-bold text-dark mb-3" style={{ fontFamily: 'Georgia' }}>
+            <Text className="text-base font-bold text-dark mb-3">
               What you get with Crunchy
             </Text>
             <ValueRow icon="scan" text="Scan any product instantly" />

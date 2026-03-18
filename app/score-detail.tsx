@@ -55,7 +55,7 @@ export default function ScoreDetailScreen() {
           <TouchableOpacity onPress={goBack} className="mr-3">
             <Ionicons name="arrow-back" size={24} color="#3D5A3E" />
           </TouchableOpacity>
-          <Text className="text-xl font-bold text-dark" style={{ fontFamily: 'System', fontWeight: '700', letterSpacing: 0.3 }}>Your Crunchy Score</Text>
+          <Text className="text-xl font-bold text-dark">Your Crunchy Score</Text>
         </View>
 
         {/* Score Card with Nature Background */}
@@ -99,7 +99,7 @@ export default function ScoreDetailScreen() {
 
         {/* Score Breakdown */}
         <View className="px-5 mt-6">
-          <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: 'System', fontWeight: '700', letterSpacing: 0.3 }}>How Your Score Works</Text>
+          <Text className="text-lg font-bold text-dark mb-3">How Your Score Works</Text>
           <View className="bg-white rounded-3xl px-4 py-1" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}>
             <BreakdownRow
               icon="barcode-outline"
@@ -124,7 +124,7 @@ export default function ScoreDetailScreen() {
 
         {/* Tiers */}
         <View className="px-5 mt-6">
-          <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: 'System', fontWeight: '700', letterSpacing: 0.3 }}>Tiers</Text>
+          <Text className="text-lg font-bold text-dark mb-3">Tiers</Text>
           <View className="bg-white rounded-3xl px-4 py-2" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}>
             {TIER_DETAILS.map((t, i) => {
               const isCurrentTier = t.label === tierInfo.label;
@@ -156,7 +156,7 @@ export default function ScoreDetailScreen() {
 
         {/* Tips */}
         <View className="px-5 mt-6">
-          <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: 'System', fontWeight: '700', letterSpacing: 0.3 }}>Level Up Your Score</Text>
+          <Text className="text-lg font-bold text-dark mb-3">Level Up Your Score</Text>
           <View className="bg-white rounded-3xl p-4" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}>
             <View className="flex-row items-start mb-3">
               <Ionicons name="scan-outline" size={18} color="#3D5A3E" />

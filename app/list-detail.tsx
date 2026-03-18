@@ -26,6 +26,11 @@ const LISTS_STORAGE_KEY = "@crunchy_user_lists";
 const cardShadow = {
   borderWidth: 1,
         borderColor: "rgba(0,0,0,0.12)",
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.06,
+  shadowRadius: 8,
+  elevation: 3,
 };
 
 export default function ListDetailScreen() {
@@ -149,7 +154,7 @@ export default function ListDetailScreen() {
           <Text className="text-xl font-bold text-dark ml-4">Not Found</Text>
         </View>
         <View className="items-center py-16">
-          <Text className="text-5xl mb-4">📋</Text>
+          <Ionicons name="list-outline" size={48} color="#A8B89C" style={{ marginBottom: 16 }} />
           <Text className="text-lg font-bold text-dark">List not found</Text>
         </View>
       </SafeAreaView>
@@ -177,7 +182,7 @@ export default function ListDetailScreen() {
         <TouchableOpacity onPress={goBack} hitSlop={8}>
           <Ionicons name="arrow-back" size={24} color="#3D5A3E" />
         </TouchableOpacity>
-        <Text className="text-xl font-bold text-dark ml-4 flex-1" numberOfLines={1} style={{ fontFamily: 'Georgia' }}>
+        <Text className="text-xl font-bold text-dark ml-4 flex-1" numberOfLines={1}>
           {list.title}
         </Text>
         <TouchableOpacity onPress={handleSaveList} hitSlop={8} className="ml-2">
@@ -273,13 +278,13 @@ export default function ListDetailScreen() {
 
         {/* Products */}
         <View className="px-5">
-          <Text className="text-base font-bold text-dark mb-3" style={{ fontFamily: 'Georgia' }}>
+          <Text className="text-base font-bold text-dark mb-3">
             Products ({list.products.length})
           </Text>
 
           {list.products.length === 0 && (
             <View className="items-center py-8">
-              <Text className="text-4xl mb-3">📦</Text>
+              <Ionicons name="cube-outline" size={40} color="#A8B89C" style={{ marginBottom: 12 }} />
               <Text className="text-sm text-dark/50 text-center">
                 No products in this list yet
               </Text>
@@ -327,7 +332,7 @@ function ProductCard({
       <View className="bg-white rounded-3xl p-4 mb-3" style={cardShadow}>
         <View className="flex-row items-center">
           <View className="w-12 h-12 rounded-3xl bg-forest/8 items-center justify-center mr-3">
-            <Text className="text-2xl">{product.image}</Text>
+            {product.image ? <Text className="text-2xl">{product.image}</Text> : <Ionicons name="cube-outline" size={24} color="#A8B89C" />}
           </View>
           <View className="flex-1">
             <Text className="text-sm font-semibold text-dark">

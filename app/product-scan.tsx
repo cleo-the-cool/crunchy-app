@@ -276,7 +276,7 @@ export default function ProductScanScreen() {
           >
             <Ionicons name="arrow-back" size={20} color="#2D2D2D" />
           </TouchableOpacity>
-          <Text className="text-xl font-bold text-dark" style={{ fontFamily: 'Georgia' }}>Scan Result</Text>
+          <Text className="text-xl font-bold text-dark">Scan Result</Text>
           <View className="w-10" />
         </View>
 
@@ -365,7 +365,7 @@ export default function ProductScanScreen() {
 
           {/* Ingredients */}
           <View className="mx-5 mt-4">
-            <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: 'Georgia' }}>Ingredients</Text>
+            <Text className="text-lg font-bold text-dark mb-3">Ingredients</Text>
             {[...analysis.ingredients].sort((a, b) => {
               const order: Record<string, number> = { toxic: 0, concern: 1, safe: 2 };
               return (order[a.risk] ?? 1) - (order[b.risk] ?? 1);
@@ -429,7 +429,7 @@ export default function ProductScanScreen() {
           {/* Concerns */}
           {analysis.concerns.length > 0 && (
             <View className="mx-5 mt-4">
-              <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: 'Georgia' }}>Concerns</Text>
+              <Text className="text-lg font-bold text-dark mb-3">Concerns</Text>
               <View className="bg-white rounded-3xl p-4" style={{
                 shadowColor: "#3D5A3E", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
               }}>
@@ -446,7 +446,7 @@ export default function ProductScanScreen() {
           {/* Clean Alternatives */}
           {analysis.cleanAlternatives.length > 0 && (
             <View className="mx-5 mt-4">
-              <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: 'Georgia' }}>Clean Alternatives</Text>
+              <Text className="text-lg font-bold text-dark mb-3">Clean Alternatives</Text>
               <View className="bg-white rounded-3xl p-4" style={{
                 shadowColor: "#3D5A3E", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
               }}>
@@ -711,9 +711,9 @@ export default function ProductScanScreen() {
 
 function getCategoryEmoji(category: string): string {
   const map: Record<string, string> = {
-    Food: "🍎", Drinks: "🥤", Skincare: "🧴", Makeup: "💄",
-    Cleaning: "🧹", "Personal Care": "🪥", Clothing: "👕",
-    Home: "🏠", Baby: "👶", Cookware: "🍳", Drinkware: "🥤",
+    Food: "", Drinks: "", Skincare: "", Makeup: "",
+    Cleaning: "", "Personal Care": "", Clothing: "",
+    Home: "", Baby: "", Cookware: "", Drinkware: "",
   };
-  return map[category] || "📦";
+  return map[category] || "";
 }

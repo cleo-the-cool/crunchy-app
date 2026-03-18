@@ -104,7 +104,7 @@ function InterestChip({
           selected ? "bg-forest" : "bg-cream"
         }`}
       >
-        <Text className="text-2xl mr-3">{option.icon}</Text>
+        {option.icon ? <Text className="text-2xl mr-3">{option.icon}</Text> : null}
         <View className="flex-1">
           <Text
             className={`text-base font-semibold ${
@@ -163,7 +163,6 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
         >
           <Text
             className="text-3xl font-bold text-dark text-center mb-3"
-            style={{ fontFamily: 'Georgia' }}
           >
             Welcome to Crunchy
           </Text>
@@ -178,7 +177,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
         entering={FadeIn.delay(800).duration(400)}
         className="w-full"
       >
-        <Button title="Let's Go 🌿" onPress={onNext} />
+        <Button title="Let's Go" onPress={onNext} />
       </Animated.View>
     </View>
   );
@@ -197,7 +196,6 @@ function InterestSelectionStep({
       <Animated.View entering={FadeIn.duration(400)}>
         <Text
           className="text-2xl font-bold text-dark"
-          style={{ fontFamily: 'Georgia' }}
         >
           What matters most to you?
         </Text>
@@ -259,7 +257,6 @@ function PlanStep({
         <Animated.View entering={FadeIn.duration(400)}>
           <Text
             className="text-2xl font-bold text-dark mb-2"
-            style={{ fontFamily: 'Georgia' }}
           >
             Your Clean Living Plan
           </Text>
@@ -283,7 +280,7 @@ function PlanStep({
         borderColor: "rgba(0,0,0,0.12)",
               }}
             >
-              <Text className="text-xl mr-3 mt-0.5">{option.icon}</Text>
+              {option.icon ? <Text className="text-xl mr-3 mt-0.5">{option.icon}</Text> : null}
               <View className="flex-1">
                 <Text className="text-sm font-semibold text-dark">
                   {option.label}
@@ -321,7 +318,7 @@ function PlanStep({
           </View>
           <Text className="text-sm text-dark/50 leading-5">
             Let's find out! Take the quiz in your profile to see where you land
-            on the crunchy spectrum. 🌱
+            on the crunchy spectrum.
           </Text>
         </Animated.View>
       </ScrollView>
@@ -386,8 +383,7 @@ export default function InterestsScreen() {
           <Animated.View entering={FadeIn.duration(400)}>
             <Text
               className="text-2xl font-bold text-dark"
-              style={{ fontFamily: 'Georgia' }}
-            >
+              >
               Edit Your Interests
             </Text>
             <Text className="text-base text-dark/50 mt-2 mb-1">
@@ -478,7 +474,7 @@ export default function InterestsScreen() {
                 title={
                   selected.length < 2
                     ? `Select ${2 - selected.length} more`
-                    : "Start Exploring 🚀"
+                    : "Start Exploring"
                 }
                 onPress={handleFinish}
                 disabled={selected.length < 2}

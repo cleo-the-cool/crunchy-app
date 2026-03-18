@@ -84,7 +84,7 @@ export default function SignUpScreen() {
             <View className="w-16 h-16 rounded-2xl bg-forest items-center justify-center mb-4">
               <Ionicons name="leaf" size={32} color="white" />
             </View>
-            <Text className="text-2xl font-bold text-dark mb-1" style={{ fontFamily: 'Georgia' }}>Create Account</Text>
+            <Text className="text-2xl font-bold text-dark mb-1">Create Account</Text>
             <Text className="text-base text-dark-light">Join the clean living community</Text>
           </View>
 

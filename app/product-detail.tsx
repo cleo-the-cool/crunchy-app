@@ -90,7 +90,7 @@ export default function ProductDetailScreen() {
           >
             <Ionicons name="arrow-back" size={20} color="#3D5A3E" />
           </TouchableOpacity>
-          <Text className="text-xl font-bold text-dark" style={{ fontFamily: 'Georgia' }}>Product Details</Text>
+          <Text className="text-xl font-bold text-dark">Product Details</Text>
         </View>
         <TouchableOpacity
           onPress={handleShare}
@@ -190,7 +190,7 @@ export default function ProductDetailScreen() {
 
         {/* Ingredients List */}
         <View className="mx-5 mt-4">
-          <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: 'Georgia' }}>Ingredients</Text>
+          <Text className="text-lg font-bold text-dark mb-3">Ingredients</Text>
           {product.ingredients.map((ingredient) => {
             const risk = RISK_CONFIG[ingredient.risk];
             const isExpanded = expandedIngredient === ingredient.name;
@@ -253,7 +253,7 @@ export default function ProductDetailScreen() {
         {/* Alternatives Section */}
         {product.alternatives.length > 0 && (
           <View className="mx-5 mt-4">
-            <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: 'Georgia' }}>
+            <Text className="text-lg font-bold text-dark mb-3">
               Clean Alternatives
             </Text>
             <View className="bg-white rounded-3xl p-4" style={{

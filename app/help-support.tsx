@@ -65,7 +65,7 @@ export default function HelpSupportScreen() {
         <TouchableOpacity onPress={goBack} hitSlop={8}>
           <Ionicons name="arrow-back" size={24} color="#3D5A3E" />
         </TouchableOpacity>
-        <Text className="text-xl font-bold text-dark ml-4" style={{ fontFamily: 'Georgia' }}>Help & Support</Text>
+        <Text className="text-xl font-bold text-dark ml-4">Help & Support</Text>
       </View>
 
       <ScrollView
@@ -95,7 +95,7 @@ export default function HelpSupportScreen() {
         </View>
 
         {/* FAQ Section */}
-        <Text className="text-sm font-semibold text-dark/40 uppercase tracking-wider px-5 mb-2" style={{ fontFamily: 'Georgia' }}>
+        <Text className="text-sm font-semibold text-dark/40 uppercase tracking-wider px-5 mb-2">
           Frequently Asked Questions
         </Text>
         <View className="mx-5 bg-white rounded-3xl overflow-hidden" style={cardShadow}>
@@ -153,5 +153,10 @@ function FAQItem({
 
 const cardShadow = {
   borderWidth: 1,
-        borderColor: "rgba(0,0,0,0.12)",
+  borderColor: "rgba(0,0,0,0.12)",
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.06,
+  shadowRadius: 8,
+  elevation: 3,
 };

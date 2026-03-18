@@ -44,10 +44,10 @@ export interface ScoreInput {
 }
 
 const TIERS: { max: number; info: TierInfo }[] = [
-  { max: 25, info: { tier: "seedling", label: "Seedling", emoji: "🌱", badge: "avoid" } },
-  { max: 50, info: { tier: "sprout", label: "Sprout", emoji: "🌿", badge: "caution" } },
-  { max: 75, info: { tier: "sapling", label: "Sapling", emoji: "🌳", badge: "caution" } },
-  { max: 100, info: { tier: "bloom", label: "In Bloom", emoji: "🌸", badge: "clean" } },
+  { max: 25, info: { tier: "seedling", label: "Seedling", emoji: "", badge: "avoid" } },
+  { max: 50, info: { tier: "sprout", label: "Sprout", emoji: "", badge: "caution" } },
+  { max: 75, info: { tier: "sapling", label: "Sapling", emoji: "", badge: "caution" } },
+  { max: 100, info: { tier: "bloom", label: "In Bloom", emoji: "", badge: "clean" } },
 ];
 
 export function getTierInfo(score: number): TierInfo {

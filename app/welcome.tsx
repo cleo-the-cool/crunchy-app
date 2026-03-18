@@ -29,7 +29,6 @@ export default function WelcomeScreen() {
             <Animated.Text
               entering={FadeInDown.delay(200).duration(500)}
               className="text-5xl font-bold text-white mb-3"
-              style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}
             >
               Crunchy
             </Animated.Text>

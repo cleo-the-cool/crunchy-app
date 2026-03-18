@@ -66,7 +66,7 @@ export default function PrivacyPolicyScreen() {
         <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
           <Ionicons name="arrow-back" size={24} color="#2D2D2D" />
         </TouchableOpacity>
-        <Text className="text-xl font-bold text-dark ml-3" style={{ fontFamily: "Georgia" }}>
+        <Text className="text-xl font-bold text-dark ml-3">
           Privacy Policy
         </Text>
       </View>
@@ -80,7 +80,7 @@ export default function PrivacyPolicyScreen() {
 
         {sections.map((section, i) => (
           <View key={i} className="mb-6">
-            <Text className="text-base font-bold text-dark mb-2" style={{ fontFamily: "Georgia" }}>
+            <Text className="text-base font-bold text-dark mb-2">
               {section.title}
             </Text>
             {section.bullets.map((bullet, j) => (

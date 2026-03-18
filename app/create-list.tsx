@@ -30,7 +30,12 @@ const LISTS_STORAGE_KEY = "@crunchy_user_lists";
 
 const cardShadow = {
   borderWidth: 1,
-        borderColor: "rgba(0,0,0,0.12)",
+  borderColor: "rgba(0,0,0,0.12)",
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.06,
+  shadowRadius: 8,
+  elevation: 3,
 };
 
 const CATEGORIES = Object.entries(LIST_CATEGORY_CONFIG) as [
@@ -134,7 +139,7 @@ export default function CreateListScreen() {
         <TouchableOpacity onPress={goBack} hitSlop={8}>
           <Ionicons name="arrow-back" size={24} color="#3D5A3E" />
         </TouchableOpacity>
-        <Text className="text-xl font-bold text-dark ml-4" style={{ fontFamily: 'Georgia' }}>
+        <Text className="text-xl font-bold text-dark ml-4">
           Create List
         </Text>
       </View>

@@ -136,7 +136,7 @@ export default function HomeScreen() {
                 <Text className="text-white/70 text-sm font-medium uppercase tracking-wider">
                   {greeting}
                 </Text>
-                <Text className="text-4xl font-bold text-white mt-1" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
+                <Text className="text-4xl font-bold text-white mt-1">
                   {firstName}
                 </Text>
                 <Text className="text-white/60 text-sm mt-1">Welcome to your clean living journey</Text>
@@ -209,7 +209,7 @@ export default function HomeScreen() {
                     <Text className="text-white text-xs font-semibold uppercase tracking-wider opacity-80">
                       Get Started
                     </Text>
-                    <Text className="text-white text-xl font-bold mt-1" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
+                    <Text className="text-white text-xl font-bold mt-1">
                       Take the Crunchy Quiz
                     </Text>
                     <Text className="text-white/80 text-sm mt-1.5">
@@ -236,7 +236,7 @@ export default function HomeScreen() {
         {recentScans.length > 0 && (
           <View className="mt-6">
             <View className="flex-row items-center justify-between px-6 mb-3">
-              <Text className="text-lg font-bold text-dark" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
+              <Text className="text-lg font-bold text-dark">
                 Recent Scans
               </Text>
               <TouchableOpacity onPress={() => router.push("/(tabs)/scan")} hitSlop={8}>
@@ -308,7 +308,7 @@ export default function HomeScreen() {
 
         {/* Daily Tip with botanical background */}
         <View className="px-6 mt-6">
-          <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
+          <Text className="text-lg font-bold text-dark mb-3">
             Daily Tip
           </Text>
           <ImageBackground
@@ -325,7 +325,7 @@ export default function HomeScreen() {
 
         {/* Browse Categories */}
         <View className="mt-6 px-6">
-          <Text className="text-lg font-bold text-dark mb-3" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
+          <Text className="text-lg font-bold text-dark mb-3">
             Browse Categories
           </Text>
           <View className="flex-row flex-wrap" style={{ gap: 10 }}>
@@ -371,7 +371,7 @@ export default function HomeScreen() {
         {completedCount < 3 && (
           <View className="px-6 mt-6">
             <View className="flex-row items-center justify-between mb-3">
-              <Text className="text-lg font-bold text-dark" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
+              <Text className="text-lg font-bold text-dark">
                 Getting Started
               </Text>
               <Text className="text-xs text-dark/40">{completedCount}/3 complete</Text>
@@ -405,7 +405,7 @@ export default function HomeScreen() {
               imageStyle={{ borderRadius: 16 }}
             >
               <View className="rounded-2xl items-center py-6 px-4" style={{ backgroundColor: "rgba(61,90,62,0.7)" }}>
-                <Text className="text-base font-bold text-white text-center" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
+                <Text className="text-base font-bold text-white text-center">
                   Start your clean living journey!
                 </Text>
                 <Text className="text-sm text-white/70 text-center mt-2 px-4">

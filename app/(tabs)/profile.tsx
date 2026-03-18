@@ -126,14 +126,14 @@ export default function ProfileScreen() {
       >
         {/* Profile Header with Botanical Background */}
         <ImageBackground
-          source={require("@/assets/images/aesthetic/fern-pattern.jpg")}
+          source={require("@/assets/images/aesthetic/forest-canopy.jpg")}
           resizeMode="cover"
         >
           <View style={{ backgroundColor: "rgba(61,90,62,0.65)" }}>
             <SafeAreaView edges={["top"]}>
               {/* Header with Settings */}
               <View className="flex-row items-center justify-between px-6 pt-2 pb-1">
-                <Text className="text-2xl font-bold text-white" style={{ fontFamily: 'System', fontWeight: '700', letterSpacing: 0.3 }}>Profile</Text>
+                <Text className="text-2xl font-bold text-white">Profile</Text>
                 <TouchableOpacity
                   onPress={() => router.push("/settings")}
                   hitSlop={8}
@@ -156,7 +156,7 @@ export default function ProfileScreen() {
                 </View>
 
                 {/* Display Name */}
-                <Text className="text-2xl font-bold text-white" style={{ fontFamily: 'System', fontWeight: '700', letterSpacing: 0.3 }}>{displayName}</Text>
+                <Text className="text-2xl font-bold text-white">{displayName}</Text>
 
                 {/* Tier Badge */}
                 <View
@@ -228,7 +228,7 @@ export default function ProfileScreen() {
 
         {/* Screenshotable Score Card */}
         <View className="mt-6">
-          <Text className="text-lg font-bold text-dark px-6 mb-3" style={{ fontFamily: 'System', fontWeight: '700', letterSpacing: 0.3 }}>Your Crunchy Card</Text>
+          <Text className="text-lg font-bold text-dark px-6 mb-3">Your Crunchy Card</Text>
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={() => router.push("/score-detail")}
@@ -240,7 +240,7 @@ export default function ProfileScreen() {
         {/* My Recent Scans - Horizontal Scroll */}
         <View className="mt-6">
           <View className="flex-row items-center justify-between px-6 mb-3">
-            <Text className="text-lg font-bold text-dark" style={{ fontFamily: 'System', fontWeight: '700', letterSpacing: 0.3 }}>Recent Scans</Text>
+            <Text className="text-lg font-bold text-dark">Recent Scans</Text>
             <TouchableOpacity
               onPress={() => router.push("/(tabs)/scan")}
               hitSlop={8}
@@ -328,7 +328,7 @@ export default function ProfileScreen() {
         {/* Saved Products with Category Tabs */}
         <View className="mt-6">
           <View className="flex-row items-center justify-between px-6 mb-3">
-            <Text className="text-lg font-bold text-dark" style={{ fontFamily: 'System', fontWeight: '700', letterSpacing: 0.3 }}>Saved Products</Text>
+            <Text className="text-lg font-bold text-dark">Saved Products</Text>
             {savedProducts.length > 0 && (
               <TouchableOpacity onPress={() => router.push("/(tabs)/explore")} hitSlop={8}>
                 <Text className="text-sm font-medium text-forest">Browse More</Text>
@@ -480,7 +480,7 @@ export default function ProfileScreen() {
         {/* My Lists Section */}
         <View className="mt-6">
           <View className="flex-row items-center justify-between px-6 mb-3">
-            <Text className="text-lg font-bold text-dark" style={{ fontFamily: 'System', fontWeight: '700', letterSpacing: 0.3 }}>My Lists</Text>
+            <Text className="text-lg font-bold text-dark">My Lists</Text>
             <TouchableOpacity
               onPress={() => router.push("/lists")}
               hitSlop={8}
@@ -569,7 +569,7 @@ function SavedProductDetailModal({
           {/* Header */}
           <View className="flex-row items-center justify-between px-5 pb-3">
             <View className="flex-1">
-              <Text className="text-lg font-bold text-dark" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>
+              <Text className="text-lg font-bold text-dark">
                 {product.name}
               </Text>
               {product.brand && <Text className="text-sm text-dark/50">{product.brand}</Text>}
@@ -604,7 +604,7 @@ function SavedProductDetailModal({
             {/* Ingredients */}
             {scan?.ingredients && scan.ingredients.length > 0 && (
               <View className="mb-4">
-                <Text className="text-base font-bold text-dark mb-2" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>Ingredients</Text>
+                <Text className="text-base font-bold text-dark mb-2">Ingredients</Text>
                 <View className="bg-white rounded-2xl overflow-hidden" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)" }}>
                   {scan.ingredients.map((ing, i) => {
                     const risk = RISK_CONFIG[ing.risk] || RISK_CONFIG.concern;
@@ -629,7 +629,7 @@ function SavedProductDetailModal({
             {/* Concerns */}
             {scan?.concerns && scan.concerns.length > 0 && (
               <View className="mb-4">
-                <Text className="text-base font-bold text-dark mb-2" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>Concerns</Text>
+                <Text className="text-base font-bold text-dark mb-2">Concerns</Text>
                 <View className="bg-white rounded-2xl p-3" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)" }}>
                   {scan.concerns.map((c, i) => (
                     <View key={i} className="flex-row items-start mb-1.5">
@@ -644,7 +644,7 @@ function SavedProductDetailModal({
             {/* Clean Alternatives */}
             {scan?.cleanAlternatives && scan.cleanAlternatives.length > 0 && (
               <View className="mb-4">
-                <Text className="text-base font-bold text-dark mb-2" style={{ fontFamily: "System", fontWeight: "700", letterSpacing: 0.3 }}>Clean Alternatives</Text>
+                <Text className="text-base font-bold text-dark mb-2">Clean Alternatives</Text>
                 <View className="bg-white rounded-2xl p-3" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)" }}>
                   {scan.cleanAlternatives.map((alt, i) => (
                     <View key={i} className="flex-row items-center mb-1.5">

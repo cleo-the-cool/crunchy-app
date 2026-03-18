@@ -114,7 +114,7 @@ export default function EditProfileScreen() {
             <TouchableOpacity onPress={goBack} hitSlop={8}>
               <Ionicons name="arrow-back" size={24} color="#3D5A3E" />
             </TouchableOpacity>
-            <Text className="text-lg font-bold text-dark" style={{ fontFamily: 'Georgia' }}>Edit Profile</Text>
+            <Text className="text-lg font-bold text-dark">Edit Profile</Text>
             <TouchableOpacity onPress={handleSave} disabled={isSaving} hitSlop={8}>
               <Text className={`text-base font-semibold ${isSaving ? "text-dark/30" : "text-forest"}`}>
                 {isSaving ? "Saving..." : "Save"}

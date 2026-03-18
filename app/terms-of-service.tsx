@@ -13,7 +13,7 @@ export default function TermsOfServiceScreen() {
         <TouchableOpacity onPress={goBack} hitSlop={8}>
           <Ionicons name="arrow-back" size={24} color="#3D5A3E" />
         </TouchableOpacity>
-        <Text className="text-xl font-bold text-dark ml-4" style={{ fontFamily: 'Georgia' }}>Terms of Service</Text>
+        <Text className="text-xl font-bold text-dark ml-4">Terms of Service</Text>
       </View>
 
       <ScrollView
@@ -114,7 +114,7 @@ export default function TermsOfServiceScreen() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <View className="mb-5">
-      <Text className="text-base font-bold text-dark mb-2" style={{ fontFamily: 'Georgia' }}>{title}</Text>
+      <Text className="text-base font-bold text-dark mb-2">{title}</Text>
       <Text className="text-sm text-dark/70 leading-5">{children}</Text>
     </View>
   );

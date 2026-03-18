@@ -53,10 +53,10 @@ const questions: QuizQuestion[] = [
     question: "What does grocery shopping look like for you?",
     category: "Food & Nutrition",
     options: [
-      { text: "Grab what's fast and cheap, no stress", emoji: "🏃", score: 1 },
-      { text: "I buy some organic stuff if it's not too pricey", emoji: "🛒", score: 2 },
-      { text: "Mostly organic, I check the Dirty Dozen list", emoji: "🥬", score: 3 },
-      { text: "Farmers market, local co-op, or I grow my own", emoji: "🌻", score: 4 },
+      { text: "Grab what's fast and cheap, no stress", emoji: "", score: 1 },
+      { text: "I buy some organic stuff if it's not too pricey", emoji: "", score: 2 },
+      { text: "Mostly organic, I check the Dirty Dozen list", emoji: "", score: 3 },
+      { text: "Farmers market, local co-op, or I grow my own", emoji: "", score: 4 },
     ],
   },
   {
@@ -64,10 +64,10 @@ const questions: QuizQuestion[] = [
     question: "What's your supplement situation?",
     category: "Food & Nutrition",
     options: [
-      { text: "I don't take any", emoji: "😅", score: 1 },
-      { text: "A multivitamin when I remember", emoji: "💊", score: 2 },
-      { text: "A few targeted ones — D3, magnesium, etc.", emoji: "🧬", score: 3 },
-      { text: "Full stack, whole-food sourced, third-party tested", emoji: "🍄", score: 4 },
+      { text: "I don't take any", emoji: "", score: 1 },
+      { text: "A multivitamin when I remember", emoji: "", score: 2 },
+      { text: "A few targeted ones — D3, magnesium, etc.", emoji: "", score: 3 },
+      { text: "Full stack, whole-food sourced, third-party tested", emoji: "", score: 4 },
     ],
   },
   // — Personal Care & Beauty (3) —
@@ -76,10 +76,10 @@ const questions: QuizQuestion[] = [
     question: "What's your deodorant situation?",
     category: "Personal Care",
     options: [
-      { text: "Whatever smells good at the store", emoji: "🧴", score: 1 },
-      { text: "Aluminum-free from a regular brand", emoji: "🌀", score: 2 },
-      { text: "Clean brand like Native or Primally Pure", emoji: "🌿", score: 3 },
-      { text: "Clean brand with simple ingredients I trust", emoji: "✨", score: 4 },
+      { text: "Whatever smells good at the store", emoji: "", score: 1 },
+      { text: "Aluminum-free from a regular brand", emoji: "", score: 2 },
+      { text: "Clean brand like Native or Primally Pure", emoji: "", score: 3 },
+      { text: "Clean brand with simple ingredients I trust", emoji: "", score: 4 },
     ],
   },
   {
@@ -87,10 +87,10 @@ const questions: QuizQuestion[] = [
     question: "What's your sunscreen philosophy?",
     category: "Personal Care",
     options: [
-      { text: "Whatever's on sale, SPF is SPF", emoji: "☀️", score: 1 },
-      { text: "I try to get a decent one without weird stuff", emoji: "🧴", score: 2 },
-      { text: "Mineral only — zinc oxide, no chemical filters", emoji: "🛡️", score: 3 },
-      { text: "Mineral-only and I layer up with hats and shade", emoji: "🤔", score: 4 },
+      { text: "Whatever's on sale, SPF is SPF", emoji: "", score: 1 },
+      { text: "I try to get a decent one without weird stuff", emoji: "", score: 2 },
+      { text: "Mineral only — zinc oxide, no chemical filters", emoji: "", score: 3 },
+      { text: "Mineral-only and I layer up with hats and shade", emoji: "", score: 4 },
     ],
   },
   {
@@ -98,10 +98,10 @@ const questions: QuizQuestion[] = [
     question: "What does your haircare look like?",
     category: "Personal Care",
     options: [
-      { text: "Shampoo and conditioner, nothing fancy", emoji: "🚿", score: 1 },
-      { text: "Sulfate-free or salon brands", emoji: "💇", score: 2 },
-      { text: "Clean beauty brands, minimal ingredients", emoji: "🌸", score: 3 },
-      { text: "All-natural brands, I read every ingredient label", emoji: "🍎", score: 4 },
+      { text: "Shampoo and conditioner, nothing fancy", emoji: "", score: 1 },
+      { text: "Sulfate-free or salon brands", emoji: "", score: 2 },
+      { text: "Clean beauty brands, minimal ingredients", emoji: "", score: 3 },
+      { text: "All-natural brands, I read every ingredient label", emoji: "", score: 4 },
     ],
   },
   // — Home & Cleaning (2) —
@@ -110,10 +110,10 @@ const questions: QuizQuestion[] = [
     question: "What's your go-to for cleaning the house?",
     category: "Home & Cleaning",
     options: [
-      { text: "Bleach, Lysol — if it kills germs I'm happy", emoji: "🧪", score: 1 },
-      { text: "Standard stuff, maybe some Method or Mrs. Meyer's", emoji: "🏪", score: 2 },
-      { text: "Branch Basics, Force of Nature, or similar", emoji: "🌎", score: 3 },
-      { text: "Vinegar, baking soda, castile soap — DIY everything", emoji: "🫧", score: 4 },
+      { text: "Bleach, Lysol — if it kills germs I'm happy", emoji: "", score: 1 },
+      { text: "Standard stuff, maybe some Method or Mrs. Meyer's", emoji: "", score: 2 },
+      { text: "Branch Basics, Force of Nature, or similar", emoji: "", score: 3 },
+      { text: "Vinegar, baking soda, castile soap — DIY everything", emoji: "", score: 4 },
     ],
   },
   {
@@ -121,10 +121,10 @@ const questions: QuizQuestion[] = [
     question: "What's making your home smell good?",
     category: "Home & Cleaning",
     options: [
-      { text: "Febreze, Glade plug-ins, whatever works", emoji: "🌬️", score: 1 },
-      { text: "Bath & Body Works candles are my weakness", emoji: "🕯️", score: 2 },
-      { text: "Beeswax or coconut wax candles with essential oils", emoji: "🐝", score: 3 },
-      { text: "Just open a window, diffuse essential oils, or nothing", emoji: "🪟", score: 4 },
+      { text: "Febreze, Glade plug-ins, whatever works", emoji: "", score: 1 },
+      { text: "Bath & Body Works candles are my weakness", emoji: "", score: 2 },
+      { text: "Beeswax or coconut wax candles with essential oils", emoji: "", score: 3 },
+      { text: "Just open a window, diffuse essential oils, or nothing", emoji: "", score: 4 },
     ],
   },
   // — Health & Wellness (3) —
@@ -133,10 +133,10 @@ const questions: QuizQuestion[] = [
     question: "You have a headache. What's the move?",
     category: "Health & Wellness",
     options: [
-      { text: "Advil. Immediately. Don't think about it", emoji: "💊", score: 1 },
-      { text: "Try to tough it out, take meds if it gets bad", emoji: "🤕", score: 2 },
-      { text: "Water, magnesium, rest, maybe a cold compress", emoji: "💧", score: 3 },
-      { text: "Peppermint oil on the temples and pressure points", emoji: "🌱", score: 4 },
+      { text: "Advil. Immediately. Don't think about it", emoji: "", score: 1 },
+      { text: "Try to tough it out, take meds if it gets bad", emoji: "", score: 2 },
+      { text: "Water, magnesium, rest, maybe a cold compress", emoji: "", score: 3 },
+      { text: "Peppermint oil on the temples and pressure points", emoji: "", score: 4 },
     ],
   },
   {
@@ -144,10 +144,10 @@ const questions: QuizQuestion[] = [
     question: "How do you take care of your mental health?",
     category: "Health & Wellness",
     options: [
-      { text: "I don't really have a routine for it", emoji: "🫠", score: 1 },
-      { text: "Therapy or talking to friends when I need to", emoji: "💬", score: 2 },
-      { text: "Journaling, meditation, or breathwork regularly", emoji: "🧘", score: 3 },
-      { text: "Daily practice: journaling, walks in nature, screen limits", emoji: "🧊", score: 4 },
+      { text: "I don't really have a routine for it", emoji: "", score: 1 },
+      { text: "Therapy or talking to friends when I need to", emoji: "", score: 2 },
+      { text: "Journaling, meditation, or breathwork regularly", emoji: "", score: 3 },
+      { text: "Daily practice: journaling, walks in nature, screen limits", emoji: "", score: 4 },
     ],
   },
   {
@@ -155,10 +155,10 @@ const questions: QuizQuestion[] = [
     question: "What kind of movement do you do?",
     category: "Health & Wellness",
     options: [
-      { text: "Does walking to the fridge count?", emoji: "😂", score: 1 },
-      { text: "Gym when I feel like it, nothing consistent", emoji: "🏋️", score: 2 },
-      { text: "Regular routine — yoga, running, or lifting", emoji: "🏃‍♀️", score: 3 },
-      { text: "Consistent routine — I love how movement makes me feel", emoji: "🦶", score: 4 },
+      { text: "Does walking to the fridge count?", emoji: "", score: 1 },
+      { text: "Gym when I feel like it, nothing consistent", emoji: "", score: 2 },
+      { text: "Regular routine — yoga, running, or lifting", emoji: "", score: 3 },
+      { text: "Consistent routine — I love how movement makes me feel", emoji: "", score: 4 },
     ],
   },
   // — Lifestyle & Values (2) —
@@ -167,10 +167,10 @@ const questions: QuizQuestion[] = [
     question: "What's your relationship with fast fashion?",
     category: "Lifestyle & Values",
     options: [
-      { text: "Shein hauls are my love language", emoji: "🛍️", score: 1 },
-      { text: "I buy what I need, mix of everything", emoji: "👕", score: 2 },
-      { text: "Trying to buy less, invest in quality", emoji: "♻️", score: 3 },
-      { text: "Thrift, sustainable brands, or handmade only", emoji: "🧵", score: 4 },
+      { text: "Shein hauls are my love language", emoji: "", score: 1 },
+      { text: "I buy what I need, mix of everything", emoji: "", score: 2 },
+      { text: "Trying to buy less, invest in quality", emoji: "", score: 3 },
+      { text: "Thrift, sustainable brands, or handmade only", emoji: "", score: 4 },
     ],
   },
   {
@@ -178,10 +178,10 @@ const questions: QuizQuestion[] = [
     question: "What kind of water do you drink?",
     category: "Lifestyle & Values",
     options: [
-      { text: "Straight from the tap, it's fine", emoji: "🚰", score: 1 },
-      { text: "Brita or fridge filter", emoji: "🫗", score: 2 },
-      { text: "Berkey, reverse osmosis, or similar", emoji: "💎", score: 3 },
-      { text: "High-quality filter and I add minerals back", emoji: "🏔️", score: 4 },
+      { text: "Straight from the tap, it's fine", emoji: "", score: 1 },
+      { text: "Brita or fridge filter", emoji: "", score: 2 },
+      { text: "Berkey, reverse osmosis, or similar", emoji: "", score: 3 },
+      { text: "High-quality filter and I add minerals back", emoji: "", score: 4 },
     ],
   },
   // — Baby & Family (2) —
@@ -190,10 +190,10 @@ const questions: QuizQuestion[] = [
     question: "What products are around your kids or pets?",
     category: "Baby & Family",
     options: [
-      { text: "Haven't thought about it much honestly", emoji: "🤷", score: 1 },
-      { text: "Mostly regular stuff, some baby-safe options", emoji: "🍼", score: 2 },
-      { text: "I research everything that touches them", emoji: "🔍", score: 3 },
-      { text: "Non-toxic everything — even their mattress and toys", emoji: "🧸", score: 4 },
+      { text: "Haven't thought about it much honestly", emoji: "", score: 1 },
+      { text: "Mostly regular stuff, some baby-safe options", emoji: "", score: 2 },
+      { text: "I research everything that touches them", emoji: "", score: 3 },
+      { text: "Non-toxic everything — even their mattress and toys", emoji: "", score: 4 },
     ],
   },
   {
@@ -201,10 +201,10 @@ const questions: QuizQuestion[] = [
     question: "How do you handle your pet's food and products?",
     category: "Baby & Family",
     options: [
-      { text: "Whatever's at the store, they seem happy", emoji: "🐕", score: 1 },
-      { text: "Decent brand, maybe grain-free", emoji: "🦴", score: 2 },
-      { text: "Raw diet or high-quality whole-food brand", emoji: "🥩", score: 3 },
-      { text: "Premium whole-food brand, I read pet labels too", emoji: "🌿", score: 4 },
+      { text: "Whatever's at the store, they seem happy", emoji: "", score: 1 },
+      { text: "Decent brand, maybe grain-free", emoji: "", score: 2 },
+      { text: "Raw diet or high-quality whole-food brand", emoji: "", score: 3 },
+      { text: "Premium whole-food brand, I read pet labels too", emoji: "", score: 4 },
     ],
   },
 ];
@@ -223,7 +223,7 @@ function QuestionCard({
       <Text className="text-sm font-medium text-forest mb-2 uppercase tracking-wider">
         {question.category}
       </Text>
-      <Text className="text-2xl font-bold text-dark mb-6" style={{ fontFamily: 'System', fontWeight: '700', letterSpacing: 0.3 }}>
+      <Text className="text-2xl font-bold text-dark mb-6">
         {question.question}
       </Text>
       <View className="gap-3">
@@ -240,7 +240,7 @@ function QuestionCard({
               }`}
               activeOpacity={0.7}
             >
-              <Text className="text-2xl mr-3">{option.emoji}</Text>
+              {option.emoji ? <Text className="text-2xl mr-3">{option.emoji}</Text> : null}
               <Text
                 className={`text-base flex-1 ${
                   isSelected

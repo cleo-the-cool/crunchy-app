@@ -137,7 +137,6 @@ export default function OnboardingPreferencesScreen() {
         <Animated.View entering={FadeIn.duration(400)}>
           <Text
             className="text-2xl font-bold text-dark"
-            style={{ fontFamily: "Georgia" }}
           >
             {isEditing ? "Edit Scan Preferences" : "What matters to you?"}
           </Text>

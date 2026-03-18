@@ -85,7 +85,7 @@ export default function SettingsScreen() {
         <TouchableOpacity onPress={goBack} hitSlop={8}>
           <Ionicons name="arrow-back" size={24} color="#3D5A3E" />
         </TouchableOpacity>
-        <Text className="text-xl font-bold text-dark ml-4" style={{ fontFamily: 'Georgia' }}>Settings</Text>
+        <Text className="text-xl font-bold text-dark ml-4">Settings</Text>
       </View>
 
       <ScrollView
@@ -240,6 +240,11 @@ export default function SettingsScreen() {
 const cardShadow = {
   borderWidth: 1,
   borderColor: "rgba(0,0,0,0.12)",
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.06,
+  shadowRadius: 8,
+  elevation: 3,
 };
 
 const dangerCardShadow = {
@@ -254,7 +259,7 @@ const dangerCardShadow = {
 
 function SectionHeader({ title }: { title: string }) {
   return (
-    <Text className="text-sm font-semibold text-dark/40 uppercase tracking-wider px-6 mt-6 mb-2" style={{ fontFamily: 'Georgia' }}>
+    <Text className="text-sm font-semibold text-dark/40 uppercase tracking-wider px-6 mt-6 mb-2">
       {title}
     </Text>
   );
@@ -264,7 +269,7 @@ function DangerZoneHeader() {
   return (
     <Text
       className="text-sm font-semibold uppercase tracking-wider px-6 mt-8 mb-2"
-      style={{ color: "#EF4444", fontFamily: 'Georgia' }}
+      style={{ color: "#EF4444" }}
     >
       Danger Zone
     </Text>

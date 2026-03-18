@@ -27,6 +27,11 @@ const LISTS_STORAGE_KEY = "@crunchy_user_lists";
 const cardShadow = {
   borderWidth: 1,
         borderColor: "rgba(0,0,0,0.12)",
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.06,
+  shadowRadius: 8,
+  elevation: 3,
 };
 
 const CATEGORY_FILTERS: { key: "all" | ListCategory; label: string }[] = [
@@ -130,7 +135,7 @@ export default function ListsScreen() {
         <TouchableOpacity onPress={goBack} hitSlop={8}>
           <Ionicons name="arrow-back" size={24} color="#3D5A3E" />
         </TouchableOpacity>
-        <Text className="text-xl font-bold text-dark ml-4" style={{ fontFamily: 'Georgia' }}>
+        <Text className="text-xl font-bold text-dark ml-4">
           Product Lists
         </Text>
         <View className="flex-1" />
@@ -235,7 +240,7 @@ export default function ListsScreen() {
       >
         {filteredLists.length === 0 ? (
           <View className="items-center py-16">
-            <Text className="text-5xl mb-4">📋</Text>
+            <Ionicons name="list-outline" size={48} color="#A8B89C" style={{ marginBottom: 16 }} />
             <Text className="text-lg font-bold text-dark text-center">
               {emptyMessage}
             </Text>
@@ -322,7 +327,7 @@ function ListCard({ list }: { list: ProductList }) {
                 key={p.id}
                 className="w-9 h-9 rounded-xl bg-forest/8 items-center justify-center"
               >
-                <Text className="text-base">{p.image}</Text>
+                {p.image ? <Text className="text-base">{p.image}</Text> : <Ionicons name="cube-outline" size={16} color="#A8B89C" />}
               </View>
             ))}
             {list.products.length > 5 && (
