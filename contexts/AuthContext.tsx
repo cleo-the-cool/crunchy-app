@@ -1,7 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as AppleAuthentication from "expo-apple-authentication";
-import { Platform } from "react-native";
+import { Platform, Alert } from "react-native";
+
+let AppleAuthentication: any = null;
+try {
+  AppleAuthentication = require("expo-apple-authentication");
+} catch {}
 
 type User = {
   id: string;
@@ -103,6 +107,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function appleSignIn() {
     if (Platform.OS !== "ios") {
       throw new Error("Apple Sign In is only available on iOS");
+    }
+
+    if (!AppleAuthentication) {
+      Alert.alert("Apple Sign In", "Apple Sign In is not available on this build");
+      return;
     }
 
     const isAvailable = await AppleAuthentication.isAvailableAsync();

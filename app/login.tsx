@@ -11,7 +11,6 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import * as AppleAuthentication from "expo-apple-authentication";
 import { SafeAreaWrapper, Button } from "@/components";
 import { useAuth } from "@/contexts/AuthContext";
 
