@@ -7,178 +7,136 @@ import {
   TextInput,
   RefreshControl,
   ImageBackground,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import * as Haptics from "../../utils/haptics";
 import { CATEGORY_IMAGES } from "@/lib/categoryImages";
-
-interface ProductSuggestion {
-  name: string;
-  brand: string;
-  emoji: string;
-  tip: string;
-}
+import { analyzeProductByName } from "@/services/gemini";
+import { getRecipesByCategory } from "@/data/recipes";
+import { getSavedProducts, type SavedProduct } from "@/lib/savedProducts";
 
 interface BrowseCategory {
   key: string;
   label: string;
-  emoji: string;
-  products: ProductSuggestion[];
 }
 
 const BROWSE_CATEGORIES: BrowseCategory[] = [
-  {
-    key: "skincare",
-    label: "Skincare",
-    emoji: "",
-    products: [
-      { name: "CeraVe Moisturizing Cream", brand: "CeraVe", emoji: "", tip: "Fragrance-free, dermatologist recommended" },
-      { name: "Thayers Witch Hazel Toner", brand: "Thayers", emoji: "", tip: "Alcohol-free, natural ingredients" },
-      { name: "Cocokind Daily SPF", brand: "Cocokind", emoji: "", tip: "Mineral sunscreen, clean ingredients" },
-      { name: "Versed Dew Point Gel Cream", brand: "Versed", emoji: "", tip: "Lightweight, non-toxic formula" },
-      { name: "Weleda Skin Food", brand: "Weleda", emoji: "", tip: "Plant-based, ultra-nourishing" },
-    ],
-  },
-  {
-    key: "food",
-    label: "Food & Pantry",
-    emoji: "",
-    products: [
-      { name: "Primal Kitchen Mayo", brand: "Primal Kitchen", emoji: "", tip: "Avocado oil based, no seed oils" },
-      { name: "Hu Chocolate Bars", brand: "Hu", emoji: "", tip: "No refined sugar, clean ingredients" },
-      { name: "Siete Tortilla Chips", brand: "Siete", emoji: "", tip: "Grain-free, avocado oil" },
-      { name: "Chosen Foods Avocado Oil", brand: "Chosen Foods", emoji: "", tip: "Pure avocado oil for cooking" },
-      { name: "Purely Elizabeth Granola", brand: "Purely Elizabeth", emoji: "", tip: "Ancient grains, low sugar" },
-    ],
-  },
-  {
-    key: "drinks",
-    label: "Drinks",
-    emoji: "",
-    products: [
-      { name: "Olipop Prebiotic Soda", brand: "Olipop", emoji: "", tip: "Gut-friendly, low sugar" },
-      { name: "Rishi Matcha", brand: "Rishi", emoji: "", tip: "Organic, ceremonial grade" },
-      { name: "Harmless Harvest Coconut Water", brand: "Harmless Harvest", emoji: "", tip: "Raw, organic, never heated" },
-      { name: "Poppi Prebiotic Soda", brand: "Poppi", emoji: "", tip: "Apple cider vinegar based" },
-      { name: "Four Sigmatic Mushroom Coffee", brand: "Four Sigmatic", emoji: "", tip: "Adaptogens + organic coffee" },
-    ],
-  },
-  {
-    key: "cleaning",
-    label: "Cleaning",
-    emoji: "",
-    products: [
-      { name: "Branch Basics Concentrate", brand: "Branch Basics", emoji: "", tip: "One cleaner for everything, non-toxic" },
-      { name: "Blueland Cleaning Tablets", brand: "Blueland", emoji: "", tip: "Eco-friendly, zero plastic waste" },
-      { name: "Dr. Bronner's Castile Soap", brand: "Dr. Bronner's", emoji: "", tip: "Multi-use, organic, fair trade" },
-      { name: "Force of Nature Cleaner", brand: "Force of Nature", emoji: "", tip: "Electrolyzed water, kills 99.9% germs" },
-      { name: "Seventh Generation Dish Soap", brand: "Seventh Generation", emoji: "", tip: "Plant-based, no synthetic fragrances" },
-    ],
-  },
-  {
-    key: "makeup",
-    label: "Makeup & Beauty",
-    emoji: "",
-    products: [
-      { name: "ILIA Super Serum Skin Tint", brand: "ILIA", emoji: "", tip: "Clean coverage with skincare benefits" },
-      { name: "Tower 28 ShineOn Lip Jelly", brand: "Tower 28", emoji: "", tip: "Non-toxic, great for sensitive skin" },
-      { name: "RMS Beauty Lip2Cheek", brand: "RMS", emoji: "", tip: "Organic, multi-use color" },
-      { name: "Kosas Cloud Set Powder", brand: "Kosas", emoji: "", tip: "Clean, lightweight, skin-friendly" },
-      { name: "Saie Dew Blush", brand: "Saie", emoji: "", tip: "Clean beauty, buildable color" },
-    ],
-  },
-  {
-    key: "wellness",
-    label: "Wellness & Supplements",
-    emoji: "",
-    products: [
-      { name: "Seed Daily Synbiotic", brand: "Seed", emoji: "", tip: "Science-backed probiotic" },
-      { name: "Moon Juice Magnesi-Om", brand: "Moon Juice", emoji: "", tip: "Magnesium for sleep + calm" },
-      { name: "Athletic Greens AG1", brand: "AG1", emoji: "", tip: "All-in-one daily supplement" },
-      { name: "Vital Proteins Collagen", brand: "Vital Proteins", emoji: "", tip: "Grass-fed, pasture-raised collagen" },
-      { name: "Liquid IV Hydration", brand: "Liquid IV", emoji: "", tip: "Electrolyte mix, non-GMO" },
-    ],
-  },
-  {
-    key: "baby",
-    label: "Baby & Kids",
-    emoji: "",
-    products: [
-      { name: "Pipette Baby Lotion", brand: "Pipette", emoji: "", tip: "Dermatologist tested, clean formula" },
-      { name: "Attitude Baby Diapers", brand: "Attitude", emoji: "", tip: "Hypoallergenic, plant-based" },
-      { name: "Babyganics Sunscreen", brand: "Babyganics", emoji: "", tip: "Mineral SPF, tear-free" },
-      { name: "Earth Mama Organic Balm", brand: "Earth Mama", emoji: "", tip: "Organic herbs, gentle on skin" },
-      { name: "Honest Company Wipes", brand: "Honest", emoji: "", tip: "Plant-based, hypoallergenic" },
-    ],
-  },
-  {
-    key: "home",
-    label: "Home",
-    emoji: "",
-    products: [
-      { name: "Coyuchi Organic Sheets", brand: "Coyuchi", emoji: "", tip: "100% organic cotton, GOTS certified" },
-      { name: "Vitruvi Essential Oil Diffuser", brand: "Vitruvi", emoji: "", tip: "Ceramic, no plastic parts" },
-      { name: "Beeswax Candles", brand: "Various", emoji: "", tip: "No paraffin, clean burning" },
-      { name: "Molly Suds Laundry Powder", brand: "Molly Suds", emoji: "", tip: "Plant-based, no synthetic fragrances" },
-      { name: "Public Goods Hand Soap", brand: "Public Goods", emoji: "", tip: "Essential oils, no sulfates" },
-    ],
-  },
-  {
-    key: "clothing",
-    label: "Clothing & Fashion",
-    emoji: "",
-    products: [
-      { name: "Pact Organic Basics", brand: "Pact", emoji: "", tip: "Fair trade, organic cotton" },
-      { name: "Girlfriend Collective Leggings", brand: "Girlfriend", emoji: "", tip: "Made from recycled materials" },
-      { name: "Allbirds Sneakers", brand: "Allbirds", emoji: "", tip: "Merino wool, sustainable materials" },
-      { name: "Quince Cashmere", brand: "Quince", emoji: "", tip: "Affordable, sustainably sourced" },
-      { name: "Everlane Basics", brand: "Everlane", emoji: "", tip: "Transparent pricing, ethical factories" },
-    ],
-  },
+  { key: "skincare", label: "Skincare" },
+  { key: "food", label: "Food & Pantry" },
+  { key: "drinks", label: "Drinks" },
+  { key: "cleaning", label: "Cleaning" },
+  { key: "makeup", label: "Makeup & Beauty" },
+  { key: "wellness", label: "Wellness & Supplements" },
+  { key: "baby", label: "Baby & Kids" },
 ];
 
-export default function ExploreScreen() {
+// Map browse category keys to recipe category names
+function getRecipeCategoryName(key: string): string | null {
+  const map: Record<string, string> = {
+    skincare: "Skincare",
+    cleaning: "Cleaning",
+    food: "Home",
+    drinks: "Home",
+    baby: "Personal Care",
+    makeup: "Skincare",
+    wellness: "Personal Care",
+  };
+  return map[key] || null;
+}
+
+function normalizeCategoryKey(cat?: string): string {
+  if (!cat) return "other";
+  const lower = cat.toLowerCase();
+  if (lower.includes("food") || lower.includes("cooking") || lower.includes("pantry")) return "food";
+  if (lower.includes("drink") || lower.includes("beverage")) return "drinks";
+  if (lower.includes("skin") || lower.includes("personal care")) return "skincare";
+  if (lower.includes("makeup") || lower.includes("cosmetic") || lower.includes("beauty")) return "makeup";
+  if (lower.includes("clean")) return "cleaning";
+  if (lower.includes("wellness") || lower.includes("supplement")) return "wellness";
+  if (lower.includes("baby") || lower.includes("kid")) return "baby";
+  return "other";
+}
+
+export default function SearchScreen() {
   const router = useRouter();
   const [searchInput, setSearchInput] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const [searching, setSearching] = useState(false);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
-
-  const filteredCategories = searchInput.trim()
-    ? BROWSE_CATEGORIES.filter((cat) => {
-        const q = searchInput.toLowerCase();
-        return (
-          cat.label.toLowerCase().includes(q) ||
-          cat.key.toLowerCase().includes(q) ||
-          cat.products.some(
-            (p) =>
-              p.name.toLowerCase().includes(q) ||
-              p.brand.toLowerCase().includes(q)
-          )
-        );
-      })
-    : BROWSE_CATEGORIES;
+  const [categoryRecipes, setCategoryRecipes] = useState<any[]>([]);
+  const [categorySavedProducts, setCategorySavedProducts] = useState<SavedProduct[]>([]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     setTimeout(() => setRefreshing(false), 800);
   }, []);
 
-  const handleProductPress = (_product: ProductSuggestion) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    // Navigate to scanner so user can scan this product
-    router.push("/(tabs)/scan");
+  const handleSearch = async () => {
+    const query = searchInput.trim();
+    if (!query) return;
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setSearching(true);
+
+    try {
+      const analysis = await analyzeProductByName(query);
+      router.push({
+        pathname: "/scan-result",
+        params: {
+          barcodeData: JSON.stringify(analysis),
+          source: "search",
+        },
+      });
+    } catch (error: any) {
+      if (error.message === "SCANNER_RATE_LIMITED") {
+        Alert.alert("Rate Limited", "Too many searches today. Please try again tomorrow.");
+      } else {
+        Alert.alert("Search Failed", "Could not analyze this product. Please try again.");
+      }
+    } finally {
+      setSearching(false);
+    }
   };
 
-  const handleCategoryPress = (key: string) => {
+  const handleCategoryPress = async (key: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setExpandedCategory(expandedCategory === key ? null : key);
+
+    if (expandedCategory === key) {
+      setExpandedCategory(null);
+      setCategoryRecipes([]);
+      setCategorySavedProducts([]);
+      return;
+    }
+
+    setExpandedCategory(key);
+
+    // Load recipes for category
+    const recipeCat = getRecipeCategoryName(key);
+    const recipes = recipeCat ? getRecipesByCategory(recipeCat as any) : [];
+    setCategoryRecipes(recipes.slice(0, 5));
+
+    // Load saved products for category
+    const saved = await getSavedProducts();
+    const filtered = saved.filter((p) => normalizeCategoryKey(p.category) === key);
+    setCategorySavedProducts(filtered);
+  };
+
+  const getRatingColor = (rating: string) => {
+    switch (rating) {
+      case "clean": return "#4CAF50";
+      case "caution": return "#FFC107";
+      case "avoid": return "#F44336";
+      default: return "#999";
+    }
   };
 
   return (
     <View className="flex-1 bg-ivory">
-      {/* Hero Header with Nature Image */}
+      {/* Hero Header */}
       <ImageBackground
         source={require("@/assets/images/aesthetic/forest-canopy.jpg")}
         resizeMode="cover"
@@ -186,9 +144,9 @@ export default function ExploreScreen() {
         <View style={{ backgroundColor: "rgba(61,90,62,0.55)" }}>
           <SafeAreaView edges={["top"]}>
             <View className="px-6 pt-6 pb-8">
-              <Text className="text-3xl font-bold text-white">Explore</Text>
+              <Text className="text-3xl font-bold text-white">Search</Text>
               <Text className="text-sm text-white/70 mt-0.5">
-                Browse clean products by category
+                Search any product to analyze it
               </Text>
 
               {/* Search Bar */}
@@ -200,17 +158,21 @@ export default function ExploreScreen() {
                   <Ionicons name="search" size={20} color="#A8B89C" />
                   <TextInput
                     className="flex-1 ml-3 text-base text-dark"
-                    placeholder="Search categories and products..."
+                    placeholder="Search any product..."
                     placeholderTextColor="#999"
                     value={searchInput}
                     onChangeText={setSearchInput}
                     returnKeyType="search"
+                    onSubmitEditing={handleSearch}
+                    editable={!searching}
                   />
-                  {searchInput.length > 0 && (
+                  {searching ? (
+                    <ActivityIndicator size="small" color="#3D5A3E" />
+                  ) : searchInput.length > 0 ? (
                     <TouchableOpacity onPress={() => setSearchInput("")}>
                       <Ionicons name="close-circle" size={20} color="#A8B89C" />
                     </TouchableOpacity>
-                  )}
+                  ) : null}
                 </View>
               </View>
             </View>
@@ -227,32 +189,19 @@ export default function ExploreScreen() {
         }
         keyboardShouldPersistTaps="handled"
       >
-        {/* Scan CTA */}
-        <View className="px-5 mt-4">
-          <TouchableOpacity
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              router.push("/(tabs)/scan");
-            }}
-            activeOpacity={0.85}
-            className="bg-forest rounded-3xl py-4 flex-row items-center justify-center"
-            style={{
-              shadowColor: "#3D5A3E",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.15,
-              shadowRadius: 10,
-              elevation: 4,
-            }}
-          >
-            <Ionicons name="scan-outline" size={20} color="white" />
-            <Text className="text-white font-semibold text-base ml-2">
-              Scan a Product to Analyze It
+        {/* Searching indicator */}
+        {searching && (
+          <View className="items-center px-5 mt-10">
+            <ActivityIndicator size="large" color="#3D5A3E" />
+            <Text className="text-base font-semibold text-dark mt-4">Analyzing product...</Text>
+            <Text className="text-sm text-dark/40 text-center mt-1">
+              This may take a few seconds
             </Text>
-          </TouchableOpacity>
-        </View>
+          </View>
+        )}
 
-        {/* Category Grid (when not filtering) */}
-        {!searchInput.trim() && (
+        {/* Category Grid */}
+        {!searching && (
           <View className="px-5 mt-5">
             <Text className="text-lg font-bold text-dark mb-3">
               Browse by Category
@@ -272,9 +221,14 @@ export default function ExploreScreen() {
                   >
                     <View
                       className="rounded-2xl px-4 py-5 justify-end"
-                      style={{ backgroundColor: "rgba(0,0,0,0.35)", height: 100 }}
+                      style={{
+                        backgroundColor: expandedCategory === cat.key ? "rgba(61,90,62,0.6)" : "rgba(0,0,0,0.35)",
+                        height: 100,
+                        borderWidth: expandedCategory === cat.key ? 2 : 0,
+                        borderColor: "#fff",
+                        borderRadius: 16,
+                      }}
                     >
-                      {cat.emoji ? <Text className="text-2xl mb-1">{cat.emoji}</Text> : null}
                       <Text className="text-white font-bold text-base">{cat.label}</Text>
                     </View>
                   </ImageBackground>
@@ -284,100 +238,92 @@ export default function ExploreScreen() {
           </View>
         )}
 
-        {/* Expanded Category or Search Results */}
-        {(searchInput.trim() ? filteredCategories : expandedCategory ? BROWSE_CATEGORIES.filter((c) => c.key === expandedCategory) : []).map((cat) => (
-          <View key={cat.key} className="px-5 mt-5">
+        {/* Expanded Category Content */}
+        {!searching && expandedCategory && (
+          <View className="px-5 mt-5">
             <View className="flex-row items-center justify-between mb-3">
-              <View className="flex-row items-center">
-                {cat.emoji ? <Text className="text-xl mr-2">{cat.emoji}</Text> : null}
-                <Text className="text-lg font-bold text-dark">
-                  {cat.label}
-                </Text>
+              <Text className="text-lg font-bold text-dark">
+                {BROWSE_CATEGORIES.find((c) => c.key === expandedCategory)?.label}
+              </Text>
+              <TouchableOpacity onPress={() => { setExpandedCategory(null); setCategoryRecipes([]); setCategorySavedProducts([]); }}>
+                <Text className="text-sm text-forest font-medium">Close</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Saved Products in this Category */}
+            {categorySavedProducts.length > 0 && (
+              <View className="mb-4">
+                <Text className="text-sm font-semibold text-dark/60 mb-2">Saved Products</Text>
+                <View style={{ gap: 8 }}>
+                  {categorySavedProducts.map((item) => {
+                    const score = item.scanData?.crunchyScore;
+                    const rating = score != null ? (score >= 70 ? "clean" : score >= 40 ? "caution" : "avoid") : item.rating;
+                    const ratingColor = getRatingColor(rating || "caution");
+                    return (
+                      <TouchableOpacity
+                        key={item.id}
+                        onPress={() => {
+                          if (item.scanData) {
+                            router.push({
+                              pathname: "/scan-result",
+                              params: { barcodeData: JSON.stringify(item.scanData), source: "saved" },
+                            });
+                          }
+                        }}
+                        activeOpacity={0.7}
+                        className="bg-white rounded-2xl p-3.5 flex-row items-center"
+                        style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.15)" }}
+                      >
+                        <View className="flex-1">
+                          <Text className="text-sm font-semibold text-dark" numberOfLines={1}>{item.name}</Text>
+                          {item.brand && <Text className="text-xs text-dark/50 mt-0.5">{item.brand}</Text>}
+                        </View>
+                        {score != null && (
+                          <View className="px-2 py-1 rounded-full mr-2" style={{ backgroundColor: ratingColor + "18" }}>
+                            <Text className="text-xs font-bold" style={{ color: ratingColor }}>{score}</Text>
+                          </View>
+                        )}
+                        <Ionicons name="chevron-forward" size={16} color="#A8B89C" />
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
               </View>
-              {!searchInput.trim() && (
-                <TouchableOpacity onPress={() => setExpandedCategory(null)}>
-                  <Text className="text-sm text-forest font-medium">Close</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-            <View style={{ gap: 10 }}>
-              {cat.products
-                .filter((p) => {
-                  if (!searchInput.trim()) return true;
-                  const q = searchInput.toLowerCase();
-                  return (
-                    p.name.toLowerCase().includes(q) ||
-                    p.brand.toLowerCase().includes(q)
-                  );
-                })
-                .map((product, idx) => (
-                  <TouchableOpacity
-                    key={idx}
-                    onPress={() => handleProductPress(product)}
-                    activeOpacity={0.7}
-                    className="bg-white rounded-3xl p-4 flex-row items-center"
-                    style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.15)", shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 3 }}
-                  >
-                    {product.emoji ? <Text className="text-2xl mr-3">{product.emoji}</Text> : null}
-                    <View className="flex-1">
-                      <Text className="text-sm font-semibold text-dark" numberOfLines={1}>
-                        {product.name}
-                      </Text>
-                      <Text className="text-xs text-dark/50 mt-0.5">{product.brand}</Text>
-                      <Text className="text-xs text-forest/70 mt-1">{product.tip}</Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={16} color="#A8B89C" />
-                  </TouchableOpacity>
-                ))}
-            </View>
-          </View>
-        ))}
+            )}
 
-        {/* Popular Products section when nothing selected/searched */}
-        {!searchInput.trim() && !expandedCategory && (
-          <View className="px-5 mt-6">
-            <Text className="text-lg font-bold text-dark mb-3">
-              Popular Clean Swaps
-            </Text>
-            <View style={{ gap: 10 }}>
-              {[
-                BROWSE_CATEGORIES[0].products[0], // Skincare
-                BROWSE_CATEGORIES[1].products[0], // Food
-                BROWSE_CATEGORIES[2].products[0], // Drinks
-                BROWSE_CATEGORIES[3].products[0], // Cleaning
-                BROWSE_CATEGORIES[4].products[0], // Makeup
-                BROWSE_CATEGORIES[5].products[0], // Wellness
-              ].map((product, idx) => (
-                <TouchableOpacity
-                  key={idx}
-                  onPress={() => handleProductPress(product)}
-                  activeOpacity={0.7}
-                  className="bg-white rounded-3xl p-4 flex-row items-center"
-                  style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.15)" }}
-                >
-                  <Text className="text-2xl mr-3">{product.emoji}</Text>
-                  <View className="flex-1">
-                    <Text className="text-sm font-semibold text-dark" numberOfLines={1}>
-                      {product.name}
-                    </Text>
-                    <Text className="text-xs text-dark/50 mt-0.5">{product.brand}</Text>
-                    <Text className="text-xs text-forest/70 mt-1">{product.tip}</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={16} color="#A8B89C" />
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        )}
+            {/* Recipes in this Category */}
+            {categoryRecipes.length > 0 && (
+              <View>
+                <Text className="text-sm font-semibold text-dark/60 mb-2">DIY Recipes</Text>
+                <View style={{ gap: 8 }}>
+                  {categoryRecipes.map((recipe) => (
+                    <TouchableOpacity
+                      key={recipe.id}
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        router.push({ pathname: "/recipe-detail", params: { id: recipe.id } });
+                      }}
+                      activeOpacity={0.7}
+                      className="bg-white rounded-2xl p-3.5 flex-row items-center"
+                      style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.15)" }}
+                    >
+                      <View className="flex-1">
+                        <Text className="text-sm font-semibold text-dark" numberOfLines={1}>{recipe.title}</Text>
+                        <Text className="text-xs text-dark/50 mt-0.5">{recipe.difficulty} · {recipe.time}</Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={16} color="#A8B89C" />
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            )}
 
-        {/* No results */}
-        {searchInput.trim() && filteredCategories.length === 0 && (
-          <View className="items-center px-5 mt-10">
-            <Ionicons name="search-outline" size={40} color="#A8B89C" />
-            <Text className="text-base font-semibold text-dark mt-3">No results found</Text>
-            <Text className="text-sm text-dark/40 text-center mt-1">
-              Try a different search term, or use the scanner to analyze a specific product
-            </Text>
+            {categorySavedProducts.length === 0 && categoryRecipes.length === 0 && (
+              <View className="items-center py-6">
+                <Ionicons name="leaf-outline" size={32} color="#A8B89C" />
+                <Text className="text-sm text-dark/40 mt-2">No saved products or recipes in this category yet</Text>
+              </View>
+            )}
           </View>
         )}
       </ScrollView>

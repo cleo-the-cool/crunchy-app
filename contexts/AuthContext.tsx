@@ -17,6 +17,7 @@ type AuthContextType = {
   appleSignIn: () => Promise<void>;
   signOut: () => Promise<void>;
   deleteAccount: () => Promise<void>;
+  updateName: (name: string) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -160,6 +161,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }
 
+  async function updateName(name: string) {
+    if (!user) return;
+    const updated = { ...user, name: name.trim() };
+    await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updated));
+    setUser(updated);
+  }
+
   async function deleteAccount() {
     // Clear all user-related data from AsyncStorage
     const keysToRemove = [
@@ -178,7 +186,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, signUp, signIn, appleSignIn, signOut, deleteAccount }}>
+    <AuthContext.Provider value={{ user, isLoading, signUp, signIn, appleSignIn, signOut, deleteAccount, updateName }}>
       {children}
     </AuthContext.Provider>
   );

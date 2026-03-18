@@ -1,5 +1,7 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { StyleSheet } from "react-native";
+import { BlurView } from "expo-blur";
 
 export default function TabLayout() {
   return (
@@ -8,12 +10,19 @@ export default function TabLayout() {
         headerShown: false,
         tabBarActiveTintColor: "#3D5A3E",
         tabBarInactiveTintColor: "#A8B89C",
+        tabBarBackground: () => (
+          <BlurView
+            tint="light"
+            intensity={80}
+            style={{ ...StyleSheet.absoluteFillObject, borderRadius: 28, overflow: "hidden" }}
+          />
+        ),
         tabBarStyle: {
           position: 'absolute',
           bottom: 24,
           left: 40,
           right: 40,
-          backgroundColor: '#FFFDF8',
+          backgroundColor: 'rgba(255, 253, 248, 0.7)',
           borderRadius: 28,
           height: 70,
           paddingTop: 12,
@@ -55,9 +64,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="explore"
         options={{
-          title: "Explore",
+          title: "Search",
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? "compass" : "compass-outline"} size={size} color={color} />
+            <Ionicons name={focused ? "search" : "search-outline"} size={size} color={color} />
           ),
         }}
       />

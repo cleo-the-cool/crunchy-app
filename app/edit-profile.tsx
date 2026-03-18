@@ -20,17 +20,14 @@ import { useInterests } from "@/contexts/InterestsContext";
 import { INTEREST_OPTIONS, type InterestCategory } from "@/contexts/InterestsContext";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import * as Haptics from "../utils/haptics";
-import { AVATAR_PRESETS } from "@/lib/avatars";
 
 const PROFILE_STORAGE_KEY = "@crunchy_onboarding_profile";
 
 export default function EditProfileScreen() {
   const goBack = useGoBack();
-  const { user } = useAuth();
+  const { user, updateName } = useAuth();
   const { interests, setInterests } = useInterests();
   const [displayName, setDisplayName] = useState("");
-  const [bio, setBio] = useState("");
-  const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
   const [selectedInterests, setSelectedInterests] = useState<InterestCategory[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -46,9 +43,7 @@ export default function EditProfileScreen() {
     const stored = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
     if (stored) {
       const profile = JSON.parse(stored);
-      setDisplayName(profile.displayName ?? "");
-      setBio(profile.bio ?? "");
-      setSelectedAvatar(profile.avatar ?? null);
+      setDisplayName(profile.displayName ?? user?.name ?? "");
     } else {
       setDisplayName(user?.name ?? "");
     }
@@ -72,14 +67,15 @@ export default function EditProfileScreen() {
 
     const profile = {
       displayName: displayName.trim(),
-      bio: bio.trim(),
-      avatar: selectedAvatar,
     };
 
-    // Always save to AsyncStorage (local fallback)
+    // Save to AsyncStorage
     await AsyncStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
 
-    // Save interests via context (persists to AsyncStorage)
+    // Update auth context name
+    await updateName(displayName.trim());
+
+    // Save interests via context
     await setInterests(selectedInterests);
 
     // Attempt Supabase persistence if configured
@@ -88,13 +84,11 @@ export default function EditProfileScreen() {
         await supabase.from("profiles").upsert({
           id: user.id,
           display_name: profile.displayName,
-          bio: profile.bio,
-          avatar_url: profile.avatar,
           interests: selectedInterests,
           updated_at: new Date().toISOString(),
         });
       } catch {
-        // Supabase save failed silently - AsyncStorage has the data
+        // Supabase save failed silently
       }
     }
 
@@ -128,10 +122,10 @@ export default function EditProfileScreen() {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            {/* Avatar Selection */}
+            {/* Initial Circle Preview */}
             <View className="items-center px-6 pt-4 pb-6">
               <View
-                className="w-24 h-24 rounded-full bg-forest/10 items-center justify-center mb-4"
+                className="w-24 h-24 rounded-full bg-forest items-center justify-center mb-3"
                 style={{
                   shadowColor: "#3D5A3E",
                   shadowOffset: { width: 0, height: 4 },
@@ -140,55 +134,11 @@ export default function EditProfileScreen() {
                   elevation: 4,
                 }}
               >
-                <Text className="text-5xl">
-                  {selectedAvatar
-                    ? AVATAR_PRESETS.find((a) => a.id === selectedAvatar)?.emoji ?? "\u{1F33F}"
-                    : "\u{1F33F}"}
+                <Text className="text-4xl font-bold text-white">
+                  {displayName.charAt(0).toUpperCase() || "?"}
                 </Text>
               </View>
-              <Text className="text-sm font-medium text-dark mb-3">
-                Pick Your Avatar
-              </Text>
-              <View className="flex-row flex-wrap justify-center gap-3">
-                {AVATAR_PRESETS.map((avatar) => {
-                  const isSelected = selectedAvatar === avatar.id;
-                  return (
-                    <TouchableOpacity
-                      key={avatar.id}
-                      onPress={() => {
-                        setSelectedAvatar(avatar.id);
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      }}
-                      activeOpacity={0.7}
-                      className={`w-14 h-14 rounded-3xl items-center justify-center ${
-                        isSelected
-                          ? "bg-forest/10 border-2 border-forest"
-                          : "bg-cream border-2 border-cream-dark"
-                      }`}
-                      style={
-                        isSelected
-                          ? {
-                              shadowColor: "#3D5A3E",
-                              shadowOffset: { width: 0, height: 2 },
-                              shadowOpacity: 0.2,
-                              shadowRadius: 6,
-                              elevation: 3,
-                            }
-                          : undefined
-                      }
-                    >
-                      <Text className="text-2xl">{avatar.emoji}</Text>
-                      {isSelected && (
-                        <View className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-forest items-center justify-center">
-                          <Text className="text-white text-[8px] font-bold">
-                            {"\u2713"}
-                          </Text>
-                        </View>
-                      )}
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
+              <Text className="text-xs text-dark/40">Your initial is shown as your avatar</Text>
             </View>
 
             {/* Display Name */}
@@ -205,27 +155,6 @@ export default function EditProfileScreen() {
                 className="bg-white rounded-3xl px-4 py-3.5 text-base text-dark"
                 style={inputShadow}
               />
-            </View>
-
-            {/* Bio */}
-            <View className="px-6 mb-5">
-              <Text className="text-sm font-medium text-dark mb-1.5">
-                Bio
-              </Text>
-              <TextInput
-                value={bio}
-                onChangeText={(t) => setBio(t.slice(0, 150))}
-                placeholder="Tell us a bit about yourself..."
-                placeholderTextColor="#A8B89C"
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-                className="bg-white rounded-3xl px-4 py-3.5 text-base text-dark"
-                style={{ minHeight: 100, ...inputShadow }}
-              />
-              <Text className="text-xs text-dark/40 mt-1 text-right">
-                {bio.length}/150
-              </Text>
             </View>
 
             {/* Interests */}
@@ -274,7 +203,7 @@ export default function EditProfileScreen() {
 
 const inputShadow = {
   borderWidth: 1,
-        borderColor: "rgba(0,0,0,0.12)",
+  borderColor: "rgba(0,0,0,0.12)",
 };
 
 const selectedChipShadow = {

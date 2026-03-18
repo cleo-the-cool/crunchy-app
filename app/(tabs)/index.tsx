@@ -330,15 +330,13 @@ export default function HomeScreen() {
           </Text>
           <View className="flex-row flex-wrap" style={{ gap: 10 }}>
             {[
-              { key: "food", label: "Food", emoji: "" },
-              { key: "drinks", label: "Drinks", emoji: "" },
-              { key: "skincare", label: "Skincare", emoji: "" },
-              { key: "makeup", label: "Makeup", emoji: "" },
-              { key: "cleaning", label: "Cleaning", emoji: "" },
-              { key: "clothing", label: "Clothing", emoji: "" },
-              { key: "home", label: "Home", emoji: "" },
-              { key: "baby", label: "Baby", emoji: "" },
-              { key: "wellness", label: "Wellness", emoji: "" },
+              { key: "skincare", label: "Skincare" },
+              { key: "food", label: "Food & Pantry" },
+              { key: "drinks", label: "Drinks" },
+              { key: "cleaning", label: "Cleaning" },
+              { key: "makeup", label: "Makeup & Beauty" },
+              { key: "wellness", label: "Wellness & Supplements" },
+              { key: "baby", label: "Baby & Kids" },
             ].map((cat) => (
               <TouchableOpacity
                 key={cat.key}
@@ -358,7 +356,6 @@ export default function HomeScreen() {
                     className="rounded-2xl px-4 py-5 justify-end"
                     style={{ backgroundColor: "rgba(0,0,0,0.35)", height: 120 }}
                   >
-                    {cat.emoji ? <Text className="text-2xl mb-1">{cat.emoji}</Text> : null}
                     <Text className="text-white font-bold text-base">{cat.label}</Text>
                   </View>
                 </ImageBackground>

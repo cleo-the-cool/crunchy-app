@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   Switch,
   Alert,
+  TextInput,
+  Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -18,12 +20,14 @@ import * as Haptics from "../utils/haptics";
 const NOTIF_STORAGE_KEY = "@crunchy_notification_prefs";
 
 export default function SettingsScreen() {
-  const { user, signOut, deleteAccount } = useAuth();
+  const { user, signOut, deleteAccount, updateName } = useAuth();
   const router = useRouter();
   const goBack = useGoBack();
   const [communityNotifications, setCommunityNotifications] = useState(true);
   const [scanReminders, setScanReminders] = useState(false);
   const [tipsAndUpdates, setTipsAndUpdates] = useState(true);
+  const [showNameModal, setShowNameModal] = useState(false);
+  const [newName, setNewName] = useState("");
 
   useEffect(() => {
     loadNotifPrefs();
@@ -45,6 +49,26 @@ export default function SettingsScreen() {
     prefs[key] = value;
     await AsyncStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify(prefs));
   }
+
+  const handleChangeName = () => {
+    setNewName(user?.name ?? "");
+    setShowNameModal(true);
+  };
+
+  const handleSaveName = async () => {
+    if (!newName.trim()) {
+      Alert.alert("Missing Name", "Please enter a name.");
+      return;
+    }
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    await updateName(newName.trim());
+    // Also update local profile storage
+    const stored = await AsyncStorage.getItem("@crunchy_onboarding_profile");
+    const profile = stored ? JSON.parse(stored) : {};
+    profile.displayName = newName.trim();
+    await AsyncStorage.setItem("@crunchy_onboarding_profile", JSON.stringify(profile));
+    setShowNameModal(false);
+  };
 
   const handleDeleteAccount = () => {
     Alert.alert(
@@ -96,11 +120,14 @@ export default function SettingsScreen() {
         {/* ── Account ── */}
         <SectionHeader title="Account" />
         <View className="mx-6 bg-white rounded-3xl overflow-hidden" style={cardShadow}>
-          <SettingsRow
-            icon="person-outline"
-            label="Name"
-            value={user?.name ?? "Not set"}
-          />
+          <TouchableOpacity onPress={handleChangeName}>
+            <SettingsRow
+              icon="person-outline"
+              label="Name"
+              value={user?.name ?? "Not set"}
+              chevron
+            />
+          </TouchableOpacity>
           <Divider />
           <SettingsRow
             icon="mail-outline"
@@ -233,6 +260,40 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Change Name Modal */}
+      <Modal visible={showNameModal} transparent animationType="fade" onRequestClose={() => setShowNameModal(false)}>
+        <View className="flex-1 bg-black/40 items-center justify-center px-8">
+          <View className="bg-white rounded-3xl w-full p-6" style={cardShadow}>
+            <Text className="text-lg font-bold text-dark mb-4">Change Name</Text>
+            <TextInput
+              value={newName}
+              onChangeText={setNewName}
+              placeholder="Enter your name"
+              placeholderTextColor="#A8B89C"
+              autoCapitalize="words"
+              autoFocus
+              className="bg-ivory rounded-2xl px-4 py-3 text-base text-dark mb-4"
+              style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)" }}
+            />
+            <View className="flex-row" style={{ gap: 10 }}>
+              <TouchableOpacity
+                onPress={() => setShowNameModal(false)}
+                className="flex-1 py-3 rounded-2xl items-center"
+                style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)" }}
+              >
+                <Text className="text-base font-medium text-dark/60">Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleSaveName}
+                className="flex-1 bg-forest py-3 rounded-2xl items-center"
+              >
+                <Text className="text-base font-semibold text-white">Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

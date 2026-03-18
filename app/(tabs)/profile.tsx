@@ -12,44 +12,22 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import * as Haptics from "../../utils/haptics";
 import { useAuth } from "@/contexts/AuthContext";
 import { ScoreCard } from "@/components";
 import { getDefaultStats, getTierInfo, type CrunchyStats } from "@/lib/crunchyScore";
-import { AVATAR_EMOJI_MAP, DEFAULT_AVATAR_EMOJI } from "@/lib/avatars";
-const PROFILE_STORAGE_KEY = "@crunchy_onboarding_profile";
 
 import { getSavedProducts, unsaveProduct, getRatingFromScore, type SavedProduct } from "@/lib/savedProducts";
 import { getRecentScans, type ScanHistoryItem } from "@/lib/scanHistory";
 import type { GeminiAnalysis } from "@/services/gemini";
 import { CATEGORY_IMAGES } from "@/lib/categoryImages";
 
-const SAVED_CATEGORIES = [
-  { key: "All", emoji: "" },
-  { key: "Food", emoji: "" },
-  { key: "Drinks", emoji: "" },
-  { key: "Skincare", emoji: "" },
-  { key: "Makeup", emoji: "" },
-  { key: "Cleaning", emoji: "" },
-  { key: "Clothing", emoji: "" },
-  { key: "Home", emoji: "" },
-  { key: "Other", emoji: "" },
-] as const;
-
 const RISK_CONFIG = {
   safe: { color: "#4CAF50", icon: "checkmark-circle" as const, label: "Safe" },
   concern: { color: "#FFC107", icon: "alert-circle" as const, label: "Concern" },
   toxic: { color: "#F44336", icon: "warning" as const, label: "Toxic" },
 };
-
-function getCategoryEmoji(category?: string): string {
-  if (!category) return "";
-  const key = normalizeCategoryKey(category);
-  const found = SAVED_CATEGORIES.find((c) => c.key === key);
-  return found?.emoji || "";
-}
 
 function normalizeCategoryKey(cat?: string): string {
   if (!cat) return "Other";
@@ -59,45 +37,25 @@ function normalizeCategoryKey(cat?: string): string {
   if (lower.includes("skin") || lower.includes("personal care")) return "Skincare";
   if (lower.includes("makeup") || lower.includes("cosmetic")) return "Makeup";
   if (lower.includes("clean")) return "Cleaning";
-  if (lower.includes("cloth") || lower.includes("fashion") || lower.includes("textile")) return "Clothing";
-  if (lower.includes("home") || lower.includes("furniture") || lower.includes("cookware") || lower.includes("drinkware")) return "Home";
+  if (lower.includes("wellness") || lower.includes("supplement")) return "Wellness";
+  if (lower.includes("baby") || lower.includes("kid")) return "Baby";
   return "Other";
 }
-
-// Sample lists for demo
-const SAMPLE_LISTS: { id: string; name: string; itemCount: number; emoji: string }[] = [];
 
 export default function ProfileScreen() {
   const { user } = useAuth();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
-  const [profileName, setProfileName] = useState<string | null>(null);
-  const [profileBio, setProfileBio] = useState<string>("");
-  const [avatarEmoji, setAvatarEmoji] = useState<string>(DEFAULT_AVATAR_EMOJI);
   const [savedProducts, setSavedProducts] = useState<SavedProduct[]>([]);
   const [recentScans, setRecentScans] = useState<ScanHistoryItem[]>([]);
-  const [savedCategory, setSavedCategory] = useState("All");
   const [detailProduct, setDetailProduct] = useState<SavedProduct | null>(null);
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
 
   const stats: CrunchyStats = getDefaultStats();
   const tier = getTierInfo(stats.crunchyScore);
 
   useFocusEffect(
     useCallback(() => {
-      async function loadProfile() {
-        const stored = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
-        if (stored) {
-          const profile = JSON.parse(stored);
-          if (profile.displayName) setProfileName(profile.displayName);
-          if (profile.bio) setProfileBio(profile.bio);
-          if (profile.avatar && AVATAR_EMOJI_MAP[profile.avatar]) {
-            setAvatarEmoji(AVATAR_EMOJI_MAP[profile.avatar]);
-          } else {
-            setAvatarEmoji(DEFAULT_AVATAR_EMOJI);
-          }
-        }
-      }
-      loadProfile();
       getSavedProducts().then(setSavedProducts);
       getRecentScans(5).then(setRecentScans);
     }, [])
@@ -105,10 +63,35 @@ export default function ProfileScreen() {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 1500);
+    Promise.all([
+      getSavedProducts().then(setSavedProducts),
+      getRecentScans(5).then(setRecentScans),
+    ]).then(() => setRefreshing(false));
   }, []);
 
-  const displayName = profileName ?? user?.name ?? "Crunchy User";
+  const displayName = user?.name ?? "Crunchy User";
+  const firstInitial = displayName.charAt(0).toUpperCase();
+
+  // Group saved products by category
+  const savedByCategory = savedProducts.reduce<Record<string, SavedProduct[]>>((acc, p) => {
+    const key = normalizeCategoryKey(p.category);
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(p);
+    return acc;
+  }, {});
+
+  const categoryOrder = ["Skincare", "Food", "Drinks", "Cleaning", "Makeup", "Wellness", "Baby", "Other"];
+  const sortedCategories = categoryOrder.filter((c) => savedByCategory[c]?.length > 0);
+
+  const toggleCategory = (cat: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setCollapsedCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(cat)) next.delete(cat);
+      else next.add(cat);
+      return next;
+    });
+  };
 
   return (
     <View className="flex-1 bg-ivory">
@@ -142,7 +125,7 @@ export default function ProfileScreen() {
                 </TouchableOpacity>
               </View>
 
-              {/* Profile Header - Large Avatar */}
+              {/* Profile Header - Initial Circle */}
               <View className="items-center px-6 pt-4 pb-8">
                 <View
                   className="w-28 h-28 rounded-full items-center justify-center mb-4"
@@ -152,7 +135,7 @@ export default function ProfileScreen() {
                     borderColor: "rgba(255,255,255,0.3)",
                   }}
                 >
-                  <Text className="text-6xl">{avatarEmoji}</Text>
+                  <Text className="text-5xl font-bold text-white">{firstInitial}</Text>
                 </View>
 
                 {/* Display Name */}
@@ -171,13 +154,6 @@ export default function ProfileScreen() {
                     Score: {stats.crunchyScore}
                   </Text>
                 </View>
-
-                {/* Bio */}
-                {profileBio ? (
-                  <Text className="text-sm text-white/70 text-center mt-3 px-8 leading-5">
-                    {profileBio}
-                  </Text>
-                ) : null}
 
                 {/* Edit Profile Button */}
                 <TouchableOpacity
@@ -221,8 +197,8 @@ export default function ProfileScreen() {
             <Text className="text-xs text-dark/50 mt-0.5">Recipes Tried</Text>
           </View>
           <View className="flex-1 items-center">
-            <Text className="text-xl font-bold text-dark">0</Text>
-            <Text className="text-xs text-dark/50 mt-0.5">Lists Created</Text>
+            <Text className="text-xl font-bold text-dark">{savedProducts.length}</Text>
+            <Text className="text-xs text-dark/50 mt-0.5">Saved</Text>
           </View>
         </View>
 
@@ -289,7 +265,7 @@ export default function ProfileScreen() {
                       borderColor: "rgba(0,0,0,0.15)",
                     }}
                   >
-                    {getCategoryEmoji(item.category) ? <Text className="text-3xl mb-2">{getCategoryEmoji(item.category)}</Text> : <Ionicons name="cube-outline" size={28} color="#A8B89C" style={{ marginBottom: 8 }} />}
+                    <Ionicons name="cube-outline" size={28} color="#A8B89C" style={{ marginBottom: 8 }} />
                     <Text className="text-xs font-medium text-dark text-center" numberOfLines={2}>
                       {item.productName}
                     </Text>
@@ -308,7 +284,7 @@ export default function ProfileScreen() {
           ) : (
             <View className="mx-6 bg-white rounded-3xl p-6 items-center" style={{
               borderWidth: 1,
-        borderColor: "rgba(0,0,0,0.15)",
+              borderColor: "rgba(0,0,0,0.15)",
             }}>
               <Ionicons name="camera-outline" size={32} color="#A8B89C" style={{ marginBottom: 8 }} />
               <Text className="text-sm font-medium text-dark">No scans yet</Text>
@@ -325,132 +301,80 @@ export default function ProfileScreen() {
           )}
         </View>
 
-        {/* Saved Products with Category Tabs */}
+        {/* Saved Products - Collapsible by Category */}
         <View className="mt-6">
           <View className="flex-row items-center justify-between px-6 mb-3">
             <Text className="text-lg font-bold text-dark">Saved Products</Text>
             {savedProducts.length > 0 && (
-              <TouchableOpacity onPress={() => router.push("/(tabs)/explore")} hitSlop={8}>
-                <Text className="text-sm font-medium text-forest">Browse More</Text>
-              </TouchableOpacity>
+              <Text className="text-xs text-dark/40">{savedProducts.length} total</Text>
             )}
           </View>
 
-          {savedProducts.length > 0 ? (
-            <>
-              {/* Category image tiles */}
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ paddingHorizontal: 24, gap: 10, marginBottom: 12 }}
-              >
-                {SAVED_CATEGORIES.map((cat) => {
-                  const isActive = savedCategory === cat.key;
-                  const count = cat.key === "All"
-                    ? savedProducts.length
-                    : savedProducts.filter((p) => normalizeCategoryKey(p.category) === cat.key).length;
-                  if (cat.key !== "All" && count === 0) return null;
-                  const catImage = cat.key !== "All" && cat.key !== "Other"
-                    ? CATEGORY_IMAGES[cat.key.toLowerCase()]
-                    : null;
-
-                  if (catImage) {
-                    return (
-                      <TouchableOpacity
-                        key={cat.key}
-                        onPress={() => {
-                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                          setSavedCategory(cat.key);
-                        }}
-                        activeOpacity={0.8}
-                      >
-                        <ImageBackground
-                          source={catImage}
-                          resizeMode="cover"
-                          imageStyle={{ borderRadius: 14 }}
-                        >
-                          <View
-                            className="rounded-xl px-3 py-2 items-center justify-center"
-                            style={{
-                              backgroundColor: isActive ? "rgba(61,90,62,0.7)" : "rgba(0,0,0,0.35)",
-                              width: 90,
-                              height: 70,
-                              borderWidth: isActive ? 2 : 0,
-                              borderColor: "#fff",
-                              borderRadius: 14,
-                            }}
-                          >
-                            {cat.emoji ? <Text className="text-lg">{cat.emoji}</Text> : null}
-                            <Text className="text-white text-xs font-bold mt-0.5">
-                              {cat.key} ({count})
-                            </Text>
-                          </View>
-                        </ImageBackground>
-                      </TouchableOpacity>
-                    );
-                  }
-
-                  return (
+          {sortedCategories.length > 0 ? (
+            <View className="px-6" style={{ gap: 10 }}>
+              {sortedCategories.map((cat) => {
+                const items = savedByCategory[cat];
+                const isCollapsed = collapsedCategories.has(cat);
+                return (
+                  <View key={cat} className="bg-white rounded-2xl overflow-hidden" style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.15)" }}>
+                    {/* Category Header */}
                     <TouchableOpacity
-                      key={cat.key}
-                      onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        setSavedCategory(cat.key);
-                      }}
-                      className={`flex-row items-center px-3 py-1.5 rounded-full self-center ${isActive ? "bg-forest" : "bg-white"}`}
-                      style={{ borderWidth: 1, borderColor: isActive ? "#3D5A3E" : "rgba(0,0,0,0.12)", height: 34 }}
+                      onPress={() => toggleCategory(cat)}
+                      activeOpacity={0.7}
+                      className="flex-row items-center justify-between px-4 py-3"
                     >
-                      {cat.emoji ? <Text className="text-sm mr-1">{cat.emoji}</Text> : null}
-                      <Text className={`text-xs font-semibold ${isActive ? "text-white" : "text-dark"}`}>
-                        {cat.key} ({count})
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
-
-              {/* Product cards */}
-              <View className="px-6" style={{ gap: 10 }}>
-                {savedProducts
-                  .filter((p) => savedCategory === "All" || normalizeCategoryKey(p.category) === savedCategory)
-                  .map((item) => {
-                    const score = item.scanData?.crunchyScore;
-                    const derivedRating = score != null ? getRatingFromScore(score) : item.rating;
-                    const ratingColor = derivedRating === "clean" ? "#4CAF50" : derivedRating === "caution" ? "#FFC107" : "#F44336";
-                    return (
-                      <TouchableOpacity
-                        key={item.id}
-                        activeOpacity={0.7}
-                        onPress={() => {
-                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                          setDetailProduct(item);
-                        }}
-                        className="bg-white rounded-3xl p-4 flex-row items-center"
-                        style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.15)" }}
-                      >
-                        {(item.image || getCategoryEmoji(item.category)) ? <Text className="text-2xl mr-3">{item.image || getCategoryEmoji(item.category)}</Text> : <Ionicons name="cube-outline" size={24} color="#A8B89C" style={{ marginRight: 12 }} />}
-                        <View className="flex-1">
-                          <Text className="text-sm font-semibold text-dark" numberOfLines={1}>{item.name}</Text>
-                          {item.brand && <Text className="text-xs text-dark/50 mt-0.5">{item.brand}</Text>}
+                      <View className="flex-row items-center">
+                        <Text className="text-sm font-bold text-dark">{cat}</Text>
+                        <View className="ml-2 bg-forest/10 px-2 py-0.5 rounded-full">
+                          <Text className="text-xs font-semibold text-forest">{items.length}</Text>
                         </View>
-                        {score != null && (
-                          <View className="items-center mr-3">
-                            <Text className="text-lg font-bold" style={{ color: ratingColor }}>{score}</Text>
-                            <Text className="text-[10px] text-dark/40">score</Text>
+                      </View>
+                      <Ionicons
+                        name={isCollapsed ? "chevron-forward" : "chevron-down"}
+                        size={16}
+                        color="#A8B89C"
+                      />
+                    </TouchableOpacity>
+
+                    {/* Products */}
+                    {!isCollapsed && items.map((item, idx) => {
+                      const score = item.scanData?.crunchyScore;
+                      const derivedRating = score != null ? getRatingFromScore(score) : item.rating;
+                      const ratingColor = derivedRating === "clean" ? "#4CAF50" : derivedRating === "caution" ? "#FFC107" : "#F44336";
+                      return (
+                        <TouchableOpacity
+                          key={item.id}
+                          activeOpacity={0.7}
+                          onPress={() => {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                            setDetailProduct(item);
+                          }}
+                          className="flex-row items-center px-4 py-2.5"
+                          style={idx > 0 || true ? { borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.05)" } : undefined}
+                        >
+                          <View className="flex-1">
+                            <Text className="text-sm font-medium text-dark" numberOfLines={1}>{item.name}</Text>
+                            {item.brand && <Text className="text-xs text-dark/40">{item.brand}</Text>}
                           </View>
-                        )}
-                        {derivedRating && (
-                          <View className="px-2 py-1 rounded-full" style={{ backgroundColor: ratingColor + "18" }}>
-                            <Text className="text-xs font-bold capitalize" style={{ color: ratingColor }}>
-                              {derivedRating}
-                            </Text>
-                          </View>
-                        )}
-                      </TouchableOpacity>
-                    );
-                  })}
-              </View>
-            </>
+                          {score != null && (
+                            <View className="items-center mr-2">
+                              <Text className="text-base font-bold" style={{ color: ratingColor }}>{score}</Text>
+                            </View>
+                          )}
+                          {derivedRating && (
+                            <View className="px-2 py-0.5 rounded-full" style={{ backgroundColor: ratingColor + "18" }}>
+                              <Text className="text-[10px] font-bold capitalize" style={{ color: ratingColor }}>
+                                {derivedRating}
+                              </Text>
+                            </View>
+                          )}
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                );
+              })}
+            </View>
           ) : (
             <View className="mx-6 rounded-3xl p-6 items-center" style={{
               backgroundColor: "#fff",
@@ -476,64 +400,6 @@ export default function ProfileScreen() {
             setDetailProduct(null);
           }}
         />
-
-        {/* My Lists Section */}
-        <View className="mt-6">
-          <View className="flex-row items-center justify-between px-6 mb-3">
-            <Text className="text-lg font-bold text-dark">My Lists</Text>
-            <TouchableOpacity
-              onPress={() => router.push("/lists")}
-              hitSlop={8}
-            >
-              <Text className="text-sm font-medium text-forest">See All</Text>
-            </TouchableOpacity>
-          </View>
-
-          {SAMPLE_LISTS.length > 0 ? (
-            <View className="px-6" style={{ gap: 10 }}>
-              {SAMPLE_LISTS.map((list) => (
-                <TouchableOpacity
-                  key={list.id}
-                  onPress={() => router.push("/lists")}
-                  activeOpacity={0.7}
-                  className="bg-white rounded-3xl p-4 flex-row items-center"
-                  style={{
-                    borderWidth: 1,
-        borderColor: "rgba(0,0,0,0.15)",
-                  }}
-                >
-                  <View className="w-11 h-11 rounded-xl bg-forest/8 items-center justify-center mr-3">
-                    <Text className="text-xl">{list.emoji}</Text>
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-sm font-semibold text-dark">{list.name}</Text>
-                    <Text className="text-xs text-dark/50 mt-0.5">
-                      {list.itemCount} items
-                    </Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={18} color="#3D5A3E" />
-                </TouchableOpacity>
-              ))}
-            </View>
-          ) : (
-            <View className="mx-6 bg-white rounded-3xl p-6 items-center" style={{
-              borderWidth: 1,
-        borderColor: "rgba(0,0,0,0.15)",
-            }}>
-              <Ionicons name="list-outline" size={32} color="#A8B89C" style={{ marginBottom: 8 }} />
-              <Text className="text-sm font-medium text-dark">No lists yet</Text>
-              <Text className="text-xs text-dark/50 mt-1 text-center">
-                Create lists to organize your favorite products!
-              </Text>
-              <TouchableOpacity
-                onPress={() => router.push("/lists")}
-                className="mt-3 bg-forest px-5 py-2 rounded-3xl"
-              >
-                <Text className="text-sm font-semibold text-cream">Create a List</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
       </ScrollView>
     </View>
   );
@@ -582,7 +448,6 @@ function SavedProductDetailModal({
           <ScrollView className="px-5" contentContainerStyle={{ paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
             {/* Score + Rating Row */}
             <View className="flex-row items-center mb-4" style={{ gap: 12 }}>
-              {/* Score circle */}
               {scan?.crunchyScore != null && (
                 <View
                   className="w-16 h-16 rounded-full items-center justify-center"
