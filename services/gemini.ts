@@ -196,6 +196,7 @@ MANDATORY TIER OVERRIDES (always apply these regardless of other analysis):
 - Xylene: ALWAYS HIGH RISK — IARC Group 3, neurotoxin, VOC with inhalation risks.
 - Toluene: ALWAYS HIGH RISK — reproductive toxin, neurotoxin.
 - Butanol / n-butanol: ALWAYS MODERATE RISK — irritant, VOC.
+- Carbon black: ALWAYS LIMITED RISK — IARC Group 2B, possible carcinogen.
 - Formaldehyde and formaldehyde-releasing preservatives (DMDM hydantoin, quaternium-15) are IARC Group 1 carcinogens. ALWAYS rate HIGH RISK.
 
 For flagged ingredients, cite the specific authority (EFSA, ANSES, IARC, NIH) and the finding.
@@ -204,7 +205,7 @@ CRITICAL FORMATTING RULES:
 - Each "concern" value must be a complete standalone fact in 8 words or fewer. Never write full sentences or paragraphs.
   BAD: "This ingredient has been flagged by regulatory bodies as a potential endocrine disruptor based on recent studies."
   GOOD: "Potential endocrine disruptor (EFSA)."
-- The "summary" field must be a single complete sentence of 15 words or fewer. No truncation, no ellipsis.
+- The "summary" field must be 8 words maximum. No exceptions. Example: "Contains neurotoxins, endocrine disruptors, and carcinogens."
 
 Return ONLY valid JSON, no markdown:
 {
@@ -703,6 +704,7 @@ export async function analyzeAndSaveScan(
       { pattern: /^fragrance$|^parfum$/i, tier: "limited", concern: "Undisclosed ingredients", source: "EFSA" },
       { pattern: /formaldehyde|dmdm hydantoin|quaternium.?15/i, tier: "high", concern: "IARC Group 1 carcinogen", source: "IARC" },
       { pattern: /butanol|n-butanol/i, tier: "moderate", concern: "Irritant, VOC", source: "EFSA" },
+      { pattern: /carbon black/i, tier: "limited", concern: "IARC Group 2B, possible carcinogen", source: "IARC" },
     ];
 
     for (const ing of toxinsResult.ingredients) {
