@@ -198,6 +198,24 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        {/* Quick Links */}
+        <View className="mx-6 mt-4">
+          <TouchableOpacity
+            onPress={() => router.push("/recipe-lists")}
+            activeOpacity={0.7}
+            className="bg-white rounded-2xl flex-row items-center px-4 py-3.5"
+            style={{
+              borderWidth: 1,
+              borderColor: "rgba(0,0,0,0.15)",
+              shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2,
+            }}
+          >
+            <Ionicons name="bookmark" size={20} color="#3D5A3E" />
+            <Text className="text-base font-medium text-dark ml-3 flex-1">My Recipe Lists</Text>
+            <Ionicons name="chevron-forward" size={18} color="#A8B89C" />
+          </TouchableOpacity>
+        </View>
+
         {/* My Recent Scans - Horizontal Scroll */}
         <View className="mt-6">
           <View className="flex-row items-center justify-between px-6 mb-3">
