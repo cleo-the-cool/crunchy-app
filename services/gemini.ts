@@ -615,10 +615,16 @@ export async function analyzeAndSaveScan(
   const productInfo = await identifyProduct(base64Image);
 
   // Step 2: Check cache
-  console.log("[CACHE DEBUG] Identify returned:", JSON.stringify({ name: productInfo.productName, brand: productInfo.brand, category: productInfo.category }));
+  const _id = JSON.stringify({ name: productInfo.productName, brand: productInfo.brand });
+  console.log("[CACHE DEBUG] Identify returned:", _id);
+  const { Alert: _Alert } = require("react-native");
+  _Alert.alert("Cache Debug 1/3", "Identify: " + productInfo.productName + " by " + productInfo.brand);
   const cached = await findCachedProduct(productInfo.productName, productInfo.brand);
-  console.log("[CACHE DEBUG] findCachedProduct returned:", cached ? { productId: cached.productId, hasCategoryScores: !!cached.categoryScores, hasAnalysis: !!cached.analysis } : "null");
+  const _cacheInfo = cached ? "productId=" + cached.productId + " hasCatScores=" + !!cached.categoryScores : "NULL (no match)";
+  console.log("[CACHE DEBUG] findCachedProduct returned:", _cacheInfo);
+  _Alert.alert("Cache Debug 2/3", "Cache result: " + _cacheInfo);
   if (cached?.categoryScores) {
+    _Alert.alert("Cache Debug 3/3", "CACHE HIT! Returning instant score.");
     const prefs = await loadUserPreferences();
     const score = computeWeightedScore(cached.categoryScores, prefs);
     const analysis = buildAnalysisFromCachedData(productInfo, cached, score);
