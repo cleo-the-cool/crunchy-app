@@ -189,14 +189,20 @@ Rate each ingredient using this 4-tier system based on scientific consensus:
 
 For flagged ingredients, cite the specific authority (EFSA, ANSES, IARC, NIH) and the finding.
 
+CRITICAL FORMATTING RULES:
+- Each "concern" value must be a complete standalone fact in 8 words or fewer. Never write full sentences or paragraphs.
+  BAD: "This ingredient has been flagged by regulatory bodies as a potential endocrine disruptor based on recent studies."
+  GOOD: "Potential endocrine disruptor (EFSA)."
+- The "summary" field must be a single complete sentence of 15 words or fewer. No truncation, no ellipsis.
+
 Return ONLY valid JSON, no markdown:
 {
   "toxins_score": "number 0-100 where 100 means no harmful additives found",
   "ingredients": [
-    { "name": "string", "tier": "high|moderate|limited|safe", "concern": "string or null", "source": "string or null" }
+    { "name": "string", "tier": "high|moderate|limited|safe", "concern": "8 words max or null", "source": "string or null" }
   ],
-  "flagged_count": { "high": "count of high-risk ingredients", "moderate": "count of moderate-risk ingredients", "limited": "count of limited-risk ingredients", "safe": "count of safe ingredients" },
-  "summary": "string"
+  "flagged_count": { "high": "count", "moderate": "count", "limited": "count", "safe": "count" },
+  "summary": "one complete sentence, 15 words max"
 }`,
       },
       { inline_data: { mime_type: "image/jpeg", data: base64Image } },
@@ -216,6 +222,9 @@ Score based on: whole vs processed ingredients, NOVA processing scale (1=whole f
 
 DO NOT consider additives, ethics, sourcing, or anything not directly nutritional.
 
+CRITICAL FORMATTING RULES:
+- The "summary" field must be a single complete sentence of 15 words or fewer.
+
 Return ONLY valid JSON:
 {
   "nutrition_score": "number 0-100 where 100 means excellent nutritional quality",
@@ -226,7 +235,7 @@ Return ONLY valid JSON:
     "processing_level": "minimal|processed|ultra-processed",
     "artificial_sweeteners": "true or false"
   },
-  "summary": "string"
+  "summary": "one complete sentence, 15 words max"
 }`,
       },
       { inline_data: { mime_type: "image/jpeg", data: base64Image } },
@@ -247,17 +256,23 @@ Product: ${productInfo.productName} by ${productInfo.brand}
 
 If product-specific data is unavailable, use brand-level data and note this in data_confidence.
 
+CRITICAL FORMATTING RULES:
+- Each item in the findings arrays must be a complete standalone fact in 8 words or fewer. Never write full sentences or paragraphs.
+  BAD: "The product appears to be free of harmful additives based on current scientific consensus."
+  GOOD: "No harmful additives or chemicals detected."
+- The "summary" field must be a single complete sentence of 15 words or fewer.
+
 Return ONLY valid JSON:
 {
   "animal_welfare_score": "number 0-100 or null if unknown",
   "sustainability_score": "number 0-100 or null if unknown",
   "fair_trade_score": "number 0-100 or null if unknown",
-  "animal_welfare_findings": ["findings ONLY about animal welfare"],
-  "sustainability_findings": ["findings ONLY about environmental sustainability"],
-  "fair_trade_findings": ["findings ONLY about fair trade and labor"],
+  "animal_welfare_findings": ["8 words max per finding"],
+  "sustainability_findings": ["8 words max per finding"],
+  "fair_trade_findings": ["8 words max per finding"],
   "certifications": ["list of certification names found"],
   "data_confidence": "product|brand|limited",
-  "summary": "string"
+  "summary": "one complete sentence, 15 words max"
 }`,
       },
       { inline_data: { mime_type: "image/jpeg", data: base64Image } },
