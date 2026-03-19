@@ -24,7 +24,7 @@ export function BrandText({ size = "md", showLogo = true, color = "#704300", sty
           resizeMode="contain"
         />
       )}
-      <Text style={{ fontFamily: "JosefinSans-Thin", fontSize, color, letterSpacing: 1 }}>
+      <Text style={{ fontFamily: "JosefinSans-Regular", fontSize, color, letterSpacing: 1 }}>
         Crunchy Living
       </Text>
     </View>

@@ -71,6 +71,7 @@ function RootNavigator() {
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     "JosefinSans-Thin": require("@/assets/fonts/JosefinSans-Thin.ttf"),
+    "JosefinSans-Regular": require("@/assets/fonts/JosefinSans-Regular.ttf"),
   });
 
   if (!fontsLoaded) {

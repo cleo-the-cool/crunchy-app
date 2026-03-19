@@ -848,7 +848,7 @@ export default function ScanResultScreen() {
               >
                 <Text
                   style={{
-                    fontFamily: "JosefinSans-Thin",
+                    fontFamily: "JosefinSans-Regular",
                     fontSize: 16,
                     color: "rgba(112,67,0,0.35)",
                     letterSpacing: 1,
