@@ -179,6 +179,8 @@ async function analyzeToxins(base64Image: string, productInfo: ProductInfo): Pro
 
 Product: ${productInfo.productName} by ${productInfo.brand} (Category: ${productInfo.category})
 
+IMPORTANT: If no ingredients are visible on the packaging in the image, DO NOT return "no ingredients found" or refuse to analyze. Instead, use your knowledge base to look up the known ingredients, materials, or chemical components for this specific product and brand. For non-food items like markers, pens, cleaning products, or cosmetics, research known formulation ingredients, VOCs, solvents, pigments, plasticizers, or hazardous materials associated with this product type. Always provide a full ingredient/material analysis.
+
 DO NOT penalize for: natural sugars, saturated fats, calories, whole food ingredients, or anything not chemically synthesized.
 
 Rate each ingredient using this 4-tier system based on scientific consensus:
@@ -218,6 +220,8 @@ async function analyzeNutrition(base64Image: string, productInfo: ProductInfo): 
 
 Product: ${productInfo.productName} by ${productInfo.brand}
 
+IMPORTANT: If no nutritional information is visible on the packaging, use your knowledge base to estimate the nutritional profile based on the known formulation of this product and brand. Never return empty results — always provide your best analysis.
+
 Score based on: whole vs processed ingredients, NOVA processing scale (1=whole food, 4=ultra-processed), fiber content, added vs natural sugar, artificial sweeteners, and overall nutritional density.
 
 DO NOT consider additives, ethics, sourcing, or anything not directly nutritional.
@@ -253,6 +257,8 @@ async function analyzeEthics(base64Image: string, productInfo: ProductInfo): Pro
 3. Fair trade: labor sourcing, fair trade certifications, known labor controversies
 
 Product: ${productInfo.productName} by ${productInfo.brand}
+
+IMPORTANT: If no label or ingredient data is visible in the image, use your knowledge base to research this brand and product. Never return empty findings — always provide your best analysis based on known brand practices, certifications, and industry data.
 
 If product-specific data is unavailable, use brand-level data and note this in data_confidence.
 
