@@ -26,16 +26,21 @@ const RISK_CONFIG = {
   toxic: { color: "#F44336", icon: "warning" as const, label: "Toxic" },
 };
 
-function normalizeCategoryKey(cat?: string): string {
+function normalizeCategoryKey(cat?: string, productName?: string, brand?: string): string {
+  const parts = [cat, productName, brand].filter(Boolean).join(" ").toLowerCase();
+  if (/sparkling water|soda|juice|la croix|lacroix|kombucha|energy drink/i.test(parts) && !/bottle|cup|tumbler/i.test(parts)) return "Drinks";
+  if (/cleanser|moistur|serum|facial|lotion|sunscreen|la roche|cerave|cetaphil|lip balm|skincare/i.test(parts)) return "Skincare";
+  if (/ointment|hydrocortisone|ibuprofen|aspirin|supplement|vitamin|medicine|melatonin|probiotic/i.test(parts)) return "Wellness";
+
   if (!cat) return "Other";
   const lower = cat.toLowerCase();
   if (lower.includes("food") || lower.includes("cooking") || lower.includes("pantry")) return "Food";
   if (lower.includes("drink") || lower.includes("beverage")) return "Drinks";
   if (lower.includes("cosmetic")) return "Skincare";
-  if (lower.includes("skin") || lower.includes("personal care") || lower.includes("cleanser") || lower.includes("moistur") || lower.includes("serum") || lower.includes("facial")) return "Skincare";
+  if (lower.includes("skin") || lower.includes("personal care")) return "Skincare";
   if (lower.includes("makeup") || lower.includes("beauty")) return "Makeup";
   if (lower.includes("clean")) return "Cleaning";
-  if (lower.includes("supplement") || lower.includes("wellness") || lower.includes("medicine") || lower.includes("ointment") || lower.includes("vitamin")) return "Wellness";
+  if (lower.includes("supplement") || lower.includes("wellness")) return "Wellness";
   if (lower.includes("baby") || lower.includes("kid")) return "Baby";
   return "Other";
 }
@@ -85,7 +90,7 @@ export default function ProfileScreen() {
 
   // Group saved products by category
   const savedByCategory = savedProducts.reduce<Record<string, SavedProduct[]>>((acc, p) => {
-    const key = normalizeCategoryKey(p.category);
+    const key = normalizeCategoryKey(p.category, p.name, p.brand);
     if (!acc[key]) acc[key] = [];
     acc[key].push(p);
     return acc;

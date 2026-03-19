@@ -56,19 +56,27 @@ function getRecipeCategoryName(key: string): RecipeCategory | null {
   return map[key] ?? null;
 }
 
-// Mirrors the normalizeCategoryKey logic from explore.tsx
-function normalizeCategoryKey(cat?: string): string {
+// Normalizes a product's category, checking stored category + product name + brand
+function normalizeCategoryKey(cat?: string, productName?: string, brand?: string): string {
+  // Build a combined string for matching
+  const parts = [cat, productName, brand].filter(Boolean).join(" ").toLowerCase();
+
+  // Check for specific product types by name/brand first (more accurate than stored category)
+  if (/sparkling water|soda|juice|la croix|lacroix|kombucha|energy drink/i.test(parts) && !/bottle|cup|tumbler/i.test(parts)) return "drinks";
+  if (/cleanser|moistur|serum|facial|lotion|sunscreen|la roche|cerave|cetaphil|lip balm|skincare/i.test(parts)) return "skincare";
+  if (/ointment|hydrocortisone|ibuprofen|aspirin|supplement|vitamin|medicine|melatonin|probiotic/i.test(parts)) return "wellness";
+
+  // Then check stored category
   if (!cat) return "other";
   const lower = cat.toLowerCase();
   if (lower.includes("food") || lower.includes("cooking") || lower.includes("pantry")) return "food";
   if (lower.includes("drink") || lower.includes("beverage")) return "drinks";
   if (lower.includes("cosmetic")) return "skincare";
-  if (lower.includes("skin") || lower.includes("personal care") || lower.includes("cleanser") || lower.includes("moistur") || lower.includes("serum") || lower.includes("facial")) return "skincare";
+  if (lower.includes("skin") || lower.includes("personal care")) return "skincare";
   if (lower.includes("makeup") || lower.includes("beauty")) return "makeup";
   if (lower.includes("clean")) return "cleaning";
-  if (lower.includes("supplement") || lower.includes("wellness") || lower.includes("medicine") || lower.includes("ointment") || lower.includes("vitamin")) return "wellness";
+  if (lower.includes("supplement") || lower.includes("wellness")) return "wellness";
   if (lower.includes("baby") || lower.includes("kid")) return "baby";
-  if (lower.includes("home") || lower.includes("other")) return "other";
   return "other";
 }
 
@@ -110,7 +118,7 @@ export default function CategoryScreen() {
       try {
         // Load saved products filtered by this category (user-scoped)
         const all = await getSavedProducts(user?.id);
-        const filtered = all.filter((p) => normalizeCategoryKey(p.category) === categoryKey);
+        const filtered = all.filter((p) => normalizeCategoryKey(p.category, p.name, p.brand) === categoryKey);
         setSavedProducts(filtered);
 
         // Load recipes for this category
