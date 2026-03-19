@@ -584,7 +584,6 @@ export default function ScanResultScreen() {
     product = { ...fallbackProduct, concerns: [], summary: "" };
   }
 
-  const ratingInfo = RATING_CONFIG[product.rating];
   const categoryScores = product.categoryScores;
 
   // Active preference categories sorted by weight
@@ -596,6 +595,17 @@ export default function ScanResultScreen() {
   const scoreBreakdown = categoryScores
     ? getScoreBreakdown(categoryScores, preferences)
     : null;
+
+  // Computed weighted score is the SINGLE source of truth for display
+  const computedScore = scoreBreakdown
+    ? scoreBreakdown.reduce((sum, item) => sum + item.contribution, 0)
+    : product.crunchyScore ?? null;
+
+  // Re-derive rating from computed score so color/label stay in sync
+  const computedRating = computedScore != null
+    ? getRatingFromScore(computedScore)
+    : product.rating;
+  const ratingInfo = RATING_CONFIG[computedRating];
 
   // ─── Handlers ───────────────────────────────────────────────────
 
@@ -641,8 +651,8 @@ export default function ScanResultScreen() {
       }
     } catch {}
     try {
-      const scoreText = product.crunchyScore
-        ? ` (Score: ${product.crunchyScore}/100)`
+      const scoreText = computedScore != null
+        ? ` (Score: ${computedScore}/100)`
         : "";
       await Share.share({
         message: `I scanned ${product.name} by ${product.brand} on Crunchy Living and it's rated ${ratingInfo.label}${scoreText}!\n\nDownload Crunchy Living to check your products.`,
@@ -807,7 +817,7 @@ export default function ScanResultScreen() {
                     className="text-2xl font-bold"
                     style={{ color: ratingInfo.color }}
                   >
-                    {product.crunchyScore ?? "—"}
+                    {computedScore ?? "—"}
                   </Text>
                 </View>
                 <View className="flex-1">
