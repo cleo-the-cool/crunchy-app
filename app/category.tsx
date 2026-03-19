@@ -12,7 +12,8 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { useGoBack } from "@/lib/useGoBack";
 import { CATEGORY_IMAGES } from "@/lib/categoryImages";
 import { getRecipesByCategory, type Recipe, type RecipeCategory } from "@/data/recipes";
-import { getSavedProducts, type SavedProduct } from "@/lib/savedProducts";
+import { getSavedProducts, unsaveProduct, type SavedProduct } from "@/lib/savedProducts";
+import { Swipeable } from "react-native-gesture-handler";
 import { useAuth } from "@/contexts/AuthContext";
 import * as Haptics from "../utils/haptics";
 
@@ -67,7 +68,7 @@ function normalizeCategoryKey(cat?: string): string {
   if (lower.includes("clean")) return "cleaning";
   if (lower.includes("supplement") || lower.includes("wellness") || lower.includes("medicine") || lower.includes("ointment") || lower.includes("vitamin")) return "wellness";
   if (lower.includes("baby") || lower.includes("kid")) return "baby";
-  if (lower.includes("other")) return "other";
+  if (lower.includes("home") || lower.includes("other")) return "other";
   return "other";
 }
 
@@ -185,62 +186,78 @@ export default function CategoryScreen() {
                   score != null ? getRatingFromScore(score) : item.rating ?? "caution";
                 const ratingColor = getRatingColor(rating);
 
-                return (
+                const renderRightActions = () => (
                   <TouchableOpacity
-                    key={item.id}
-                    onPress={() => {
-                      if (item.scanData) {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        router.push({
-                          pathname: "/scan-result",
-                          params: {
-                            barcodeData: JSON.stringify(item.scanData),
-                            source: "saved",
-                          },
-                        });
-                      }
+                    onPress={async () => {
+                      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                      await unsaveProduct(item.id, user?.id);
+                      setSavedProducts((prev) => prev.filter((p) => p.id !== item.id));
                     }}
+                    className="bg-red-500 rounded-2xl items-center justify-center ml-2"
+                    style={{ width: 80 }}
                     activeOpacity={0.7}
-                    className="bg-white rounded-2xl p-3.5 flex-row items-center"
-                    style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.15)" }}
                   >
-                    {/* Score badge */}
-                    <View
-                      className="w-10 h-10 rounded-full items-center justify-center mr-3"
-                      style={{ backgroundColor: ratingColor + "18" }}
-                    >
-                      {score != null ? (
-                        <Text className="text-xs font-bold" style={{ color: ratingColor }}>
-                          {score}
-                        </Text>
-                      ) : (
-                        <Ionicons name="leaf" size={16} color={ratingColor} />
-                      )}
-                    </View>
-
-                    <View className="flex-1">
-                      <Text
-                        className="text-sm font-semibold text-dark"
-                        numberOfLines={1}
-                      >
-                        {item.name}
-                      </Text>
-                      {item.brand ? (
-                        <Text className="text-xs text-dark/50 mt-0.5">{item.brand}</Text>
-                      ) : null}
-                    </View>
-
-                    <View
-                      className="px-2 py-0.5 rounded-full mr-2"
-                      style={{ backgroundColor: ratingColor + "18" }}
-                    >
-                      <Text className="text-xs font-semibold capitalize" style={{ color: ratingColor }}>
-                        {rating}
-                      </Text>
-                    </View>
-
-                    <Ionicons name="chevron-forward" size={16} color="#A8B89C" />
+                    <Ionicons name="trash-outline" size={22} color="#fff" />
+                    <Text className="text-white text-xs font-semibold mt-1">Delete</Text>
                   </TouchableOpacity>
+                );
+
+                return (
+                  <Swipeable key={item.id} renderRightActions={renderRightActions} overshootRight={false}>
+                    <TouchableOpacity
+                      onPress={() => {
+                        if (item.scanData) {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          router.push({
+                            pathname: "/scan-result",
+                            params: {
+                              barcodeData: JSON.stringify(item.scanData),
+                              source: "saved",
+                            },
+                          });
+                        }
+                      }}
+                      activeOpacity={0.7}
+                      className="bg-white rounded-2xl p-3.5 flex-row items-center"
+                      style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.15)" }}
+                    >
+                      <View
+                        className="w-10 h-10 rounded-full items-center justify-center mr-3"
+                        style={{ backgroundColor: ratingColor + "18" }}
+                      >
+                        {score != null ? (
+                          <Text className="text-xs font-bold" style={{ color: ratingColor }}>
+                            {score}
+                          </Text>
+                        ) : (
+                          <Ionicons name="leaf" size={16} color={ratingColor} />
+                        )}
+                      </View>
+
+                      <View className="flex-1">
+                        <Text
+                          className="text-sm font-semibold text-dark"
+                          numberOfLines={1}
+                        >
+                          {item.name}
+                        </Text>
+                        {item.brand ? (
+                          <Text className="text-xs text-dark/50 mt-0.5">{item.brand}</Text>
+                        ) : null}
+                      </View>
+
+                      <View
+                        className="px-2 py-0.5 rounded-full mr-2"
+                        style={{ backgroundColor: ratingColor + "18" }}
+                      >
+                        <Text className="text-xs font-semibold capitalize" style={{ color: ratingColor }}>
+                          {rating}
+                        </Text>
+                      </View>
+
+                      <Ionicons name="chevron-forward" size={16} color="#A8B89C" />
+                    </TouchableOpacity>
+                  </Swipeable>
                 );
               })}
             </View>

@@ -7,6 +7,7 @@ import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { InterestsProvider } from "@/contexts/InterestsContext";
 import { PreferencesProvider } from "@/contexts/PreferencesContext";
 import { View, ActivityIndicator, Text } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useNetworkStatus } from "@/lib/useNetworkStatus";
 import { useFonts } from "expo-font";
 
@@ -79,14 +80,16 @@ export default function RootLayout() {
   }
 
   return (
-    <AuthProvider>
-      <SubscriptionProvider>
-        <InterestsProvider>
-          <PreferencesProvider>
-            <RootNavigator />
-          </PreferencesProvider>
-        </InterestsProvider>
-      </SubscriptionProvider>
-    </AuthProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AuthProvider>
+        <SubscriptionProvider>
+          <InterestsProvider>
+            <PreferencesProvider>
+              <RootNavigator />
+            </PreferencesProvider>
+          </InterestsProvider>
+        </SubscriptionProvider>
+      </AuthProvider>
+    </GestureHandlerRootView>
   );
 }
