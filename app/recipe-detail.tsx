@@ -6,16 +6,26 @@ import {
   TouchableOpacity,
   Alert,
   Share,
+  Modal,
+  TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useGoBack } from "@/lib/useGoBack";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "../utils/haptics";
 import { getRecipeById, type Recipe, type Difficulty } from "@/data/recipes";
-
-const SAVED_RECIPES_KEY = "@crunchy_saved_recipes";
+import {
+  getRecipeLists,
+  createRecipeList,
+  addRecipeToList,
+  getListsContainingRecipe,
+  getMadeItCount,
+  incrementMadeIt,
+  hasUserMadeIt,
+  markUserMadeIt,
+  type RecipeList,
+} from "@/lib/recipeLists";
 
 function DifficultyStars({ difficulty }: { difficulty: Difficulty }) {
   const count = difficulty === "Easy" ? 1 : difficulty === "Medium" ? 2 : 3;
@@ -38,22 +48,24 @@ export default function RecipeDetailScreen() {
   const router = useRouter();
   const goBack = useGoBack();
   const { id } = useLocalSearchParams<{ id?: string }>();
-  const [isSaved, setIsSaved] = useState(false);
   const [madeIt, setMadeIt] = useState(false);
+  const [madeItCount, setMadeItCount] = useState(0);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(
     new Set()
   );
+  const [showListModal, setShowListModal] = useState(false);
+  const [recipeLists, setRecipeLists] = useState<RecipeList[]>([]);
+  const [listsContaining, setListsContaining] = useState<string[]>([]);
+  const [newListName, setNewListName] = useState("");
+  const [showNewListInput, setShowNewListInput] = useState(false);
 
   const recipe = id ? getRecipeById(id) : undefined;
 
   useEffect(() => {
     if (!id) return;
-    AsyncStorage.getItem(SAVED_RECIPES_KEY).then((val) => {
-      if (val) {
-        const saved: string[] = JSON.parse(val);
-        setIsSaved(saved.includes(id));
-      }
-    });
+    // Load made-it state
+    getMadeItCount(id).then(setMadeItCount);
+    hasUserMadeIt(id).then(setMadeIt);
   }, [id]);
 
   if (!recipe) {
@@ -71,29 +83,13 @@ export default function RecipeDetailScreen() {
     );
   }
 
-  const handleSave = async () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    const newSaved = !isSaved;
-    setIsSaved(newSaved);
-    try {
-      const val = await AsyncStorage.getItem(SAVED_RECIPES_KEY);
-      const saved: string[] = val ? JSON.parse(val) : [];
-      if (newSaved) {
-        if (!saved.includes(id!)) saved.push(id!);
-      } else {
-        const idx = saved.indexOf(id!);
-        if (idx >= 0) saved.splice(idx, 1);
-      }
-      await AsyncStorage.setItem(SAVED_RECIPES_KEY, JSON.stringify(saved));
-    } catch {
-      // Silently handle storage errors
-    }
-  };
-
-  const handleMadeIt = () => {
-    if (madeIt) return;
+  const handleMadeIt = async () => {
+    if (madeIt || !id) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     setMadeIt(true);
+    const newCount = await incrementMadeIt(id);
+    setMadeItCount(newCount);
+    await markUserMadeIt(id);
   };
 
   const handleShare = async () => {
@@ -105,6 +101,50 @@ export default function RecipeDetailScreen() {
     } catch {
       // User cancelled share
     }
+  };
+
+  const handleAddToList = async () => {
+    if (!id) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const lists = await getRecipeLists();
+    const containing = await getListsContainingRecipe(id);
+    setRecipeLists(lists);
+    setListsContaining(containing);
+
+    // If only one list and recipe not in it, add directly
+    if (lists.length === 1 && !containing.includes(lists[0].id)) {
+      await addRecipeToList(lists[0].id, id);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert("Added!", `"${recipe.title}" added to ${lists[0].name}`);
+      return;
+    }
+
+    setShowListModal(true);
+  };
+
+  const handleToggleList = async (listId: string) => {
+    if (!id) return;
+    if (listsContaining.includes(listId)) {
+      // Already in this list - don't remove from modal, user can do that from list screen
+      return;
+    }
+    await addRecipeToList(listId, id);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setListsContaining((prev) => [...prev, listId]);
+  };
+
+  const handleCreateList = async () => {
+    const name = newListName.trim();
+    if (!name) return;
+    const newList = await createRecipeList(name);
+    if (id) {
+      await addRecipeToList(newList.id, id);
+      setListsContaining((prev) => [...prev, newList.id]);
+    }
+    setRecipeLists((prev) => [...prev, newList]);
+    setNewListName("");
+    setShowNewListInput(false);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
   const toggleIngredient = (index: number) => {
@@ -120,7 +160,7 @@ export default function RecipeDetailScreen() {
     });
   };
 
-  const displayMadeItCount = recipe.madeItCount + (madeIt ? 1 : 0);
+  const displayMadeItCount = madeItCount;
 
   return (
     <SafeAreaView className="flex-1 bg-ivory">
@@ -130,12 +170,8 @@ export default function RecipeDetailScreen() {
           <Ionicons name="arrow-back" size={24} color="#3D5A3E" />
         </TouchableOpacity>
         <View className="flex-row gap-4">
-          <TouchableOpacity onPress={handleSave} hitSlop={8}>
-            <Ionicons
-              name={isSaved ? "heart" : "heart-outline"}
-              size={24}
-              color={isSaved ? "#E57373" : "#3D5A3E"}
-            />
+          <TouchableOpacity onPress={handleAddToList} hitSlop={8}>
+            <Ionicons name="bookmark-outline" size={24} color="#3D5A3E" />
           </TouchableOpacity>
           <TouchableOpacity onPress={handleShare} hitSlop={8}>
             <Ionicons name="share-outline" size={24} color="#3D5A3E" />
@@ -189,33 +225,6 @@ export default function RecipeDetailScreen() {
                 </Text>
               </View>
               <Text className="text-xs text-dark/40 mt-1">Time</Text>
-            </View>
-            <View className="w-px bg-dark/10" />
-            <View className="flex-1 items-center">
-              <View className="flex-row items-center gap-1">
-                <Ionicons name="wallet-outline" size={16} color="#3D5A3E" />
-                <Text className="text-sm font-semibold text-dark">
-                  {recipe.costEstimate}
-                </Text>
-              </View>
-              <Text className="text-xs text-dark/40 mt-1">Cost</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Cost Comparison */}
-        <View className="px-5 mt-4">
-          <View
-            className="bg-forest/8 rounded-3xl p-4 flex-row items-center"
-          >
-            <Ionicons name="trending-down" size={24} color="#3D5A3E" />
-            <View className="ml-3 flex-1">
-              <Text className="text-sm font-semibold text-dark">
-                Save money making your own!
-              </Text>
-              <Text className="text-xs text-dark/60 mt-0.5">
-                DIY: {recipe.costEstimate} vs Store: {recipe.storeBoughtCost}
-              </Text>
             </View>
           </View>
         </View>
@@ -285,6 +294,45 @@ export default function RecipeDetailScreen() {
             })}
           </View>
         </View>
+
+        {/* Equipment Needed */}
+        {recipe.equipment && recipe.equipment.length > 0 && (
+          <View className="px-5 mt-6">
+            <Text className="text-lg font-bold text-dark mb-3">
+              Equipment Needed
+            </Text>
+            <View
+              className="bg-white rounded-3xl p-4"
+              style={{
+                borderWidth: 1,
+                borderColor: "rgba(0,0,0,0.12)",
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.06,
+                shadowRadius: 8,
+                elevation: 3,
+              }}
+            >
+              {recipe.equipment.map((item, index) => (
+                <View
+                  key={index}
+                  className={`flex-row items-center py-2.5 ${
+                    index < recipe.equipment!.length - 1
+                      ? "border-b border-dark/5"
+                      : ""
+                  }`}
+                >
+                  <View className="w-6 h-6 rounded-md items-center justify-center mr-3 bg-gold/15">
+                    <Ionicons name="construct-outline" size={13} color="#C4A76C" />
+                  </View>
+                  <Text className="text-sm font-medium text-dark flex-1">
+                    {item}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
 
         {/* Steps */}
         <View className="px-5 mt-6">
@@ -400,14 +448,137 @@ export default function RecipeDetailScreen() {
             </Text>
           </TouchableOpacity>
 
-          <View className="flex-row items-center justify-center mt-3">
-            <Ionicons name="people-outline" size={16} color="#3D5A3E" />
-            <Text className="text-sm text-forest ml-1.5">
-              {displayMadeItCount.toLocaleString()} people made this
+          {displayMadeItCount > 0 && (
+            <View className="flex-row items-center justify-center mt-3">
+              <Ionicons name="people-outline" size={16} color="#3D5A3E" />
+              <Text className="text-sm text-forest ml-1.5">
+                {displayMadeItCount.toLocaleString()} {displayMadeItCount === 1 ? "person" : "people"} made this
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Add to List Button */}
+        <View className="px-5 mt-4">
+          <TouchableOpacity
+            onPress={handleAddToList}
+            activeOpacity={0.8}
+            className="rounded-3xl py-3.5 flex-row items-center justify-center bg-white"
+            style={{
+              borderWidth: 1,
+              borderColor: "rgba(61,90,62,0.3)",
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.06,
+              shadowRadius: 8,
+              elevation: 2,
+            }}
+          >
+            <Ionicons name="bookmark-outline" size={20} color="#3D5A3E" />
+            <Text className="text-forest font-semibold text-base ml-2">
+              Add to List
             </Text>
-          </View>
+          </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Add to List Modal */}
+      <Modal
+        visible={showListModal}
+        animationType="slide"
+        transparent
+        onRequestClose={() => {
+          setShowListModal(false);
+          setShowNewListInput(false);
+          setNewListName("");
+        }}
+      >
+        <View className="flex-1 bg-black/40 justify-end">
+          <View
+            className="bg-ivory rounded-t-3xl"
+            style={{ borderTopWidth: 1, borderColor: "rgba(0,0,0,0.08)", maxHeight: "60%" }}
+          >
+            {/* Handle bar */}
+            <View className="items-center pt-3 pb-1">
+              <View className="w-10 h-1 rounded-full bg-dark/15" />
+            </View>
+
+            {/* Header */}
+            <View className="flex-row items-center justify-between px-5 pb-3">
+              <Text className="text-lg font-bold text-dark">Add to List</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowListModal(false);
+                  setShowNewListInput(false);
+                  setNewListName("");
+                }}
+                hitSlop={8}
+              >
+                <Ionicons name="close" size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView className="px-5" contentContainerStyle={{ paddingBottom: 32 }}>
+              {/* Existing lists */}
+              {recipeLists.map((list) => {
+                const isInList = listsContaining.includes(list.id);
+                return (
+                  <TouchableOpacity
+                    key={list.id}
+                    onPress={() => handleToggleList(list.id)}
+                    activeOpacity={0.7}
+                    className="flex-row items-center py-3.5 border-b border-dark/5"
+                  >
+                    <Ionicons
+                      name={isInList ? "checkbox" : "square-outline"}
+                      size={22}
+                      color={isInList ? "#3D5A3E" : "#999"}
+                    />
+                    <Text className="text-base text-dark ml-3 flex-1">
+                      {list.name}
+                    </Text>
+                    <Text className="text-xs text-dark/40">
+                      {list.recipeIds.length} recipes
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+
+              {/* New list input */}
+              {showNewListInput ? (
+                <View className="flex-row items-center mt-3 gap-2">
+                  <TextInput
+                    value={newListName}
+                    onChangeText={setNewListName}
+                    placeholder="List name..."
+                    placeholderTextColor="#999"
+                    className="flex-1 bg-white rounded-2xl px-4 py-3 text-dark"
+                    style={{ borderWidth: 1, borderColor: "rgba(0,0,0,0.12)" }}
+                    autoFocus
+                    onSubmitEditing={handleCreateList}
+                  />
+                  <TouchableOpacity
+                    onPress={handleCreateList}
+                    className="bg-forest rounded-2xl px-4 py-3"
+                  >
+                    <Text className="text-white font-semibold">Add</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  onPress={() => setShowNewListInput(true)}
+                  className="flex-row items-center py-3.5 mt-1"
+                >
+                  <Ionicons name="add-circle-outline" size={22} color="#3D5A3E" />
+                  <Text className="text-base text-forest ml-3 font-medium">
+                    Create New List
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

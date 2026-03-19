@@ -36,6 +36,7 @@ export interface Recipe {
   steps: RecipeStep[];
   tips: string[];
   madeItCount: number;
+  equipment?: string[];
 }
 
 export const RECIPE_CATEGORIES: { name: RecipeCategory; icon: string }[] = [
@@ -80,7 +81,8 @@ export const RECIPES: Recipe[] = [
       "Avoid using on marble or granite surfaces.",
       "The infused vinegar concentrate keeps for months.",
     ],
-    madeItCount: 342,
+    madeItCount: 0,
+    equipment: ["glass jar with lid", "spray bottle", "fine mesh strainer"],
   },
   {
     id: "recipe-002",
@@ -107,7 +109,8 @@ export const RECIPES: Recipe[] = [
       "Spray pillows 30 minutes before bedtime for better sleep.",
       "Also works great as a room spray.",
     ],
-    madeItCount: 518,
+    madeItCount: 0,
+    equipment: ["spray bottle"],
   },
   {
     id: "recipe-003",
@@ -136,7 +139,8 @@ export const RECIPES: Recipe[] = [
       "Make fresh batches as needed since it dries out.",
       "Tea tree oil adds natural antibacterial properties.",
     ],
-    madeItCount: 267,
+    madeItCount: 0,
+    equipment: ["mixing bowl", "sponge"],
   },
   {
     id: "recipe-004",
@@ -164,7 +168,8 @@ export const RECIPES: Recipe[] = [
       "The cornstarch is the secret to streak-free results.",
       "Use newspaper for an even shinier finish.",
     ],
-    madeItCount: 189,
+    madeItCount: 0,
+    equipment: ["spray bottle", "microfiber cloth"],
   },
   {
     id: "recipe-005",
@@ -196,7 +201,8 @@ export const RECIPES: Recipe[] = [
       "Makes about 12 bombs per batch.",
       "Keep them away from moisture until ready to use.",
     ],
-    madeItCount: 412,
+    madeItCount: 0,
+    equipment: ["mixing bowl", "silicone molds", "airtight container"],
   },
   {
     id: "recipe-006",
@@ -224,7 +230,8 @@ export const RECIPES: Recipe[] = [
       "Use sparingly, a little goes a long way.",
       "Test on a small area first.",
     ],
-    madeItCount: 156,
+    madeItCount: 0,
+    equipment: ["mop", "bucket or spray bottle"],
   },
   {
     id: "recipe-007",
@@ -252,7 +259,8 @@ export const RECIPES: Recipe[] = [
       "Use a foaming soap dispenser for best results.",
       "Add a bit more castile soap for tough grease.",
     ],
-    madeItCount: 203,
+    madeItCount: 0,
+    equipment: ["bottle or soap dispenser"],
   },
 
   // ===== SKINCARE (7 recipes) =====
@@ -283,7 +291,8 @@ export const RECIPES: Recipe[] = [
       "Use 1-2 times per week for best results.",
       "The lactic acid in yogurt provides gentle chemical exfoliation.",
     ],
-    madeItCount: 723,
+    madeItCount: 0,
+    equipment: ["small mixing bowl"],
   },
   {
     id: "recipe-009",
@@ -311,7 +320,8 @@ export const RECIPES: Recipe[] = [
       "Store in the fridge for an extra refreshing feel.",
       "Use morning and night after cleansing.",
     ],
-    madeItCount: 589,
+    madeItCount: 0,
+    equipment: ["glass bottle", "cotton pads"],
   },
   {
     id: "recipe-010",
@@ -341,7 +351,8 @@ export const RECIPES: Recipe[] = [
       "The caffeine in coffee temporarily tightens skin.",
       "Be careful - it can make the shower floor slippery!",
     ],
-    madeItCount: 891,
+    madeItCount: 0,
+    equipment: ["mixing bowl"],
   },
   {
     id: "recipe-011",
@@ -368,7 +379,8 @@ export const RECIPES: Recipe[] = [
       "Follow up with your regular cleanser (double cleanse method).",
       "Not recommended for acne-prone skin.",
     ],
-    madeItCount: 445,
+    madeItCount: 0,
+    equipment: ["small jar with lid", "warm damp cloth"],
   },
   {
     id: "recipe-012",
@@ -398,7 +410,8 @@ export const RECIPES: Recipe[] = [
       "Keep refrigerated, use within 1 week.",
       "Tap gently around the eyes with your ring finger for best absorption.",
     ],
-    madeItCount: 334,
+    madeItCount: 0,
+    equipment: ["small saucepan", "dark glass dropper bottle"],
   },
   {
     id: "recipe-013",
@@ -428,7 +441,8 @@ export const RECIPES: Recipe[] = [
       "Best used at night in case of slight discoloration.",
       "Do a patch test first if you have sensitive skin.",
     ],
-    madeItCount: 567,
+    madeItCount: 0,
+    equipment: ["small mixing bowl"],
   },
   {
     id: "recipe-014",
@@ -456,7 +470,8 @@ export const RECIPES: Recipe[] = [
       "Use 2-3 times per week for smooth lips.",
       "It tastes good, so making extra is recommended!",
     ],
-    madeItCount: 678,
+    madeItCount: 0,
+    equipment: ["small jar"],
   },
 
   // ===== HAIRCARE (6 recipes) =====
@@ -486,7 +501,8 @@ export const RECIPES: Recipe[] = [
       "The vinegar smell disappears as hair dries.",
       "Use raw, unfiltered ACV with 'the mother' for best results.",
     ],
-    madeItCount: 934,
+    madeItCount: 0,
+    equipment: ["squeeze bottle or cup"],
   },
   {
     id: "recipe-016",
@@ -514,7 +530,8 @@ export const RECIPES: Recipe[] = [
       "For extra deep conditioning, apply heat with a warm towel over the shower cap.",
       "Best for medium to thick hair types.",
     ],
-    madeItCount: 456,
+    madeItCount: 0,
+    equipment: ["mixing bowl", "shower cap"],
   },
   {
     id: "recipe-017",
@@ -544,7 +561,8 @@ export const RECIPES: Recipe[] = [
       "Use 2-3 times per week for best results.",
       "Protect your pillowcase with an old towel if leaving overnight.",
     ],
-    madeItCount: 1023,
+    madeItCount: 0,
+    equipment: ["small dropper bottle"],
   },
   {
     id: "recipe-018",
@@ -575,7 +593,8 @@ export const RECIPES: Recipe[] = [
       "Perfect for the curly girl method.",
       "Adjust consistency by boiling longer (thicker) or shorter (thinner).",
     ],
-    madeItCount: 567,
+    madeItCount: 0,
+    equipment: ["saucepan", "fine mesh strainer", "jar"],
   },
   {
     id: "recipe-019",
@@ -603,7 +622,8 @@ export const RECIPES: Recipe[] = [
       "Skip cocoa powder entirely for blonde/light hair.",
       "Let it sit for 2 minutes before brushing through.",
     ],
-    madeItCount: 789,
+    madeItCount: 0,
+    equipment: ["small jar", "makeup brush"],
   },
   {
     id: "recipe-020",
@@ -633,7 +653,7 @@ export const RECIPES: Recipe[] = [
       "Do this treatment once every 2 weeks.",
       "Overuse can make hair brittle, balance with moisture treatments.",
     ],
-    madeItCount: 345,
+    madeItCount: 0,
   },
 
   // ===== HOME (5 recipes) =====
@@ -666,7 +686,8 @@ export const RECIPES: Recipe[] = [
       "Wash with cool water and mild soap only.",
       "Refresh wraps by re-melting in the oven after a few months.",
     ],
-    madeItCount: 234,
+    madeItCount: 0,
+    equipment: ["baking sheet", "parchment paper", "brush", "tongs", "pinking shears"],
   },
   {
     id: "recipe-022",
@@ -698,7 +719,8 @@ export const RECIPES: Recipe[] = [
       "Burn for at least 1 hour on first use to prevent tunneling.",
       "Soy wax burns 50% longer than paraffin.",
     ],
-    madeItCount: 567,
+    madeItCount: 0,
+    equipment: ["double boiler", "glass jar (8 oz)", "wick holder", "thermometer"],
   },
   {
     id: "recipe-023",
@@ -728,7 +750,8 @@ export const RECIPES: Recipe[] = [
       "Replace reeds every month as they become saturated.",
       "Try: lemongrass + ginger, or lavender + chamomile.",
     ],
-    madeItCount: 345,
+    madeItCount: 0,
+    equipment: ["small glass vase", "reed diffuser sticks"],
   },
   {
     id: "recipe-024",
@@ -757,7 +780,8 @@ export const RECIPES: Recipe[] = [
       "The herbs make the vinegar smell much more pleasant.",
       "Great for kitchen and bathroom surfaces.",
     ],
-    madeItCount: 178,
+    madeItCount: 0,
+    equipment: ["glass jar with lid"],
   },
   {
     id: "recipe-025",
@@ -787,7 +811,8 @@ export const RECIPES: Recipe[] = [
       "The rice absorbs moisture and helps carry the scent.",
       "Also works as a natural moth repellent.",
     ],
-    madeItCount: 234,
+    madeItCount: 0,
+    equipment: ["small muslin bags"],
   },
 
   // ===== PERSONAL CARE (6 recipes) =====
@@ -821,7 +846,8 @@ export const RECIPES: Recipe[] = [
       "Allow a 2-week adjustment period when switching from conventional deodorant.",
       "In hot weather, store in the fridge to keep it solid.",
     ],
-    madeItCount: 678,
+    madeItCount: 0,
+    equipment: ["double boiler", "deodorant container or small jar"],
   },
   {
     id: "recipe-027",
@@ -853,7 +879,8 @@ export const RECIPES: Recipe[] = [
       "Try vanilla + orange or rose + geranium scent combos.",
       "Lasts 3-6 months when stored properly.",
     ],
-    madeItCount: 512,
+    madeItCount: 0,
+    equipment: ["double boiler", "hand mixer", "jars"],
   },
   {
     id: "recipe-028",
@@ -882,7 +909,8 @@ export const RECIPES: Recipe[] = [
       "The jar of mix makes about 6-8 soaks.",
       "Great after a long day or workout.",
     ],
-    madeItCount: 289,
+    madeItCount: 0,
+    equipment: ["mixing jar", "basin for soaking"],
   },
   {
     id: "recipe-029",
@@ -912,7 +940,8 @@ export const RECIPES: Recipe[] = [
       "Your sink will look messy but it washes right off.",
       "Don't use if you have dental restorations (veneers, crowns).",
     ],
-    madeItCount: 345,
+    madeItCount: 0,
+    equipment: ["small jar", "non-metal spoon"],
   },
   {
     id: "recipe-030",
@@ -943,7 +972,8 @@ export const RECIPES: Recipe[] = [
       "Add a tiny bit of beetroot powder for natural tint.",
       "Great as gifts!",
     ],
-    madeItCount: 456,
+    madeItCount: 0,
+    equipment: ["double boiler", "lip balm tubes or tins"],
   },
   {
     id: "recipe-031",
@@ -976,7 +1006,8 @@ export const RECIPES: Recipe[] = [
       "Put herbs in a muslin bag to avoid clogging the drain.",
       "Add dried rose petals for an extra luxe experience.",
     ],
-    madeItCount: 567,
+    madeItCount: 0,
+    equipment: ["large mixing bowl", "glass jar"],
   },
 
   // ===== CLEANING (8 more, total 15) =====
@@ -1007,7 +1038,8 @@ export const RECIPES: Recipe[] = [
       "Works in both standard and HE machines.",
       "For extra whitening power, add 1/4 cup of hydrogen peroxide to the wash.",
     ],
-    madeItCount: 678,
+    madeItCount: 0,
+    equipment: ["cheese grater", "airtight container"],
   },
   {
     id: "recipe-033",
@@ -1034,7 +1066,8 @@ export const RECIPES: Recipe[] = [
       "Vinegar naturally removes detergent residue.",
       "Also helps reduce static cling.",
     ],
-    madeItCount: 456,
+    madeItCount: 0,
+    equipment: ["jar or bottle"],
   },
   {
     id: "recipe-034",
@@ -1061,7 +1094,7 @@ export const RECIPES: Recipe[] = [
       "Always wipe in the direction of the grain.",
       "Use sparingly on olive oil to avoid a greasy feel.",
     ],
-    madeItCount: 234,
+    madeItCount: 0,
   },
   {
     id: "recipe-035",
@@ -1090,7 +1123,8 @@ export const RECIPES: Recipe[] = [
       "Do this monthly as preventive maintenance.",
       "For tough clogs, repeat the process twice.",
     ],
-    madeItCount: 567,
+    madeItCount: 0,
+    equipment: ["kettle or pot for boiling water"],
   },
   {
     id: "recipe-036",
@@ -1119,7 +1153,8 @@ export const RECIPES: Recipe[] = [
       "Store dried pods in a jar by the sink.",
       "Use one per week for a fresh-smelling kitchen.",
     ],
-    madeItCount: 345,
+    madeItCount: 0,
+    equipment: ["ice cube trays"],
   },
   {
     id: "recipe-037",
@@ -1147,7 +1182,8 @@ export const RECIPES: Recipe[] = [
       "Test on a small hidden area first.",
       "Great for freshening up after pets.",
     ],
-    madeItCount: 289,
+    madeItCount: 0,
+    equipment: ["jar with shaker lid", "vacuum cleaner"],
   },
   {
     id: "recipe-038",
@@ -1176,7 +1212,8 @@ export const RECIPES: Recipe[] = [
       "Squeegee after every shower to prevent buildup.",
       "Works on tile and faucets too.",
     ],
-    madeItCount: 412,
+    madeItCount: 0,
+    equipment: ["spray bottle", "sponge", "squeegee"],
   },
   {
     id: "recipe-039",
@@ -1205,7 +1242,8 @@ export const RECIPES: Recipe[] = [
       "The longer you leave the paste, the better it works.",
       "Wear gloves to keep hands clean.",
     ],
-    madeItCount: 523,
+    madeItCount: 0,
+    equipment: ["mixing bowl", "spray bottle", "damp cloths"],
   },
 
   // ===== SKINCARE (8 more, total 15) =====
@@ -1235,7 +1273,7 @@ export const RECIPES: Recipe[] = [
       "Use the other half of the avocado for a smoothie!",
       "Great for winter skin when it's extra dry.",
     ],
-    madeItCount: 456,
+    madeItCount: 0,
   },
   {
     id: "recipe-041",
@@ -1264,7 +1302,7 @@ export const RECIPES: Recipe[] = [
       "Keep it cold for extra soothing relief.",
       "Apply generously to sunburned areas every few hours.",
     ],
-    madeItCount: 567,
+    madeItCount: 0,
   },
   {
     id: "recipe-042",
@@ -1293,7 +1331,7 @@ export const RECIPES: Recipe[] = [
       "Best used cold from the fridge.",
       "Use morning or evening for de-puffing.",
     ],
-    madeItCount: 389,
+    madeItCount: 0,
   },
   {
     id: "recipe-043",
@@ -1322,7 +1360,8 @@ export const RECIPES: Recipe[] = [
       "Your face may be slightly red after; this is normal and fades in 30 minutes.",
       "Use once per week for oily/combination skin.",
     ],
-    madeItCount: 612,
+    madeItCount: 0,
+    equipment: ["non-metal bowl", "non-metal spoon"],
   },
   {
     id: "recipe-044",
@@ -1353,7 +1392,8 @@ export const RECIPES: Recipe[] = [
       "A little goes a long way; use pea-sized amount.",
       "Rosehip oil is rich in retinol, a natural anti-aging ingredient.",
     ],
-    madeItCount: 445,
+    madeItCount: 0,
+    equipment: ["double boiler", "small jar", "fork or hand mixer"],
   },
   {
     id: "recipe-045",
@@ -1382,7 +1422,7 @@ export const RECIPES: Recipe[] = [
       "Dermatologists recommend oatmeal baths for eczema and psoriasis.",
       "Pat skin dry gently after the bath; don't rub.",
     ],
-    madeItCount: 334,
+    madeItCount: 0,
   },
   {
     id: "recipe-046",
@@ -1412,7 +1452,8 @@ export const RECIPES: Recipe[] = [
       "Make fresh batches every 1-2 weeks.",
       "Always use sunscreen when using vitamin C.",
     ],
-    madeItCount: 723,
+    madeItCount: 0,
+    equipment: ["dark glass dropper bottle"],
   },
   {
     id: "recipe-047",
@@ -1439,7 +1480,7 @@ export const RECIPES: Recipe[] = [
       "Use Ceylon cinnamon (not cassia) to avoid skin irritation.",
       "Patch test first as cinnamon can be sensitizing for some.",
     ],
-    madeItCount: 534,
+    madeItCount: 0,
   },
 
   // ===== COOKING (15 recipes) =====
@@ -1472,7 +1513,8 @@ export const RECIPES: Recipe[] = [
       "Freeze bananas when they get spotty for ready-made smoothie ingredients.",
       "Add a tablespoon of nut butter for extra protein.",
     ],
-    madeItCount: 892,
+    madeItCount: 0,
+    equipment: ["blender"],
   },
   {
     id: "recipe-049",
@@ -1503,7 +1545,8 @@ export const RECIPES: Recipe[] = [
       "The black pepper is essential for turmeric bioavailability.",
       "Be careful: turmeric stains everything!",
     ],
-    madeItCount: 1203,
+    madeItCount: 0,
+    equipment: ["small saucepan", "strainer or cheesecloth", "mug"],
   },
   {
     id: "recipe-050",
@@ -1534,7 +1577,8 @@ export const RECIPES: Recipe[] = [
       "Make 5 jars on Sunday for the whole work week.",
       "Try PB + banana, or mango + coconut combos.",
     ],
-    madeItCount: 1567,
+    madeItCount: 0,
+    equipment: ["jar with lid"],
   },
   {
     id: "recipe-051",
@@ -1564,7 +1608,7 @@ export const RECIPES: Recipe[] = [
       "Keeps in the fridge for up to a week.",
       "Add a tablespoon of maple syrup for a sweet variation.",
     ],
-    madeItCount: 734,
+    madeItCount: 0,
   },
   {
     id: "recipe-052",
@@ -1596,7 +1640,8 @@ export const RECIPES: Recipe[] = [
       "Store in the fridge for up to 2 weeks.",
       "Makes about 16 balls.",
     ],
-    madeItCount: 945,
+    madeItCount: 0,
+    equipment: ["food processor"],
   },
   {
     id: "recipe-053",
@@ -1631,7 +1676,8 @@ export const RECIPES: Recipe[] = [
       "The granola will crisp up as it cools.",
       "Store in an airtight container for up to 3 weeks.",
     ],
-    madeItCount: 1123,
+    madeItCount: 0,
+    equipment: ["baking sheet", "parchment paper", "large mixing bowl"],
   },
   {
     id: "recipe-054",
@@ -1664,7 +1710,7 @@ export const RECIPES: Recipe[] = [
       "Add a soft-boiled egg for extra protein.",
       "Sourdough is easier to digest than regular bread.",
     ],
-    madeItCount: 1456,
+    madeItCount: 0,
   },
   {
     id: "recipe-055",
@@ -1693,7 +1739,8 @@ export const RECIPES: Recipe[] = [
       "Chia seeds naturally gel up, creating the jam texture.",
       "Keeps in the fridge for 2 weeks.",
     ],
-    madeItCount: 678,
+    madeItCount: 0,
+    equipment: ["saucepan"],
   },
   {
     id: "recipe-056",
@@ -1729,7 +1776,8 @@ export const RECIPES: Recipe[] = [
       "Coconut aminos are a soy-free alternative to soy sauce.",
       "Don't overcrowd the pan or the cauliflower will steam instead of fry.",
     ],
-    madeItCount: 567,
+    madeItCount: 0,
+    equipment: ["food processor", "large skillet"],
   },
   {
     id: "recipe-057",
@@ -1763,7 +1811,8 @@ export const RECIPES: Recipe[] = [
       "Meal prep the sweet potatoes and rice ahead for quick weeknight dinners.",
       "Add pickled red onions for extra flavor.",
     ],
-    madeItCount: 789,
+    madeItCount: 0,
+    equipment: ["baking sheet", "mixing bowl"],
   },
   {
     id: "recipe-058",
@@ -1793,7 +1842,8 @@ export const RECIPES: Recipe[] = [
       "Save the almond pulp for baking or energy balls.",
       "Keeps in the fridge for 4-5 days. Shake before using.",
     ],
-    madeItCount: 623,
+    madeItCount: 0,
+    equipment: ["blender", "nut milk bag or cheesecloth"],
   },
   {
     id: "recipe-059",
@@ -1828,7 +1878,8 @@ export const RECIPES: Recipe[] = [
       "Use whatever vegetables you have on hand.",
       "Cuts into wedges and stores in the fridge for 4 days.",
     ],
-    madeItCount: 456,
+    madeItCount: 0,
+    equipment: ["oven-safe skillet", "mixing bowl"],
   },
   {
     id: "recipe-060",
@@ -1859,7 +1910,8 @@ export const RECIPES: Recipe[] = [
       "Keep fruit frozen until blending for the thickest texture.",
       "Add a scoop of protein powder for a post-workout meal.",
     ],
-    madeItCount: 845,
+    madeItCount: 0,
+    equipment: ["blender"],
   },
   {
     id: "recipe-061",
@@ -1892,7 +1944,8 @@ export const RECIPES: Recipe[] = [
       "Salt zucchini noodles and let them drain for 10 minutes to remove excess water.",
       "Nutritional yeast gives a cheesy flavor without dairy.",
     ],
-    madeItCount: 623,
+    madeItCount: 0,
+    equipment: ["spiralizer or peeler", "blender or food processor"],
   },
   {
     id: "recipe-062",
@@ -1923,7 +1976,8 @@ export const RECIPES: Recipe[] = [
       "The riper the banana, the sweeter the pancakes.",
       "Makes about 8 small pancakes.",
     ],
-    madeItCount: 1234,
+    madeItCount: 0,
+    equipment: ["blender", "skillet"],
   },
 
   // ===== WELLNESS & SUPPLEMENTS (8 recipes) =====
@@ -1957,7 +2011,8 @@ export const RECIPES: Recipe[] = [
       "Ginger is a natural anti-inflammatory and helps with nausea too.",
       "The black pepper increases turmeric's bioavailability by 2000%.",
     ],
-    madeItCount: 567,
+    madeItCount: 0,
+    equipment: ["small saucepan", "strainer or cheesecloth", "mug"],
   },
   {
     id: "recipe-064",
@@ -1988,7 +2043,8 @@ export const RECIPES: Recipe[] = [
       "Chamomile contains apigenin, a natural sedative compound.",
       "Add a tiny pinch of cinnamon for a cozy twist.",
     ],
-    madeItCount: 823,
+    madeItCount: 0,
+    equipment: ["tea strainer or infuser", "mug"],
   },
   {
     id: "recipe-065",
@@ -2017,7 +2073,7 @@ export const RECIPES: Recipe[] = [
       "Pair with 3 deep breaths between each stretch for mindfulness.",
       "Consistency matters more than flexibility — just show up daily.",
     ],
-    madeItCount: 1456,
+    madeItCount: 0,
   },
   {
     id: "recipe-066",
@@ -2046,7 +2102,7 @@ export const RECIPES: Recipe[] = [
       "Even 2 rounds will noticeably lower your heart rate.",
       "Can be done anywhere — in class, in the car, before bed.",
     ],
-    madeItCount: 2134,
+    madeItCount: 0,
   },
   {
     id: "recipe-067",
@@ -2075,7 +2131,8 @@ export const RECIPES: Recipe[] = [
       "Peppermint relaxes the smooth muscles in your digestive tract.",
       "Avoid if you have acid reflux — peppermint can worsen it.",
     ],
-    madeItCount: 678,
+    madeItCount: 0,
+    equipment: ["small saucepan", "strainer", "mug"],
   },
   {
     id: "recipe-068",
@@ -2108,7 +2165,7 @@ export const RECIPES: Recipe[] = [
       "Magnesium is a game-changer for sleep, anxiety, and muscle cramps.",
       "Always check with a doctor before starting new supplements.",
     ],
-    madeItCount: 3456,
+    madeItCount: 0,
   },
   {
     id: "recipe-069",
@@ -2139,7 +2196,7 @@ export const RECIPES: Recipe[] = [
       "Morning journaling sets intentions; evening journaling processes the day.",
       "There's no right way to do this — even one sentence counts.",
     ],
-    madeItCount: 1890,
+    madeItCount: 0,
   },
   {
     id: "recipe-070",
@@ -2173,7 +2230,8 @@ export const RECIPES: Recipe[] = [
       "Lasts 2-3 months refrigerated.",
       "Never eat raw elderberries — they must be cooked first.",
     ],
-    madeItCount: 1234,
+    madeItCount: 0,
+    equipment: ["pot", "fine mesh strainer", "glass jar"],
   },
 ];
 
