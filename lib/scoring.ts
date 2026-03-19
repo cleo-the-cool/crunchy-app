@@ -126,10 +126,10 @@ export function computeWeightedScore(
     if (weight === 0) continue; // user doesn't care about this category
 
     const categoryData = categoryScores[scoreKey];
-    const rawScore = categoryData?.score ?? 50; // neutral default if no data
-    const score = rawScore ?? 50; // handle null scores
+    const rawScore = categoryData?.score;
+    if (rawScore == null) continue; // no data for this category — exclude entirely
 
-    totalScore += score * weight;
+    totalScore += rawScore * weight;
     totalWeight += weight;
   }
 
@@ -171,19 +171,19 @@ export function getScoreBreakdown(
   ];
 
   let totalWeight = 0;
-  for (const { prefKey } of categories) {
+  for (const { key, prefKey } of categories) {
     const w = userPreferences[prefKey] ?? 0;
-    if (w > 0) totalWeight += w;
+    const hasData = categoryScores[key]?.score != null;
+    if (w > 0 && hasData) totalWeight += w;
   }
 
   return categories.map(({ key, prefKey, label }) => {
     const weight = userPreferences[prefKey] ?? 0;
     const rawScore = categoryScores[key]?.score ?? null;
-    const effectiveScore = rawScore ?? 50;
 
-    // Contribution = what percentage of the final score this category accounts for
-    const contribution = totalWeight > 0 && weight > 0
-      ? Math.round((effectiveScore * weight) / totalWeight)
+    // Null scores are excluded entirely from the weighted calculation
+    const contribution = totalWeight > 0 && weight > 0 && rawScore != null
+      ? Math.round((rawScore * weight) / totalWeight)
       : 0;
 
     return {
