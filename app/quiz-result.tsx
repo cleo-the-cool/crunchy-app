@@ -17,7 +17,7 @@ import Animated, {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ViewShot from "../utils/view-shot";
 import * as Sharing from "../utils/sharing";
-import { SafeAreaWrapper, Button } from "@/components";
+import { SafeAreaWrapper, Button, BrandText } from "@/components";
 import { Ionicons } from "@expo/vector-icons";
 import { getTierInfo, type TierInfo } from "@/lib/crunchyScore";
 import { useAuth } from "@/contexts/AuthContext";
@@ -66,11 +66,8 @@ function ShareableCard({
         style={{ backgroundColor: "#FFFDF8" }}
       >
         {/* App branding */}
-        <View className="flex-row items-center mb-6">
-          <View className="w-8 h-8 rounded-lg bg-forest items-center justify-center mr-2">
-            <Ionicons name="leaf" size={16} color="white" />
-          </View>
-          <Text className="text-lg font-bold text-dark">Crunchy</Text>
+        <View className="mb-6">
+          <BrandText size="md" />
         </View>
 
         {/* Score circle */}
@@ -211,17 +208,17 @@ export default function QuizResultScreen() {
         if (isAvailable) {
           await Sharing.shareAsync(uri, {
             mimeType: "image/png",
-            dialogTitle: "Share your Crunchy Score",
+            dialogTitle: "Share your Crunchy Living Score",
           });
         } else {
           await Share.share({
-            message: `I scored ${score}/100 on the Crunchy Quiz! I'm a ${tier.label} ${tier.emoji}. Take the quiz at crunchy.app`,
+            message: `I scored ${score}/100 on the Crunchy Living Quiz! I'm a ${tier.label} ${tier.emoji}. Take the quiz at crunchy.app`,
           });
         }
       }
     } catch {
       await Share.share({
-        message: `I scored ${score}/100 on the Crunchy Quiz! I'm a ${tier.label} ${tier.emoji}. Take the quiz at crunchy.app`,
+        message: `I scored ${score}/100 on the Crunchy Living Quiz! I'm a ${tier.label} ${tier.emoji}. Take the quiz at crunchy.app`,
       });
     }
   };

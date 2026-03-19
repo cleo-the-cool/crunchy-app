@@ -31,7 +31,7 @@ import {
   type Rating,
   type Alternative,
 } from "@/data/products";
-import { Badge } from "@/components";
+import { Badge, BrandText } from "@/components";
 import { getRatingFromScore } from "@/lib/savedProducts";
 import { getCategoryImage } from "@/lib/categoryImages";
 import { useAuth } from "@/contexts/AuthContext";
@@ -645,7 +645,7 @@ export default function ScanResultScreen() {
         ? ` (Score: ${product.crunchyScore}/100)`
         : "";
       await Share.share({
-        message: `I scanned ${product.name} by ${product.brand} on Crunchy and it's rated ${ratingInfo.label}${scoreText}!\n\nDownload Crunchy to check your products.`,
+        message: `I scanned ${product.name} by ${product.brand} on Crunchy Living and it's rated ${ratingInfo.label}${scoreText}!\n\nDownload Crunchy Living to check your products.`,
       });
     } catch {}
   };
@@ -842,12 +842,7 @@ export default function ScanResultScreen() {
                 >
                   Scanned with{" "}
                 </Text>
-                <Text
-                  className="text-sm text-forest"
-                  style={{ fontStyle: "italic", fontWeight: "600" }}
-                >
-                  Crunchy
-                </Text>
+                <BrandText size="sm" showLogo={false} />
               </View>
             </View>
           </Animated.View>

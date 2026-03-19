@@ -8,6 +8,7 @@ import { InterestsProvider } from "@/contexts/InterestsContext";
 import { PreferencesProvider } from "@/contexts/PreferencesContext";
 import { View, ActivityIndicator, Text } from "react-native";
 import { useNetworkStatus } from "@/lib/useNetworkStatus";
+import { useFonts } from "expo-font";
 
 function OfflineBanner() {
   const { isConnected, isChecking } = useNetworkStatus();
@@ -68,6 +69,14 @@ function RootNavigator() {
 }
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    "JosefinSans-Thin": require("@/assets/fonts/JosefinSans-Thin.ttf"),
+  });
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
     <AuthProvider>
       <SubscriptionProvider>

@@ -80,7 +80,7 @@ export default function LoginScreen() {
               <Ionicons name="leaf" size={32} color="white" />
             </View>
             <Text className="text-2xl font-bold text-dark mb-1">Welcome Back</Text>
-            <Text className="text-base text-dark-light">Log in to your Crunchy account</Text>
+            <Text className="text-base text-dark-light">Log in to your <Text style={{ fontFamily: "JosefinSans-Thin" }}>Crunchy Living</Text> account</Text>
           </View>
 
           {/* OAuth Buttons */}

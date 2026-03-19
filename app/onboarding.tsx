@@ -25,8 +25,8 @@ interface OnboardingSlide {
 const slides: OnboardingSlide[] = [
   {
     image: require("@/assets/images/aesthetic/leaves-hero.jpg"),
-    title: "What is Crunchy?",
-    subtitle: "Crunchy helps you understand what\u2019s really in your everyday products \u2014 from food to skincare to cleaning supplies.",
+    title: "What is Crunchy Living?",
+    subtitle: "Crunchy Living helps you understand what\u2019s really in your everyday products \u2014 from food to skincare to cleaning supplies.",
   },
   {
     image: require("@/assets/images/aesthetic/forest-canopy.jpg"),
