@@ -21,9 +21,9 @@ import { CameraView, useCameraPermissions } from "../utils/camera";
 import * as Haptics from "../utils/haptics";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { analyzeAndSaveScan } from "@/services/gemini";
+import { analyzeAndSaveScan, identifyAndCheckCache, type IdentifyResult } from "@/services/gemini";
 
-type ProductScanState = "camera" | "processing" | "error";
+type ProductScanState = "camera" | "processing" | "label_prompt" | "ai_processing" | "error";
 
 function ScanningLineAnimation() {
   const translateY = useSharedValue(0);
@@ -69,6 +69,8 @@ export default function ProductScanScreen() {
   const [errorMessage, setErrorMessage] = useState("");
   const [countdown, setCountdown] = useState(0);
   const [progressText, setProgressText] = useState("Identifying Product...");
+  const [identifyResult, setIdentifyResult] = useState<IdentifyResult | null>(null);
+  const [capturedImage, setCapturedImage] = useState<string>("");
   const cameraRef = useRef<CameraView>(null);
 
   const handleCapture = async () => {
@@ -86,25 +88,13 @@ export default function ProductScanScreen() {
       if (cameraRef.current) {
         try {
           const cam = cameraRef.current as any;
-          // Try takePictureAsync first (standard CameraView method)
           if (typeof cam.takePictureAsync === "function") {
-            const photo = await cam.takePictureAsync({
-              base64: true,
-              quality: 0.7,
-            });
-            if (photo?.base64) {
-              base64Image = photo.base64;
-            }
+            const photo = await cam.takePictureAsync({ base64: true, quality: 0.7 });
+            if (photo?.base64) base64Image = photo.base64;
           }
-          // Fallback: try captureAsync (some Expo SDK versions use this)
           if (!base64Image && typeof cam.captureAsync === "function") {
-            const photo = await cam.captureAsync({
-              base64: true,
-              quality: 0.7,
-            });
-            if (photo?.base64) {
-              base64Image = photo.base64;
-            }
+            const photo = await cam.captureAsync({ base64: true, quality: 0.7 });
+            if (photo?.base64) base64Image = photo.base64;
           }
         } catch (camErr: any) {
           console.warn("Camera capture error:", camErr?.message || camErr);
@@ -120,7 +110,73 @@ export default function ProductScanScreen() {
         return;
       }
 
-      const result = await analyzeAndSaveScan(base64Image, "item", user?.id ?? null, (step) => setProgressText(step));
+      setCapturedImage(base64Image);
+
+      // Step 1: Identify product and check cache
+      const identified = await identifyAndCheckCache(base64Image, user?.id ?? null, (step) => setProgressText(step));
+
+      // If cached, go straight to results
+      if (identified.cached && identified.cachedAnalysis) {
+        recordScan();
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        router.replace({
+          pathname: "/scan-result",
+          params: {
+            barcodeData: JSON.stringify(identified.cachedAnalysis),
+            source: "item",
+          },
+        });
+        return;
+      }
+
+      // Not cached — show the label prompt
+      setIdentifyResult(identified);
+      setState("label_prompt");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Something went wrong";
+      console.error("Scan error:", msg, err);
+      setErrorMessage(msg);
+      setState("error");
+    }
+  };
+
+  // User chose "Scan Ingredients" — go to label scan with product context
+  const handleScanIngredients = () => {
+    if (!identifyResult) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.replace({
+      pathname: "/label-scan",
+      params: {
+        mode: "ingredients",
+        productName: identifyResult.productName,
+        productBrand: identifyResult.brand,
+        productCategory: identifyResult.category,
+      },
+    });
+  };
+
+  // User chose "Skip — use AI knowledge"
+  const handleSkipToAI = async () => {
+    if (!identifyResult || !capturedImage) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setState("ai_processing");
+    setProgressText("Analyzing with AI knowledge...");
+
+    try {
+      const result = await analyzeAndSaveScan(
+        capturedImage,
+        "item",
+        user?.id ?? null,
+        (step) => setProgressText(step),
+        {
+          aiKnowledgeBase: true,
+          productContext: {
+            productName: identifyResult.productName,
+            brand: identifyResult.brand,
+            category: identifyResult.category,
+          },
+        }
+      );
       recordScan();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.replace({
@@ -132,7 +188,7 @@ export default function ProductScanScreen() {
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Something went wrong";
-      console.error("Scan error:", msg, err);
+      console.error("AI analysis error:", msg, err);
       setErrorMessage(msg);
       setState("error");
     }
@@ -218,6 +274,91 @@ export default function ProductScanScreen() {
                 Powered by Gemini AI
               </Text>
             </View>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Label prompt state — product identified but not cached
+  if (state === "label_prompt" && identifyResult) {
+    return (
+      <SafeAreaView className="flex-1 bg-ivory">
+        <View className="flex-1 items-center justify-center px-8">
+          <View
+            className="bg-white rounded-3xl p-8 items-center w-full"
+            style={{
+              shadowColor: "#3D5A3E",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.08,
+              shadowRadius: 12,
+              elevation: 4,
+            }}
+          >
+            <View className="bg-forest/8 rounded-full w-20 h-20 items-center justify-center mb-5">
+              <Ionicons name="leaf" size={36} color="#3D5A3E" />
+            </View>
+            <Text className="text-xl font-bold text-dark mb-1">
+              {identifyResult.productName}
+            </Text>
+            <Text className="text-sm text-dark/50 mb-5">
+              by {identifyResult.brand}
+            </Text>
+            <Text className="text-base text-dark/70 text-center mb-6 leading-6">
+              For the most accurate results, flip to the ingredients label and scan it.
+            </Text>
+            <TouchableOpacity
+              onPress={handleScanIngredients}
+              className="bg-forest w-full rounded-2xl py-4 items-center mb-3"
+              activeOpacity={0.8}
+            >
+              <View className="flex-row items-center">
+                <Ionicons name="scan-outline" size={20} color="#fff" />
+                <Text className="text-white font-bold text-base ml-2">
+                  Scan Ingredients
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleSkipToAI}
+              className="w-full rounded-2xl py-3.5 items-center border border-dark/10"
+              activeOpacity={0.7}
+            >
+              <Text className="text-dark/50 font-medium text-sm">
+                Skip — use AI knowledge
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // AI knowledge processing state
+  if (state === "ai_processing") {
+    return (
+      <SafeAreaView className="flex-1 bg-ivory">
+        <View className="flex-1 items-center justify-center px-8">
+          <View
+            className="bg-white rounded-3xl p-8 items-center w-full"
+            style={{
+              shadowColor: "#3D5A3E",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.08,
+              shadowRadius: 12,
+              elevation: 4,
+            }}
+          >
+            <View className="bg-forest/8 rounded-full w-20 h-20 items-center justify-center mb-5">
+              <Ionicons name="sparkles" size={36} color="#3D5A3E" />
+            </View>
+            <Text className="text-xl font-bold text-dark mb-2">
+              {progressText}
+            </Text>
+            <Text className="text-sm text-dark/50 text-center mb-4">
+              Researching known ingredients from our AI knowledge base
+            </Text>
+            <ScanningLineAnimation />
           </View>
         </View>
       </SafeAreaView>

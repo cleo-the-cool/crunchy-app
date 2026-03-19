@@ -514,6 +514,7 @@ interface DisplayProduct {
   concerns?: string[];
   summary?: string;
   categoryScores?: CategoryScores;
+  aiKnowledgeBase?: boolean;
 }
 
 // ─── Main Screen ─────────────────────────────────────────────────────
@@ -567,6 +568,7 @@ export default function ScanResultScreen() {
         concerns: analysis.concerns || [],
         summary: analysis.summary || "",
         categoryScores: analysis.categoryScores || undefined,
+        aiKnowledgeBase: analysis.aiKnowledgeBase || false,
       };
     } catch {
       const fallback = getDefaultProduct("unknown");
@@ -830,6 +832,14 @@ export default function ScanResultScreen() {
                   >
                     {product.summary || ratingInfo.description}
                   </Text>
+                  {product.aiKnowledgeBase && (
+                    <View className="flex-row items-center mt-2 bg-peach/10 rounded-lg px-3 py-2">
+                      <Ionicons name="information-circle" size={14} color="#F4A574" />
+                      <Text className="text-xs text-dark/50 ml-1.5 flex-1">
+                        Ingredients sourced from AI knowledge base — may not reflect exact formulation.
+                      </Text>
+                    </View>
+                  )}
                 </View>
               </View>
 

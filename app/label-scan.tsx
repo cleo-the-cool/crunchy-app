@@ -80,8 +80,16 @@ function ScanningLineAnimation() {
 
 export default function LabelScanScreen() {
   const router = useRouter();
-  const { mode: modeParam } = useLocalSearchParams<{ mode?: string }>();
+  const { mode: modeParam, productName, productBrand, productCategory } = useLocalSearchParams<{
+    mode?: string;
+    productName?: string;
+    productBrand?: string;
+    productCategory?: string;
+  }>();
   const scanMode: ScanMode = modeParam === "label" ? "label" : "ingredients";
+  const productContext = productName && productBrand
+    ? { productName, brand: productBrand, category: productCategory || "Other" }
+    : undefined;
   const { canScan, recordScan } = useSubscription();
   const { user } = useAuth();
   const { preferences } = usePreferences();
@@ -130,7 +138,13 @@ export default function LabelScanScreen() {
         return;
       }
 
-      const result = await analyzeAndSaveScan(base64Image, scanMode, user?.id ?? null, (step) => setProgressText(step));
+      const result = await analyzeAndSaveScan(
+        base64Image,
+        scanMode,
+        user?.id ?? null,
+        (step) => setProgressText(step),
+        productContext ? { productContext } : undefined
+      );
       recordScan();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.replace({

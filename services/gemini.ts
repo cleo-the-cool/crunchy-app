@@ -29,6 +29,15 @@ export interface GeminiAnalysis {
   cleanAlternatives: string[];
   summary: string;
   categoryScores?: CategoryScores;
+  aiKnowledgeBase?: boolean; // true when ingredients came from AI, not label
+}
+
+export interface IdentifyResult {
+  productName: string;
+  brand: string;
+  category: string;
+  cached: boolean;
+  cachedAnalysis?: GeminiAnalysis;
 }
 
 const GEMINI_API_KEY =
@@ -626,11 +635,75 @@ const MOCK_RESULTS: Record<ScanMode, GeminiAnalysis> = {
 
 // ─── Main Entry Points ───────────────────────────────────────────────
 
+/**
+ * Step 1 for item mode: identify product + check cache.
+ * If cached, returns the full analysis. If not, returns product info so the UI
+ * can prompt the user to scan the ingredients label.
+ */
+export async function identifyAndCheckCache(
+  base64Image: string,
+  userId: string | null,
+  onProgress?: (step: string) => void
+): Promise<IdentifyResult> {
+  if (isMockMode()) {
+    return { productName: "Mock Product", brand: "Mock Brand", category: "Other", cached: false };
+  }
+
+  onProgress?.("Identifying product...");
+  const productInfo = await identifyProduct(base64Image);
+
+  const cached = await findCachedProduct(productInfo.productName, productInfo.brand);
+  if (cached?.categoryScores) {
+    const prefs = await loadUserPreferences();
+    const score = computeWeightedScore(cached.categoryScores, prefs);
+    const analysis = buildAnalysisFromCachedData(productInfo, cached, score);
+
+    // Increment scan count
+    if (cached.productId && isSupabaseConfigured()) {
+      supabase.from("products")
+        .update({ scan_count: ((await supabase.from("products").select("scan_count").eq("id", cached.productId).single()).data?.scan_count ?? 0) + 1 })
+        .eq("id", cached.productId)
+        .then(() => {});
+    }
+    if (userId) saveScan(userId, cached.productId, "item", analysis).catch(() => {});
+
+    await incrementDailyCount();
+    const { addToHistory } = await import("@/lib/scanHistory");
+    addToHistory({
+      productName: analysis.productName,
+      brand: analysis.brand,
+      category: analysis.category,
+      rating: analysis.rating,
+      crunchyScore: analysis.crunchyScore,
+      scanMode: "item",
+      ingredients: analysis.ingredients.map(i => ({ name: i.name, risk: i.risk })),
+      concerns: analysis.concerns,
+      summary: analysis.summary,
+    }).catch(() => {});
+
+    return {
+      productName: productInfo.productName,
+      brand: productInfo.brand,
+      category: productInfo.category,
+      cached: true,
+      cachedAnalysis: analysis,
+    };
+  }
+
+  return {
+    productName: productInfo.productName,
+    brand: productInfo.brand,
+    category: productInfo.category,
+    cached: false,
+  };
+}
+
 export async function analyzeAndSaveScan(
   base64Image: string,
   mode: ScanMode,
   userId: string | null,
-  onProgress?: (step: string) => void
+  onProgress?: (step: string) => void,
+  options?: { aiKnowledgeBase?: boolean; productContext?: { productName: string; brand: string; category: string } }
 ): Promise<GeminiAnalysis> {
   if (isMockMode()) {
     await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -640,9 +713,9 @@ export async function analyzeAndSaveScan(
   const withinLimit = await checkDailyLimit();
   if (!withinLimit) throw new Error("SCANNER_RATE_LIMITED");
 
-  // Step 1: Identify product
+  // Step 1: Identify product (skip if context already provided)
   onProgress?.("Identifying product...");
-  const productInfo = await identifyProduct(base64Image);
+  const productInfo = options?.productContext || await identifyProduct(base64Image);
 
   // Step 2: Check cache
   const cached = await findCachedProduct(productInfo.productName, productInfo.brand);
@@ -808,6 +881,11 @@ export async function analyzeAndSaveScan(
     categoryScores,
     crunchyScore
   );
+
+  // Flag if ingredients came from AI knowledge base (item mode, no label scanned)
+  if (options?.aiKnowledgeBase) {
+    analysis.aiKnowledgeBase = true;
+  }
 
   // Step 7: Cache and save (non-blocking)
   const productId = await cacheProduct(analysis, categoryScores);
