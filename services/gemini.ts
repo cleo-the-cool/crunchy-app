@@ -189,6 +189,13 @@ Rate each ingredient using this 4-tier system based on scientific consensus:
 - LIMITED RISK: Some concern in high doses, regulatory debate ongoing
 - SAFE: Approved by EFSA, ANSES, and IARC with no significant concern
 
+MANDATORY TIER OVERRIDES (always apply these regardless of other analysis):
+- Phthalates and phthalate plasticizers (DBP, DEHP, BBP, DINP, etc.) are confirmed endocrine disruptors. ALWAYS rate HIGH RISK.
+- Methylisothiazolinone (MIT/MI) is flagged by EFSA as a skin sensitizer. ALWAYS rate MODERATE RISK.
+- "Fragrance" or "Parfum" (unspecified) should ALWAYS be LIMITED RISK due to undisclosed ingredients.
+- Xylene, toluene, and aromatic solvents are neurotoxins with inhalation risks. ALWAYS rate HIGH RISK.
+- Formaldehyde and formaldehyde-releasing preservatives (DMDM hydantoin, quaternium-15) are IARC Group 1 carcinogens. ALWAYS rate HIGH RISK.
+
 For flagged ingredients, cite the specific authority (EFSA, ANSES, IARC, NIH) and the finding.
 
 CRITICAL FORMATTING RULES:
@@ -708,7 +715,16 @@ export async function analyzeAndSaveScan(
           severity: i.tier,
           source: i.source || "",
         })),
-      risk_breakdown: toxinsResult?.flagged_count || { high: 0, moderate: 0, limited: 0, safe: 0 },
+      risk_breakdown: (() => {
+        // Recompute from actual ingredient tiers (don't trust Gemini's flagged_count)
+        const ings = toxinsResult?.ingredients || [];
+        return {
+          high: ings.filter((i: any) => i.tier === "high").length,
+          moderate: ings.filter((i: any) => i.tier === "moderate").length,
+          limited: ings.filter((i: any) => i.tier === "limited").length,
+          safe: ings.filter((i: any) => i.tier === "safe").length,
+        };
+      })(),
       ingredients: toxinsResult?.ingredients || [],
       summary: toxinsResult?.summary || "",
     },
