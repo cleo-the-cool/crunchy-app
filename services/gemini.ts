@@ -607,6 +607,9 @@ export async function analyzeAndSaveScan(
   if (cached?.categoryScores) {
     const prefs = await loadUserPreferences();
     const score = computeWeightedScore(cached.categoryScores, prefs);
+    // TEMP DEBUG: remove after confirming preference weighting works
+    const { Alert: _A } = require("react-native");
+    _A.alert("Cache Score Debug", "Prefs: " + JSON.stringify(prefs) + "\nToxins cat score: " + (cached.categoryScores.toxins_additives?.score ?? "null") + "\nComputed score: " + score);
     const analysis = buildAnalysisFromCachedData(productInfo, cached, score);
     
     // Increment scan count
@@ -754,12 +757,12 @@ function buildAnalysisFromCachedData(
   const rating = getRatingFromScore(crunchyScore);
 
   if (cached.analysis) {
-    return {
-      ...cached.analysis,
-      crunchyScore,
-      rating,
-      categoryScores: cached.categoryScores || undefined,
-    };
+    // Spread cached analysis but ALWAYS override score/rating with freshly computed values
+    const result = { ...cached.analysis };
+    result.crunchyScore = crunchyScore;
+    result.rating = rating;
+    result.categoryScores = cached.categoryScores || undefined;
+    return result;
   }
 
   // Build from category scores if no full analysis cached
