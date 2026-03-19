@@ -284,8 +284,11 @@ function ToxinsCard({
         <>
           <SectionHeader text="Ingredients" />
           {sortedIngredients.map((ingredient) => {
-            const tier = ingredient.tier || "safe";
-            const config = TIER_CONFIG[tier as keyof typeof TIER_CONFIG] || TIER_CONFIG.safe;
+            // Debug: log raw tier values to diagnose badge mapping
+            if (__DEV__) console.log(`[TIER DEBUG] ${ingredient.name}: tier="${ingredient.tier}", raw=`, JSON.stringify(ingredient));
+            const rawTier = (ingredient.tier || "safe").toLowerCase().trim();
+            const tier = (rawTier in TIER_CONFIG ? rawTier : "safe") as keyof typeof TIER_CONFIG;
+            const config = TIER_CONFIG[tier];
             const isExpanded = expandedIngredient === ingredient.name;
 
             return (

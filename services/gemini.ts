@@ -193,7 +193,9 @@ MANDATORY TIER OVERRIDES (always apply these regardless of other analysis):
 - Phthalates and phthalate plasticizers (DBP, DEHP, BBP, DINP, etc.) are confirmed endocrine disruptors. ALWAYS rate HIGH RISK.
 - Methylisothiazolinone (MIT/MI) is flagged by EFSA as a skin sensitizer. ALWAYS rate MODERATE RISK.
 - "Fragrance" or "Parfum" (unspecified) should ALWAYS be LIMITED RISK due to undisclosed ingredients.
-- Xylene, toluene, and aromatic solvents are neurotoxins with inhalation risks. ALWAYS rate HIGH RISK.
+- Xylene: ALWAYS HIGH RISK — IARC Group 3, neurotoxin, VOC with inhalation risks.
+- Toluene: ALWAYS HIGH RISK — reproductive toxin, neurotoxin.
+- Butanol / n-butanol: ALWAYS MODERATE RISK — irritant, VOC.
 - Formaldehyde and formaldehyde-releasing preservatives (DMDM hydantoin, quaternium-15) are IARC Group 1 carcinogens. ALWAYS rate HIGH RISK.
 
 For flagged ingredients, cite the specific authority (EFSA, ANSES, IARC, NIH) and the finding.
@@ -688,14 +690,43 @@ export async function analyzeAndSaveScan(
   const ethicsResult = results[1];
   const nutritionResult = isFoodOrDrinks ? results[2] : null;
 
-  // Post-process: ensure obviously safe ingredients aren't misclassified
-  const OBVIOUSLY_SAFE = ["water", "carbonated water", "purified water", "filtered water", "spring water", "sparkling water", "salt", "sea salt"];
+  // Post-process: normalize tiers and enforce mandatory overrides
   if (toxinsResult?.ingredients) {
+    const OBVIOUSLY_SAFE = ["water", "carbonated water", "purified water", "filtered water", "spring water", "sparkling water", "salt", "sea salt"];
+
+    // Mandatory tier overrides — code-enforced, not just prompt-requested
+    const TIER_OVERRIDES: Array<{ pattern: RegExp; tier: string; concern: string; source: string }> = [
+      { pattern: /xylene/i, tier: "high", concern: "Neurotoxin, VOC (IARC Group 3)", source: "IARC" },
+      { pattern: /toluene/i, tier: "high", concern: "Reproductive toxin, neurotoxin", source: "IARC" },
+      { pattern: /phthalate|dehp|dbp|bbp|dinp/i, tier: "high", concern: "Confirmed endocrine disruptor", source: "EFSA" },
+      { pattern: /methylisothiazolinone|\bMIT\b|\bMI\b/i, tier: "moderate", concern: "Skin sensitizer (EFSA)", source: "EFSA" },
+      { pattern: /^fragrance$|^parfum$/i, tier: "limited", concern: "Undisclosed ingredients", source: "EFSA" },
+      { pattern: /formaldehyde|dmdm hydantoin|quaternium.?15/i, tier: "high", concern: "IARC Group 1 carcinogen", source: "IARC" },
+      { pattern: /butanol|n-butanol/i, tier: "moderate", concern: "Irritant, VOC", source: "EFSA" },
+    ];
+
     for (const ing of toxinsResult.ingredients) {
-      if (OBVIOUSLY_SAFE.some((s) => ing.name.toLowerCase().includes(s))) {
+      // Normalize tier value
+      const rawTier = (ing.tier || "safe").toLowerCase().trim();
+      const validTiers = ["high", "moderate", "limited", "safe"];
+      ing.tier = validTiers.includes(rawTier) ? rawTier : "safe";
+
+      // Apply obviously safe overrides
+      if (OBVIOUSLY_SAFE.some((s: string) => ing.name.toLowerCase().includes(s))) {
         ing.tier = "safe";
         ing.concern = null;
         ing.source = null;
+        continue;
+      }
+
+      // Apply mandatory tier overrides (code > Gemini)
+      for (const override of TIER_OVERRIDES) {
+        if (override.pattern.test(ing.name)) {
+          ing.tier = override.tier;
+          if (!ing.concern) ing.concern = override.concern;
+          if (!ing.source) ing.source = override.source;
+          break;
+        }
       }
     }
   }
