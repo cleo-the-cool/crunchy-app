@@ -31,7 +31,7 @@ import {
   type Rating,
   type Alternative,
 } from "@/data/products";
-import { Badge, BrandText } from "@/components";
+import { Badge } from "@/components";
 import { getRatingFromScore } from "@/lib/savedProducts";
 import { getCategoryImage } from "@/lib/categoryImages";
 import { useAuth } from "@/contexts/AuthContext";
@@ -837,12 +837,15 @@ export default function ScanResultScreen() {
                 }}
               >
                 <Text
-                  className="text-sm text-dark/30"
-                  style={{ fontWeight: "500" }}
+                  style={{
+                    fontFamily: "JosefinSans-Thin",
+                    fontSize: 16,
+                    color: "rgba(61,90,62,0.35)",
+                    letterSpacing: 1,
+                  }}
                 >
-                  Scanned with{" "}
+                  Scanned with Crunchy Living
                 </Text>
-                <BrandText size="sm" showLogo={false} />
               </View>
             </View>
           </Animated.View>
