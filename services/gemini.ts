@@ -181,6 +181,8 @@ Product: ${productInfo.productName} by ${productInfo.brand} (Category: ${product
 
 IMPORTANT: If no ingredients are visible on the packaging in the image, DO NOT return "no ingredients found" or refuse to analyze. Instead, use your knowledge base to look up the known ingredients, materials, or chemical components for this specific product and brand. For non-food items like markers, pens, cleaning products, or cosmetics, research known formulation ingredients, VOCs, solvents, pigments, plasticizers, or hazardous materials associated with this product type. Always provide a full ingredient/material analysis.
 
+COMPLETENESS RULE: Include ALL known ingredients for the product category, even if not visible on the label. For dry erase markers, ALWAYS include xylene, toluene, isopropanol, butanol, and resin components. For cleaning products, include all known active chemicals and surfactants. Never omit known hazardous ingredients just because they aren't printed on the packaging — if the ingredient is a known component of this product type, include it.
+
 DO NOT penalize for: natural sugars, saturated fats, calories, whole food ingredients, or anything not chemically synthesized.
 
 Rate each ingredient using this 4-tier system based on scientific consensus:
@@ -272,6 +274,8 @@ IMPORTANT: If no product label is visible, research this brand and its parent co
 
 If product-specific data is unavailable, use brand-level or parent-company-level data and note this in data_confidence.
 
+SCORING RULES: Always return a numeric score (0-100) for each category when you have ANY findings or research. Use 50 as a baseline when data is limited. Only return null if you have absolutely zero information. Having findings but returning null is never acceptable.
+
 CRITICAL FORMATTING RULES:
 - Each item in the findings arrays must be a complete standalone fact in 8 words or fewer. Never write full sentences or paragraphs.
   BAD: "The product appears to be free of harmful additives based on current scientific consensus."
@@ -280,9 +284,9 @@ CRITICAL FORMATTING RULES:
 
 Return ONLY valid JSON:
 {
-  "animal_welfare_score": "number 0-100 or null if unknown",
-  "sustainability_score": "number 0-100 or null if unknown",
-  "fair_trade_score": "number 0-100 or null if unknown",
+  "animal_welfare_score": "number 0-100 (use 50 baseline if data is limited, null ONLY if zero info)",
+  "sustainability_score": "number 0-100 (use 50 baseline if data is limited, null ONLY if zero info)",
+  "fair_trade_score": "number 0-100 (use 50 baseline if data is limited, null ONLY if zero info)",
   "animal_welfare_findings": ["8 words max per finding"],
   "sustainability_findings": ["8 words max per finding"],
   "fair_trade_findings": ["8 words max per finding"],
@@ -762,18 +766,21 @@ export async function analyzeAndSaveScan(
       summary: toxinsResult?.summary || "",
     },
     animal_welfare: {
-      score: ethicsResult?.animal_welfare_score ?? null,
+      score: ethicsResult?.animal_welfare_score
+        ?? ((ethicsResult?.animal_welfare_findings?.length > 0 || ethicsResult?.certifications?.length > 0) ? 50 : null),
       findings: ethicsResult?.animal_welfare_findings || [],
       certifications: ethicsResult?.certifications || [],
       data_confidence: ethicsResult?.data_confidence || "limited",
     },
     sustainability: {
-      score: ethicsResult?.sustainability_score ?? null,
+      score: ethicsResult?.sustainability_score
+        ?? ((ethicsResult?.sustainability_findings?.length > 0) ? 50 : null),
       findings: ethicsResult?.sustainability_findings || [],
       data_confidence: ethicsResult?.data_confidence || "limited",
     },
     fair_trade: {
-      score: ethicsResult?.fair_trade_score ?? null,
+      score: ethicsResult?.fair_trade_score
+        ?? ((ethicsResult?.fair_trade_findings?.length > 0) ? 50 : null),
       findings: ethicsResult?.fair_trade_findings || [],
       data_confidence: ethicsResult?.data_confidence,
     },
