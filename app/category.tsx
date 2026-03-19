@@ -13,6 +13,7 @@ import { useGoBack } from "@/lib/useGoBack";
 import { CATEGORY_IMAGES } from "@/lib/categoryImages";
 import { getRecipesByCategory, type Recipe, type RecipeCategory } from "@/data/recipes";
 import { getSavedProducts, type SavedProduct } from "@/lib/savedProducts";
+import { useAuth } from "@/contexts/AuthContext";
 import * as Haptics from "../utils/haptics";
 
 // ─── Category config ─────────────────────────────────────────────────────────
@@ -60,10 +61,11 @@ function normalizeCategoryKey(cat?: string): string {
   const lower = cat.toLowerCase();
   if (lower.includes("food") || lower.includes("cooking") || lower.includes("pantry")) return "food";
   if (lower.includes("drink") || lower.includes("beverage")) return "drinks";
-  if (lower.includes("skin") || lower.includes("personal care")) return "skincare";
-  if (lower.includes("makeup") || lower.includes("cosmetic") || lower.includes("beauty")) return "makeup";
+  if (lower.includes("cosmetic")) return "skincare";
+  if (lower.includes("skin") || lower.includes("personal care") || lower.includes("cleanser") || lower.includes("moistur") || lower.includes("serum") || lower.includes("facial")) return "skincare";
+  if (lower.includes("makeup") || lower.includes("beauty")) return "makeup";
   if (lower.includes("clean")) return "cleaning";
-  if (lower.includes("wellness") || lower.includes("supplement")) return "wellness";
+  if (lower.includes("supplement") || lower.includes("wellness") || lower.includes("medicine") || lower.includes("ointment") || lower.includes("vitamin")) return "wellness";
   if (lower.includes("baby") || lower.includes("kid")) return "baby";
   if (lower.includes("other")) return "other";
   return "other";
@@ -89,6 +91,7 @@ function getRatingFromScore(score: number): "clean" | "caution" | "avoid" {
 export default function CategoryScreen() {
   const router = useRouter();
   const goBack = useGoBack();
+  const { user } = useAuth();
   const { key } = useLocalSearchParams<{ key: string }>();
 
   const categoryKey = key ?? "skincare";
@@ -104,8 +107,8 @@ export default function CategoryScreen() {
     async function load() {
       setLoading(true);
       try {
-        // Load saved products filtered by this category
-        const all = await getSavedProducts();
+        // Load saved products filtered by this category (user-scoped)
+        const all = await getSavedProducts(user?.id);
         const filtered = all.filter((p) => normalizeCategoryKey(p.category) === categoryKey);
         setSavedProducts(filtered);
 

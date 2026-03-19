@@ -343,6 +343,7 @@ export default function HomeScreen() {
               { key: "makeup", label: "Makeup & Beauty" },
               { key: "wellness", label: "Wellness & Supplements" },
               { key: "baby", label: "Baby & Kids" },
+              { key: "other", label: "Other" },
             ].map((cat) => (
               <TouchableOpacity
                 key={cat.key}

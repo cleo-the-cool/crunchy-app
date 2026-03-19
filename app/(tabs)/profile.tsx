@@ -29,12 +29,13 @@ const RISK_CONFIG = {
 function normalizeCategoryKey(cat?: string): string {
   if (!cat) return "Other";
   const lower = cat.toLowerCase();
-  if (lower.includes("food") || lower.includes("cooking")) return "Food";
+  if (lower.includes("food") || lower.includes("cooking") || lower.includes("pantry")) return "Food";
   if (lower.includes("drink") || lower.includes("beverage")) return "Drinks";
-  if (lower.includes("skin") || lower.includes("personal care")) return "Skincare";
-  if (lower.includes("makeup") || lower.includes("cosmetic")) return "Makeup";
+  if (lower.includes("cosmetic")) return "Skincare";
+  if (lower.includes("skin") || lower.includes("personal care") || lower.includes("cleanser") || lower.includes("moistur") || lower.includes("serum") || lower.includes("facial")) return "Skincare";
+  if (lower.includes("makeup") || lower.includes("beauty")) return "Makeup";
   if (lower.includes("clean")) return "Cleaning";
-  if (lower.includes("wellness") || lower.includes("supplement")) return "Wellness";
+  if (lower.includes("supplement") || lower.includes("wellness") || lower.includes("medicine") || lower.includes("ointment") || lower.includes("vitamin")) return "Wellness";
   if (lower.includes("baby") || lower.includes("kid")) return "Baby";
   return "Other";
 }

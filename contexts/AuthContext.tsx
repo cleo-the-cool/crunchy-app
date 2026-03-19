@@ -166,7 +166,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function signOut() {
-    await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
+    await AsyncStorage.multiRemove([AUTH_STORAGE_KEY, "@crunchy_saved_products"]);
     setUser(null);
   }
 
@@ -185,6 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       "@crunchy_user_lists",
       "@crunchy_scan_history",
       "@crunchy_saved_items",
+      "@crunchy_saved_products",
       "@crunchy_recipes_tried",
       "@crunchy_interests",
       "@crunchy_onboarding_complete",
