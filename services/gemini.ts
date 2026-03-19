@@ -117,7 +117,7 @@ async function callGemini(options: GeminiCallOptions): Promise<any> {
       }),
     });
 
-    if (response.status === 429 && attempt < maxRetries) {
+    if ((response.status === 429 || response.status === 503) && attempt < maxRetries) {
       await new Promise((resolve) => setTimeout(resolve, retryDelays[attempt - 1]));
       continue;
     }
