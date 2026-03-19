@@ -221,6 +221,14 @@ function ScanSuccessAnimation({ color }: { color: string }) {
 
 // ─── Sub-components ──────────────────────────────────────────────────
 
+function truncateBullet(text: string, maxWords: number = 12): string {
+  // Take first sentence only, then cap at maxWords
+  const firstSentence = text.split(/[.!?]/)[0].trim();
+  const words = firstSentence.split(/\s+/);
+  if (words.length <= maxWords) return firstSentence;
+  return words.slice(0, maxWords).join(" ") + "...";
+}
+
 function Bullet({ text, icon, iconColor }: { text: string; icon?: keyof typeof Ionicons.glyphMap; iconColor?: string }) {
   return (
     <View className="flex-row items-start mt-1.5">
@@ -229,7 +237,7 @@ function Bullet({ text, icon, iconColor }: { text: string; icon?: keyof typeof I
       ) : (
         <Text className="text-dark/40 mr-2">•</Text>
       )}
-      <Text className="text-sm text-dark/70 flex-1">{text}</Text>
+      <Text className="text-sm text-dark/70 flex-1">{truncateBullet(text)}</Text>
     </View>
   );
 }
