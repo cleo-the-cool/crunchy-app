@@ -237,7 +237,7 @@ Score based on: whole vs processed ingredients, NOVA processing scale (1=whole f
 DO NOT consider additives, ethics, sourcing, or anything not directly nutritional.
 
 CRITICAL FORMATTING RULES:
-- The "summary" field must be a single complete sentence of 15 words or fewer.
+- The "summary" field must be 8 words maximum. No exceptions.
 
 Return ONLY valid JSON:
 {
@@ -249,7 +249,7 @@ Return ONLY valid JSON:
     "processing_level": "minimal|processed|ultra-processed",
     "artificial_sweeteners": "true or false"
   },
-  "summary": "one complete sentence, 15 words max"
+  "summary": "8 words max, no exceptions"
 }`,
       },
       { inline_data: { mime_type: "image/jpeg", data: base64Image } },
@@ -268,15 +268,15 @@ async function analyzeEthics(base64Image: string, productInfo: ProductInfo): Pro
 
 Product: ${productInfo.productName} by ${productInfo.brand}
 
-IMPORTANT: If no label or ingredient data is visible in the image, use your knowledge base to research this brand and product. Never return empty findings — always provide your best analysis based on known brand practices, certifications, and industry data.
+IMPORTANT: If no product label is visible, research this brand and its parent company thoroughly from your knowledge base. Look up: known environmental violations or certifications, labor controversies or fair trade status, animal testing policies, sustainability reports, and any NGO or regulatory findings about this brand. Identify the parent company and research their full ESG record, labor practices, and environmental commitments. Never return generic placeholder findings like "No major controversies known" — always do real brand research and provide specific, factual findings.
 
-If product-specific data is unavailable, use brand-level data and note this in data_confidence.
+If product-specific data is unavailable, use brand-level or parent-company-level data and note this in data_confidence.
 
 CRITICAL FORMATTING RULES:
 - Each item in the findings arrays must be a complete standalone fact in 8 words or fewer. Never write full sentences or paragraphs.
   BAD: "The product appears to be free of harmful additives based on current scientific consensus."
   GOOD: "No harmful additives or chemicals detected."
-- The "summary" field must be a single complete sentence of 15 words or fewer.
+- The "summary" field must be 8 words maximum. No exceptions.
 
 Return ONLY valid JSON:
 {
