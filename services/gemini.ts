@@ -299,7 +299,6 @@ async function findCachedProduct(
       .limit(1)
       .maybeSingle(); // maybeSingle returns null instead of throwing on 0 rows
 
-    console.log("[CACHE DEBUG] Exact match query for name='" + name + "' brand='" + brand + "':", exactMatch ? "FOUND (id=" + exactMatch.id + ", has_category_scores=" + !!exactMatch.category_scores + ")" : "NOT FOUND", exactError ? "ERROR: " + exactError.message : "");
 
     if (exactMatch) {
       return {
@@ -309,7 +308,6 @@ async function findCachedProduct(
       };
     }
   } catch (e) {
-    console.log("[CACHE DEBUG] Exact match threw:", e);
   }
 
   // Strategy 2: Case-insensitive brand match + name word similarity (fuzzy)
@@ -323,9 +321,7 @@ async function findCachedProduct(
       .ilike("brand", `%${normalizedBrand}%`)
       .limit(20);
 
-    console.log("[CACHE DEBUG] Fuzzy search for brand='" + normalizedBrand + "':", fuzzyMatches?.length ?? 0, "matches", fuzzyError ? "ERROR: " + fuzzyError.message : "");
     if (fuzzyMatches) {
-      fuzzyMatches.forEach((r) => console.log("[CACHE DEBUG]   - '" + r.name + "' by '" + r.brand + "' (has_cs=" + !!r.category_scores + ")"));
     }
 
     if (fuzzyMatches && fuzzyMatches.length > 0) {
@@ -341,14 +337,12 @@ async function findCachedProduct(
             nameWords.length > 0
               ? commonWords.length / Math.max(nameWords.length, dbWords.length)
               : 0;
-          console.log("[CACHE DEBUG]   Similarity '" + dbName + "' vs '" + normalizedName + "': " + similarity.toFixed(2));
           return { ...row, similarity };
         })
         .filter((row) => row.similarity >= 0.5)
         .sort((a, b) => b.similarity - a.similarity)[0];
 
       if (bestMatch) {
-        console.log("[CACHE DEBUG] Fuzzy match HIT: '" + bestMatch.name + "' (similarity=" + bestMatch.similarity.toFixed(2) + ")");
         return {
           analysis: bestMatch.gemini_analysis as GeminiAnalysis | null,
           categoryScores: bestMatch.category_scores as CategoryScores | null,
@@ -357,10 +351,8 @@ async function findCachedProduct(
       }
     }
   } catch (e) {
-    console.log("[CACHE DEBUG] Fuzzy match threw:", e);
   }
 
-  console.log("[CACHE DEBUG] No cache match found at all");
   return null;
 }
 
@@ -371,7 +363,6 @@ async function cacheProduct(
   if (!isSupabaseConfigured()) return null;
 
   try {
-    console.log("[CACHE DEBUG] cacheProduct called for:", analysis.productName, "by", analysis.brand, "hasCategoryScores:", !!categoryScores);
     const { data: existing, error: existErr } = await supabase
       .from("products")
       .select("id, scan_count")
@@ -381,7 +372,6 @@ async function cacheProduct(
       .maybeSingle();
 
     if (existing) {
-      console.log("[CACHE DEBUG] Updating existing product id:", existing.id);
       const { error: updateErr } = await supabase
         .from("products")
         .update({
@@ -392,11 +382,9 @@ async function cacheProduct(
           updated_at: new Date().toISOString(),
         })
         .eq("id", existing.id);
-      if (updateErr) console.log("[CACHE DEBUG] Update error:", updateErr.message);
       return existing.id;
     }
 
-    console.log("[CACHE DEBUG] Inserting new product");
     const { data: newProduct, error: insertErr } = await supabase
       .from("products")
       .insert({
@@ -615,16 +603,8 @@ export async function analyzeAndSaveScan(
   const productInfo = await identifyProduct(base64Image);
 
   // Step 2: Check cache
-  const _id = JSON.stringify({ name: productInfo.productName, brand: productInfo.brand });
-  console.log("[CACHE DEBUG] Identify returned:", _id);
-  const { Alert: _Alert } = require("react-native");
-  _Alert.alert("Cache Debug 1/3", "Identify: " + productInfo.productName + " by " + productInfo.brand);
   const cached = await findCachedProduct(productInfo.productName, productInfo.brand);
-  const _cacheInfo = cached ? "productId=" + cached.productId + " hasCatScores=" + !!cached.categoryScores : "NULL (no match)";
-  console.log("[CACHE DEBUG] findCachedProduct returned:", _cacheInfo);
-  _Alert.alert("Cache Debug 2/3", "Cache result: " + _cacheInfo);
   if (cached?.categoryScores) {
-    _Alert.alert("Cache Debug 3/3", "CACHE HIT! Returning instant score.");
     const prefs = await loadUserPreferences();
     const score = computeWeightedScore(cached.categoryScores, prefs);
     const analysis = buildAnalysisFromCachedData(productInfo, cached, score);
