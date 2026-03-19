@@ -162,7 +162,7 @@ export default function ListsScreen() {
           >
             <View style={{ backgroundColor: "rgba(61,90,62,0.55)" }}>
               <SafeAreaView edges={["top"]}>
-                <View className="px-6 pt-6 pb-8" style={{ minHeight: 140 }}>
+                <View className="px-6 pt-6 pb-8" style={{ minHeight: 140, justifyContent: "space-between" }}>
                   <View className="flex-row items-center">
                     <TouchableOpacity onPress={goBack} hitSlop={8}>
                       <Ionicons name="arrow-back" size={24} color="#FFF" />
@@ -176,12 +176,14 @@ export default function ListsScreen() {
                       <Ionicons name="add" size={22} color="#FFF" />
                     </TouchableOpacity>
                   </View>
-                  <Text className="text-4xl font-bold text-white mt-3">
-                    Product Lists
-                  </Text>
-                  <Text className="text-white/60 text-sm mt-1">
-                    Organize your favorite clean products
-                  </Text>
+                  <View>
+                    <Text className="text-4xl font-bold text-white">
+                      Product Lists
+                    </Text>
+                    <Text className="text-white/60 text-sm mt-1">
+                      Organize your favorite clean products
+                    </Text>
+                  </View>
                 </View>
               </SafeAreaView>
             </View>

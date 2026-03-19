@@ -4,7 +4,9 @@ export type RecipeCategory =
   | "Haircare"
   | "Home"
   | "Personal Care"
-  | "Cooking";
+  | "Cooking"
+  | "Wellness & Supplements"
+  | "Other";
 
 export type Difficulty = "Easy" | "Medium" | "Hard";
 
@@ -43,6 +45,8 @@ export const RECIPE_CATEGORIES: { name: RecipeCategory; icon: string }[] = [
   { name: "Haircare", icon: "💇" },
   { name: "Home", icon: "🏡" },
   { name: "Personal Care", icon: "🌿" },
+  { name: "Wellness & Supplements", icon: "🧘" },
+  { name: "Other", icon: "📦" },
 ];
 
 export const RECIPES: Recipe[] = [
@@ -1918,6 +1922,256 @@ export const RECIPES: Recipe[] = [
     tips: [
       "The riper the banana, the sweeter the pancakes.",
       "Makes about 8 small pancakes.",
+    ],
+    madeItCount: 1234,
+  },
+
+  // ===== WELLNESS & SUPPLEMENTS (8 recipes) =====
+  {
+    id: "recipe-063",
+    title: "Ginger-Turmeric Headache Tea",
+    category: "Wellness & Supplements",
+    image: "🫚",
+    difficulty: "Easy",
+    timeMinutes: 10,
+    costEstimate: "$1.00",
+    storeBoughtCost: "$6.99",
+    description:
+      "A warming, anti-inflammatory tea that naturally eases headaches and tension without reaching for pills.",
+    ingredients: [
+      { name: "Fresh ginger root", quantity: "1 inch piece", note: "Sliced thin" },
+      { name: "Turmeric powder", quantity: "1/2 tsp" },
+      { name: "Raw honey", quantity: "1 tsp" },
+      { name: "Lemon juice", quantity: "1 tbsp" },
+      { name: "Black pepper", quantity: "Pinch", note: "Boosts turmeric absorption" },
+      { name: "Water", quantity: "2 cups" },
+    ],
+    steps: [
+      { step: 1, instruction: "Bring water to a boil and add sliced ginger." },
+      { step: 2, instruction: "Reduce heat and simmer for 5-7 minutes." },
+      { step: 3, instruction: "Remove from heat, stir in turmeric and black pepper." },
+      { step: 4, instruction: "Strain into a mug, add honey and lemon juice." },
+    ],
+    tips: [
+      "Drink at the first sign of a headache for best results.",
+      "Ginger is a natural anti-inflammatory and helps with nausea too.",
+      "The black pepper increases turmeric's bioavailability by 2000%.",
+    ],
+    madeItCount: 567,
+  },
+  {
+    id: "recipe-064",
+    title: "Chamomile Lavender Sleep Tea",
+    category: "Wellness & Supplements",
+    image: "🌙",
+    difficulty: "Easy",
+    timeMinutes: 8,
+    costEstimate: "$1.50",
+    storeBoughtCost: "$7.99",
+    description:
+      "A calming bedtime tea blend that promotes deep, restful sleep using chamomile and lavender.",
+    ingredients: [
+      { name: "Dried chamomile flowers", quantity: "2 tbsp" },
+      { name: "Dried lavender buds", quantity: "1 tsp" },
+      { name: "Raw honey", quantity: "1 tsp" },
+      { name: "Warm milk or oat milk", quantity: "2 tbsp", note: "Optional, for creaminess" },
+      { name: "Water", quantity: "1.5 cups" },
+    ],
+    steps: [
+      { step: 1, instruction: "Bring water to a boil, then let cool for 1 minute (don't pour boiling water directly on flowers)." },
+      { step: 2, instruction: "Place chamomile and lavender in a tea strainer or mug." },
+      { step: 3, instruction: "Pour hot water over and steep for 5 minutes." },
+      { step: 4, instruction: "Strain, add honey and warm milk if desired." },
+    ],
+    tips: [
+      "Drink 30-60 minutes before bed for the best effect.",
+      "Chamomile contains apigenin, a natural sedative compound.",
+      "Add a tiny pinch of cinnamon for a cozy twist.",
+    ],
+    madeItCount: 823,
+  },
+  {
+    id: "recipe-065",
+    title: "5-Minute Morning Stretch Routine",
+    category: "Wellness & Supplements",
+    image: "🧘",
+    difficulty: "Easy",
+    timeMinutes: 5,
+    costEstimate: "$0.00",
+    storeBoughtCost: "$15.99",
+    description:
+      "A quick, energizing morning stretch routine that wakes up your body and clears your mind — no equipment needed.",
+    ingredients: [
+      { name: "Yoga mat or soft surface", quantity: "1", note: "Optional" },
+      { name: "Comfortable clothes", quantity: "Whatever you woke up in" },
+    ],
+    steps: [
+      { step: 1, instruction: "Cat-Cow: On all fours, alternate arching and rounding your back for 30 seconds.", tip: "Breathe in as you arch, out as you round." },
+      { step: 2, instruction: "Forward Fold: Stand up, hinge at hips, let arms hang toward the floor. Hold 30 seconds." },
+      { step: 3, instruction: "Side Stretches: Reach one arm overhead and lean to the opposite side. 20 seconds each side." },
+      { step: 4, instruction: "Neck Rolls: Slowly roll your head in circles, 5 each direction." },
+      { step: 5, instruction: "Child's Pose: Kneel, sit back on heels, stretch arms forward on the floor. Hold 1 minute." },
+    ],
+    tips: [
+      "Do this before reaching for your phone in the morning.",
+      "Pair with 3 deep breaths between each stretch for mindfulness.",
+      "Consistency matters more than flexibility — just show up daily.",
+    ],
+    madeItCount: 1456,
+  },
+  {
+    id: "recipe-066",
+    title: "Box Breathing for Anxiety",
+    category: "Wellness & Supplements",
+    image: "🫁",
+    difficulty: "Easy",
+    timeMinutes: 4,
+    costEstimate: "$0.00",
+    storeBoughtCost: "$12.99",
+    description:
+      "A simple breathing technique used by Navy SEALs to calm anxiety, reduce stress, and regain focus in minutes.",
+    ingredients: [
+      { name: "Quiet space", quantity: "Just you" },
+      { name: "Timer (optional)", quantity: "Phone or watch" },
+    ],
+    steps: [
+      { step: 1, instruction: "Breathe IN slowly for 4 seconds through your nose." },
+      { step: 2, instruction: "HOLD your breath for 4 seconds." },
+      { step: 3, instruction: "Breathe OUT slowly for 4 seconds through your mouth." },
+      { step: 4, instruction: "HOLD empty for 4 seconds." },
+      { step: 5, instruction: "Repeat for 4 rounds (about 4 minutes total).", tip: "Visualize tracing a square — each side is one phase." },
+    ],
+    tips: [
+      "Use during test anxiety, before presentations, or when overwhelmed.",
+      "Even 2 rounds will noticeably lower your heart rate.",
+      "Can be done anywhere — in class, in the car, before bed.",
+    ],
+    madeItCount: 2134,
+  },
+  {
+    id: "recipe-067",
+    title: "Peppermint Tummy Tea",
+    category: "Wellness & Supplements",
+    image: "🍃",
+    difficulty: "Easy",
+    timeMinutes: 7,
+    costEstimate: "$1.00",
+    storeBoughtCost: "$5.99",
+    description:
+      "A soothing peppermint tea that relieves bloating, cramps, and digestive discomfort naturally.",
+    ingredients: [
+      { name: "Fresh peppermint leaves", quantity: "10-12 leaves", note: "Or 1 tbsp dried" },
+      { name: "Fresh ginger", quantity: "3 thin slices" },
+      { name: "Honey", quantity: "1 tsp" },
+      { name: "Water", quantity: "1.5 cups" },
+    ],
+    steps: [
+      { step: 1, instruction: "Boil water and add peppermint leaves and ginger slices." },
+      { step: 2, instruction: "Simmer for 5 minutes on low heat." },
+      { step: 3, instruction: "Strain into a mug and add honey." },
+    ],
+    tips: [
+      "Drink after meals to aid digestion.",
+      "Peppermint relaxes the smooth muscles in your digestive tract.",
+      "Avoid if you have acid reflux — peppermint can worsen it.",
+    ],
+    madeItCount: 678,
+  },
+  {
+    id: "recipe-068",
+    title: "Natural Vitamin Guide: What to Take & When",
+    category: "Wellness & Supplements",
+    image: "💊",
+    difficulty: "Easy",
+    timeMinutes: 5,
+    costEstimate: "$0.00",
+    storeBoughtCost: "$0.00",
+    description:
+      "A quick reference guide to the most important vitamins and supplements — what they do, when to take them, and which ones actually matter.",
+    ingredients: [
+      { name: "Vitamin D3", quantity: "1000-2000 IU daily", note: "Take with food containing fat" },
+      { name: "Magnesium glycinate", quantity: "200-400mg", note: "Take at night for sleep" },
+      { name: "Omega-3 (fish oil or algae)", quantity: "1000mg EPA+DHA", note: "Take with meals" },
+      { name: "B-complex", quantity: "1 daily", note: "Take in the morning for energy" },
+      { name: "Zinc", quantity: "15-30mg", note: "Take with food to avoid nausea" },
+      { name: "Probiotics", quantity: "1 capsule", note: "Take on an empty stomach" },
+    ],
+    steps: [
+      { step: 1, instruction: "Morning with breakfast: Vitamin D3, B-complex, Omega-3." },
+      { step: 2, instruction: "With lunch: Zinc (if taking it)." },
+      { step: 3, instruction: "Before bed: Magnesium glycinate (helps with sleep and muscle recovery)." },
+      { step: 4, instruction: "On empty stomach (morning or before bed): Probiotics." },
+    ],
+    tips: [
+      "You probably don't need a multivitamin if you eat well — target specific deficiencies instead.",
+      "Vitamin D is the #1 deficiency in teens, especially if you're indoors a lot.",
+      "Magnesium is a game-changer for sleep, anxiety, and muscle cramps.",
+      "Always check with a doctor before starting new supplements.",
+    ],
+    madeItCount: 3456,
+  },
+  {
+    id: "recipe-069",
+    title: "Gratitude Journal Prompts",
+    category: "Wellness & Supplements",
+    image: "📓",
+    difficulty: "Easy",
+    timeMinutes: 10,
+    costEstimate: "$0.00",
+    storeBoughtCost: "$14.99",
+    description:
+      "A set of journal prompts designed to boost mood, build self-awareness, and cultivate gratitude — proven to reduce anxiety.",
+    ingredients: [
+      { name: "Journal or notebook", quantity: "1" },
+      { name: "Pen", quantity: "1" },
+      { name: "Quiet space", quantity: "5-10 minutes" },
+    ],
+    steps: [
+      { step: 1, instruction: "Pick 1-2 prompts from the list below and write freely for 5-10 minutes." },
+      { step: 2, instruction: "Prompt: What are 3 things that went well today, no matter how small?" },
+      { step: 3, instruction: "Prompt: What's something about yourself you're proud of this week?" },
+      { step: 4, instruction: "Prompt: Who made you smile recently, and why?", tip: "Don't overthink it — there are no wrong answers." },
+      { step: 5, instruction: "Prompt: What's a challenge you're facing, and what's one thing you can learn from it?" },
+    ],
+    tips: [
+      "Studies show journaling for just 5 minutes reduces anxiety by up to 27%.",
+      "Try to journal at the same time each day to build the habit.",
+      "Morning journaling sets intentions; evening journaling processes the day.",
+      "There's no right way to do this — even one sentence counts.",
+    ],
+    madeItCount: 1890,
+  },
+  {
+    id: "recipe-070",
+    title: "Elderberry Immune Syrup",
+    category: "Wellness & Supplements",
+    image: "🫐",
+    difficulty: "Medium",
+    timeMinutes: 45,
+    costEstimate: "$8.00",
+    storeBoughtCost: "$24.99",
+    description:
+      "A homemade elderberry syrup packed with antioxidants to boost immunity during cold and flu season.",
+    ingredients: [
+      { name: "Dried elderberries", quantity: "1 cup" },
+      { name: "Water", quantity: "3 cups" },
+      { name: "Cinnamon stick", quantity: "1" },
+      { name: "Whole cloves", quantity: "5" },
+      { name: "Fresh ginger", quantity: "1 inch piece" },
+      { name: "Raw honey", quantity: "1 cup", note: "Add after cooling — heat destroys enzymes" },
+    ],
+    steps: [
+      { step: 1, instruction: "Combine elderberries, water, cinnamon, cloves, and ginger in a pot." },
+      { step: 2, instruction: "Bring to a boil, then reduce heat and simmer for 40 minutes until liquid reduces by half." },
+      { step: 3, instruction: "Strain through a fine mesh strainer, pressing berries to extract all liquid." },
+      { step: 4, instruction: "Let cool to room temperature, then stir in honey.", tip: "Never add honey to hot liquid — it kills the beneficial enzymes." },
+      { step: 5, instruction: "Pour into a glass jar and store in the fridge." },
+    ],
+    tips: [
+      "Take 1 tablespoon daily for prevention, or every 2-3 hours when sick.",
+      "Kids over 1 year: 1 teaspoon daily.",
+      "Lasts 2-3 months refrigerated.",
+      "Never eat raw elderberries — they must be cooked first.",
     ],
     madeItCount: 1234,
   },

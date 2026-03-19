@@ -13,6 +13,7 @@ export const CATEGORY_IMAGES: Record<string, any> = {
   home: require("@/assets/images/aesthetic/home-interior.jpg"),
   baby: require("@/assets/images/aesthetic/baby-natural.jpg"),
   wellness: require("@/assets/images/aesthetic/wellness-herbs.jpg"),
+  other: require("@/assets/images/aesthetic/botanical.jpg"),
 };
 
 const DEFAULT_IMAGE = require("@/assets/images/aesthetic/botanical.jpg");

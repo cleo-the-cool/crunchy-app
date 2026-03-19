@@ -25,6 +25,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   makeup: "Makeup & Beauty",
   wellness: "Wellness & Supplements",
   baby: "Baby & Kids",
+  other: "Other",
 };
 
 const CATEGORY_SUBTITLES: Record<string, string> = {
@@ -35,6 +36,7 @@ const CATEGORY_SUBTITLES: Record<string, string> = {
   makeup: "Beauty products that actually care",
   wellness: "Supplements & wellness products",
   baby: "Gentle & safe for little ones",
+  other: "Everything else",
 };
 
 // Maps browse category key → recipe category name
@@ -46,7 +48,8 @@ function getRecipeCategoryName(key: string): RecipeCategory | null {
     drinks: "Cooking",
     baby: "Personal Care",
     makeup: "Skincare",
-    wellness: "Personal Care",
+    wellness: "Wellness & Supplements",
+    other: "Other",
   };
   return map[key] ?? null;
 }
@@ -62,6 +65,7 @@ function normalizeCategoryKey(cat?: string): string {
   if (lower.includes("clean")) return "cleaning";
   if (lower.includes("wellness") || lower.includes("supplement")) return "wellness";
   if (lower.includes("baby") || lower.includes("kid")) return "baby";
+  if (lower.includes("other")) return "other";
   return "other";
 }
 
@@ -124,23 +128,25 @@ export default function CategoryScreen() {
       <ImageBackground source={headerImage} resizeMode="cover">
         <View style={{ backgroundColor: "rgba(61,90,62,0.55)" }}>
           <SafeAreaView edges={["top"]}>
-            <View className="px-6 pt-4 pb-8" style={{ minHeight: 180 }}>
+            <View className="px-6 pt-4 pb-8" style={{ minHeight: 180, justifyContent: "space-between" }}>
               {/* Back button */}
               <TouchableOpacity
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   goBack();
                 }}
-                className="flex-row items-center mb-4"
+                className="flex-row items-center"
                 hitSlop={8}
               >
                 <Ionicons name="chevron-back" size={22} color="white" />
                 <Text className="text-white/90 text-sm font-medium ml-1">Back</Text>
               </TouchableOpacity>
 
-              {/* Title */}
-              <Text className="text-3xl font-bold text-white">{label}</Text>
-              <Text className="text-sm text-white/70 mt-1">{subtitle}</Text>
+              {/* Title — pinned to bottom of header */}
+              <View>
+                <Text className="text-3xl font-bold text-white">{label}</Text>
+                <Text className="text-sm text-white/70 mt-1">{subtitle}</Text>
+              </View>
             </View>
           </SafeAreaView>
         </View>
