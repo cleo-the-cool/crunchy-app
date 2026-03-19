@@ -252,8 +252,10 @@ Return ONLY valid JSON:
   "animal_welfare_score": "number 0-100 or null if unknown",
   "sustainability_score": "number 0-100 or null if unknown",
   "fair_trade_score": "number 0-100 or null if unknown",
+  "animal_welfare_findings": ["findings ONLY about animal welfare"],
+  "sustainability_findings": ["findings ONLY about environmental sustainability"],
+  "fair_trade_findings": ["findings ONLY about fair trade and labor"],
   "certifications": ["list of certification names found"],
-  "findings": ["list of factual findings about ethics"],
   "data_confidence": "product|brand|limited",
   "summary": "string"
 }`,
@@ -469,10 +471,15 @@ function buildAnalysisFromCategories(
     concerns.push(nutritionResult.summary);
   }
   // Only add negative ethics findings (filter out positive ones)
-  if (ethicsResult?.findings) {
+  const allEthicsFindings = [
+    ...(ethicsResult?.animal_welfare_findings || []),
+    ...(ethicsResult?.sustainability_findings || []),
+    ...(ethicsResult?.fair_trade_findings || []),
+  ];
+  if (allEthicsFindings.length > 0) {
     const negativeKeywords = ["controversy", "concern", "violation", "accused", "lawsuit", "poor", "low score", "no certification", "unknown", "insufficient"];
     const positiveKeywords = ["recyclable", "certified", "vegan", "cruelty-free", "organic", "fair trade", "no major", "no known", "committed", "sustainable"];
-    for (const finding of ethicsResult.findings) {
+    for (const finding of allEthicsFindings) {
       const lower = finding.toLowerCase();
       const isPositive = positiveKeywords.some((kw) => lower.includes(kw));
       const isNegative = negativeKeywords.some((kw) => lower.includes(kw));
@@ -686,18 +693,18 @@ export async function analyzeAndSaveScan(
     },
     animal_welfare: {
       score: ethicsResult?.animal_welfare_score ?? null,
-      findings: ethicsResult?.findings || [],
+      findings: ethicsResult?.animal_welfare_findings || [],
       certifications: ethicsResult?.certifications || [],
       data_confidence: ethicsResult?.data_confidence || "limited",
     },
     sustainability: {
       score: ethicsResult?.sustainability_score ?? null,
-      findings: ethicsResult?.findings || [],
+      findings: ethicsResult?.sustainability_findings || [],
       data_confidence: ethicsResult?.data_confidence || "limited",
     },
     fair_trade: {
       score: ethicsResult?.fair_trade_score ?? null,
-      findings: ethicsResult?.findings || [],
+      findings: ethicsResult?.fair_trade_findings || [],
       data_confidence: ethicsResult?.data_confidence,
     },
   };
