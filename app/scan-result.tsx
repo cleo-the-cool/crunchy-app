@@ -850,7 +850,7 @@ export default function ScanResultScreen() {
                   style={{
                     fontFamily: "JosefinSans-Thin",
                     fontSize: 16,
-                    color: "rgba(61,90,62,0.35)",
+                    color: "rgba(112,67,0,0.35)",
                     letterSpacing: 1,
                   }}
                 >

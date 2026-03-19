@@ -13,7 +13,7 @@ const SIZES = {
   lg: { fontSize: 32, logoSize: 36 },
 };
 
-export function BrandText({ size = "md", showLogo = true, color = "#3D5A3E", style }: BrandTextProps) {
+export function BrandText({ size = "md", showLogo = true, color = "#704300", style }: BrandTextProps) {
   const { fontSize, logoSize } = SIZES[size];
   return (
     <View style={[{ flexDirection: "row", alignItems: "center" }, style]}>
