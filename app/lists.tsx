@@ -189,36 +189,52 @@ export default function ListsScreen() {
             </View>
           </ImageBackground>
 
-          {/* Tab Segments */}
-          <View className="px-5 mb-3">
-            <View
-              className="flex-row bg-white rounded-3xl p-1"
-              style={cardShadow}
-            >
+          {/* Tab Segments — matches scanner page style */}
+          <View style={{
+            backgroundColor: '#FFFDF8',
+            borderRadius: 20,
+            padding: 4,
+            marginHorizontal: 16,
+            marginBottom: 12,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 10,
+            elevation: 3,
+            borderWidth: 1,
+            borderColor: 'rgba(0,0,0,0.08)',
+          }}>
+            <View className="flex-row" style={{ gap: 4 }}>
               <TouchableOpacity
                 onPress={() => setActiveTab("my-lists")}
-                className={`flex-1 py-2.5 rounded-xl items-center ${
-                  activeTab === "my-lists" ? "bg-forest" : ""
-                }`}
+                className="flex-1 flex-row items-center justify-center rounded-2xl"
+                style={
+                  activeTab === "my-lists"
+                    ? { backgroundColor: "#3D5A3E", paddingVertical: 12 }
+                    : { backgroundColor: "transparent", paddingVertical: 12 }
+                }
               >
+                <Ionicons name="list-outline" size={16} color={activeTab === "my-lists" ? "white" : "#2D2D2D"} />
                 <Text
-                  className={`text-sm font-semibold ${
-                    activeTab === "my-lists" ? "text-white" : "text-dark/50"
-                  }`}
+                  className="ml-1 text-xs font-semibold"
+                  style={{ color: activeTab === "my-lists" ? "white" : "#2D2D2D" }}
                 >
                   My Lists
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setActiveTab("saved")}
-                className={`flex-1 py-2.5 rounded-xl items-center ${
-                  activeTab === "saved" ? "bg-forest" : ""
-                }`}
+                className="flex-1 flex-row items-center justify-center rounded-2xl"
+                style={
+                  activeTab === "saved"
+                    ? { backgroundColor: "#3D5A3E", paddingVertical: 12 }
+                    : { backgroundColor: "transparent", paddingVertical: 12 }
+                }
               >
+                <Ionicons name="heart-outline" size={16} color={activeTab === "saved" ? "white" : "#2D2D2D"} />
                 <Text
-                  className={`text-sm font-semibold ${
-                    activeTab === "saved" ? "text-white" : "text-dark/50"
-                  }`}
+                  className="ml-1 text-xs font-semibold"
+                  style={{ color: activeTab === "saved" ? "white" : "#2D2D2D" }}
                 >
                   Saved Products
                 </Text>

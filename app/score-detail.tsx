@@ -106,19 +106,34 @@ export default function ScoreDetailScreen() {
   const tierInfo = stats.tier;
 
   return (
-    <SafeAreaView className="flex-1 bg-ivory">
+    <View className="flex-1 bg-ivory">
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
-        <View className="flex-row items-center px-5 pt-4 pb-2">
-          <TouchableOpacity onPress={goBack} className="mr-3">
-            <Ionicons name="arrow-back" size={24} color="#3D5A3E" />
-          </TouchableOpacity>
-          <Text className="text-xl font-bold text-dark">Your Crunchy Score</Text>
-        </View>
+        {/* Hero Header */}
+        <ImageBackground
+          source={require("@/assets/images/aesthetic/leaves-hero.jpg")}
+          resizeMode="cover"
+          style={{ width: "100%" }}
+        >
+          <View style={{ backgroundColor: "rgba(61,90,62,0.55)" }}>
+            <SafeAreaView edges={["top"]}>
+              <View className="px-6 pt-6 pb-8" style={{ minHeight: 140, justifyContent: "space-between" }}>
+                <View className="flex-row items-center">
+                  <TouchableOpacity onPress={goBack} hitSlop={8}>
+                    <Ionicons name="arrow-back" size={24} color="#FFF" />
+                  </TouchableOpacity>
+                </View>
+                <View>
+                  <Text className="text-3xl font-bold text-white">Your Crunchy Score</Text>
+                  <Text className="text-sm text-white/70 mt-0.5">Track your clean living journey</Text>
+                </View>
+              </View>
+            </SafeAreaView>
+          </View>
+        </ImageBackground>
 
         {/* Score Card with Nature Background */}
         <View className="mx-5 mt-4">
@@ -247,6 +262,6 @@ export default function ScoreDetailScreen() {
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
