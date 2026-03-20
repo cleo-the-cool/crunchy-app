@@ -259,7 +259,7 @@ export default function ScoreDetailScreen() {
             <View className="flex-row items-start mb-3">
               <Ionicons name="restaurant-outline" size={18} color="#3D5A3E" />
               <Text className="text-sm text-dark/70 ml-2 flex-1">
-                Try clean recipes from the Explore tab
+                Try clean recipes by browsing different categories
               </Text>
             </View>
             <View className="flex-row items-start">
