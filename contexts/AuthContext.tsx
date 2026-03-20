@@ -11,6 +11,7 @@ type User = {
   id: string;
   email: string;
   name: string;
+  created_at?: string;
 };
 
 type AuthContextType = {
@@ -41,7 +42,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const stored = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
       if (stored) {
-        setUser(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        // Backfill created_at for existing users who don't have it
+        if (!parsed.created_at) {
+          parsed.created_at = new Date().toISOString();
+          await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(parsed));
+        }
+        setUser(parsed);
       }
     } catch {
       // ignore
@@ -66,6 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       id: Date.now().toString(),
       email: email.toLowerCase().trim(),
       name: name.trim(),
+      created_at: new Date().toISOString(),
     };
 
     await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(newUser));
@@ -97,6 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         id: Date.now().toString(),
         email: email.toLowerCase().trim(),
         name: email.split("@")[0],
+        created_at: new Date().toISOString(),
       };
     }
 
@@ -155,10 +164,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       );
     }
 
+    // Check if existing Apple user has created_at
+    const existingStored = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
+    let existingCreatedAt: string | undefined;
+    if (existingStored) {
+      try {
+        const existing = JSON.parse(existingStored);
+        if (existing.id === `apple_${appleUserId}`) {
+          existingCreatedAt = existing.created_at;
+        }
+      } catch {}
+    }
+
     const appleUser: User = {
       id: `apple_${appleUserId}`,
       email: email || `${appleUserId}@privaterelay.appleid.com`,
       name: name || "Apple User",
+      created_at: existingCreatedAt || new Date().toISOString(),
     };
 
     await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(appleUser));

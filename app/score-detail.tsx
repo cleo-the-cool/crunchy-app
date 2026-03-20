@@ -125,7 +125,7 @@ export default function ScoreDetailScreen() {
       >
         {/* Hero Header */}
         <ImageBackground
-          source={require("@/assets/images/aesthetic/leaves-hero.jpg")}
+          source={require("@/assets/images/aesthetic/score-header.jpg")}
           resizeMode="cover"
           style={{ width: "100%" }}
         >
