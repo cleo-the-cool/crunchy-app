@@ -18,6 +18,17 @@ import { getScanStats } from "@/lib/scanHistory";
 import { useAuth } from "@/contexts/AuthContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+const TIER_IMAGES: Record<string, any> = {
+  "Seedling": require("@/assets/images/aesthetic/tier-seedling.jpg"),
+  "Sprout": require("@/assets/images/aesthetic/tier-sprout.jpg"),
+  "Sapling": require("@/assets/images/aesthetic/tier-sapling.jpg"),
+  "In Bloom": require("@/assets/images/aesthetic/tier-bloom.jpg"),
+};
+
+function getTierImage(tierLabel: string) {
+  return TIER_IMAGES[tierLabel] || TIER_IMAGES["Seedling"];
+}
+
 const TIER_DETAILS = [
   { emoji: "", label: "Seedling", range: "0-25", description: "Just starting your clean living journey" },
   { emoji: "", label: "Sprout", range: "26-50", description: "Building healthy habits" },
@@ -135,26 +146,24 @@ export default function ScoreDetailScreen() {
           </View>
         </ImageBackground>
 
-        {/* Score Card with Nature Background */}
+        {/* Score Card with Tier-specific Background */}
         <View className="mx-5 mt-4">
           <ImageBackground
-            source={require("@/assets/images/aesthetic/water-leaf.jpg")}
+            source={getTierImage(tierInfo.label)}
             resizeMode="cover"
             imageStyle={{ borderRadius: 24 }}
           >
             <View
               className="rounded-3xl p-6 items-center"
-              style={{ backgroundColor: "rgba(61,90,62,0.65)" }}
+              style={{ backgroundColor: "rgba(61,90,62,0.55)" }}
             >
               {loading ? (
                 <ActivityIndicator size="large" color="#fff" />
               ) : (
                 <>
-                  {tierInfo.emoji ? <Text className="text-5xl mb-1">{tierInfo.emoji}</Text> : null}
                   <Text className="text-5xl font-bold text-white mt-1">
                     {stats.crunchyScore}
                   </Text>
-                  <Text className="text-white/80 text-base mt-1">{tierInfo.label}</Text>
                   <View className="mt-3">
                     <Badge rating={tierInfo.badge} size="md" label={tierInfo.label} />
                   </View>
