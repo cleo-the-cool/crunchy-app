@@ -23,7 +23,7 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { analyzeAndSaveScan, identifyAndCheckCache, type IdentifyResult } from "@/services/gemini";
 
-type ProductScanState = "camera" | "processing" | "label_prompt" | "ai_processing" | "error";
+type ProductScanState = "camera" | "processing" | "ai_processing" | "error";
 
 function ScanningLineAnimation() {
   const translateY = useSharedValue(0);
@@ -129,9 +129,42 @@ export default function ProductScanScreen() {
         return;
       }
 
-      // Not cached — show the label prompt
+      // Not cached — go straight to AI analysis
       setIdentifyResult(identified);
-      setState("label_prompt");
+      setCapturedImage(base64Image);
+      setState("ai_processing");
+      setProgressText("Analyzing with AI knowledge...");
+
+      try {
+        const result = await analyzeAndSaveScan(
+          base64Image,
+          "item",
+          user?.id ?? null,
+          (step) => setProgressText(step),
+          {
+            aiKnowledgeBase: true,
+            productContext: {
+              productName: identified.productName,
+              brand: identified.brand,
+              category: identified.category,
+            },
+          }
+        );
+        recordScan();
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        router.replace({
+          pathname: "/scan-result",
+          params: {
+            barcodeData: JSON.stringify(result),
+            source: "item",
+          },
+        });
+      } catch (aiErr) {
+        const aiMsg = aiErr instanceof Error ? aiErr.message : "Something went wrong";
+        console.error("AI analysis error:", aiMsg, aiErr);
+        setErrorMessage(aiMsg);
+        setState("error");
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Something went wrong";
       console.error("Scan error:", msg, err);
@@ -140,59 +173,7 @@ export default function ProductScanScreen() {
     }
   };
 
-  // User chose "Scan Ingredients" — go to label scan with product context
-  const handleScanIngredients = () => {
-    if (!identifyResult) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.replace({
-      pathname: "/label-scan",
-      params: {
-        mode: "ingredients",
-        productName: identifyResult.productName,
-        productBrand: identifyResult.brand,
-        productCategory: identifyResult.category,
-      },
-    });
-  };
 
-  // User chose "Skip — use AI knowledge"
-  const handleSkipToAI = async () => {
-    if (!identifyResult || !capturedImage) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setState("ai_processing");
-    setProgressText("Analyzing with AI knowledge...");
-
-    try {
-      const result = await analyzeAndSaveScan(
-        capturedImage,
-        "item",
-        user?.id ?? null,
-        (step) => setProgressText(step),
-        {
-          aiKnowledgeBase: true,
-          productContext: {
-            productName: identifyResult.productName,
-            brand: identifyResult.brand,
-            category: identifyResult.category,
-          },
-        }
-      );
-      recordScan();
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.replace({
-        pathname: "/scan-result",
-        params: {
-          barcodeData: JSON.stringify(result),
-          source: "item",
-        },
-      });
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Something went wrong";
-      console.error("AI analysis error:", msg, err);
-      setErrorMessage(msg);
-      setState("error");
-    }
-  };
 
   const handleRetry = () => {
     setState("camera");
@@ -280,59 +261,7 @@ export default function ProductScanScreen() {
     );
   }
 
-  // Label prompt state — product identified but not cached
-  if (state === "label_prompt" && identifyResult) {
-    return (
-      <SafeAreaView className="flex-1 bg-ivory">
-        <View className="flex-1 items-center justify-center px-8">
-          <View
-            className="bg-white rounded-3xl p-8 items-center w-full"
-            style={{
-              shadowColor: "#3D5A3E",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.08,
-              shadowRadius: 12,
-              elevation: 4,
-            }}
-          >
-            <View className="bg-forest/8 rounded-full w-20 h-20 items-center justify-center mb-5">
-              <Ionicons name="leaf" size={36} color="#3D5A3E" />
-            </View>
-            <Text className="text-xl font-bold text-dark mb-1">
-              {identifyResult.productName}
-            </Text>
-            <Text className="text-sm text-dark/50 mb-5">
-              by {identifyResult.brand}
-            </Text>
-            <Text className="text-base text-dark/70 text-center mb-6 leading-6">
-              For the most accurate results, flip to the ingredients label and scan it.
-            </Text>
-            <TouchableOpacity
-              onPress={handleScanIngredients}
-              className="bg-forest w-full rounded-2xl py-4 items-center mb-3"
-              activeOpacity={0.8}
-            >
-              <View className="flex-row items-center">
-                <Ionicons name="scan-outline" size={20} color="#fff" />
-                <Text className="text-white font-bold text-base ml-2">
-                  Scan Ingredients
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleSkipToAI}
-              className="w-full rounded-2xl py-3.5 items-center border border-dark/10"
-              activeOpacity={0.7}
-            >
-              <Text className="text-dark/50 font-medium text-sm">
-                Skip — use AI knowledge
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </SafeAreaView>
-    );
-  }
+
 
   // AI knowledge processing state
   if (state === "ai_processing") {
