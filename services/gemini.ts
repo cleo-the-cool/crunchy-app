@@ -782,6 +782,9 @@ export async function analyzeAndSaveScan(
       { pattern: /formaldehyde|dmdm hydantoin|quaternium.?15/i, tier: "high", concern: "IARC Group 1 carcinogen", source: "IARC" },
       { pattern: /butanol|n-butanol/i, tier: "moderate", concern: "Irritant, VOC", source: "EFSA" },
       { pattern: /carbon black/i, tier: "limited", concern: "IARC Group 2B, possible carcinogen", source: "IARC" },
+      { pattern: /disodium\s*(di)?phosphate|E450/i, tier: "limited", concern: "High phosphate intake linked to kidney stress", source: "EFSA" },
+      { pattern: /artificial\s*flavo(?:u)?r/i, tier: "limited", concern: "Undisclosed ingredient mix", source: "EFSA" },
+      { pattern: /mono.?\s*(?:and|&)\s*diglycerides|E471/i, tier: "limited", concern: "May contain trans fatty acids", source: "EFSA" },
     ];
 
     for (const ing of toxinsResult.ingredients) {
@@ -814,9 +817,22 @@ export async function analyzeAndSaveScan(
 
   // Step 4: Build CategoryScores
   onProgress?.("Calculating your score...");
+
+  // Recalculate toxins score from actual ingredient tiers (don't trust Gemini's number)
+  const computedToxinsScore = (() => {
+    const ings = toxinsResult?.ingredients || [];
+    if (ings.length === 0) return toxinsResult?.toxins_score ?? 50;
+    const highCount = ings.filter((i: any) => i.tier === "high").length;
+    const moderateCount = ings.filter((i: any) => i.tier === "moderate").length;
+    const limitedCount = ings.filter((i: any) => i.tier === "limited").length;
+    // Each high-risk ingredient costs 18 points, moderate costs 10, limited costs 4
+    const penalty = (highCount * 18) + (moderateCount * 10) + (limitedCount * 4);
+    return Math.max(1, Math.min(100, 100 - penalty));
+  })();
+
   const categoryScores: CategoryScores = {
     toxins_additives: {
-      score: toxinsResult?.toxins_score ?? 50,
+      score: computedToxinsScore,
       flagged: (toxinsResult?.ingredients || [])
         .filter((i: any) => i.tier !== "safe")
         .map((i: any) => ({
