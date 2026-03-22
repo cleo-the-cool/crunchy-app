@@ -190,10 +190,8 @@ export default function LabelScanScreen() {
   };
 
   const screenTitle = scanMode === "label" ? "Scan Label" : "Scan Ingredients";
-  const processingText = scanMode === "label" ? "Analyzing Label..." : "Reading Ingredients...";
-  const processingSubtext = scanMode === "label"
-    ? "Analyzing nutrition claims and certifications"
-    : "Analyzing the label for toxins and harmful ingredients";
+  const processingText = "Analyzing ingredients...";
+  const processingSubtext = "Our AI is analyzing the product to find its ingredients and rate it";
 
   if (!permission) {
     return (

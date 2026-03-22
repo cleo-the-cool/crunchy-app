@@ -190,7 +190,7 @@ Product: ${productInfo.productName} by ${productInfo.brand} (Category: ${product
 
 IMPORTANT: If no ingredients are visible on the packaging in the image, DO NOT return "no ingredients found" or refuse to analyze. Instead, use your knowledge base to look up the known ingredients, materials, or chemical components for this specific product and brand. For non-food items like markers, pens, cleaning products, or cosmetics, research known formulation ingredients, VOCs, solvents, pigments, plasticizers, or hazardous materials associated with this product type. Always provide a full ingredient/material analysis.
 
-COMPLETENESS RULE: Include ALL known ingredients for the product category, even if not visible on the label. For dry erase markers, ALWAYS include xylene, toluene, isopropanol, butanol, and resin components. For cleaning products, include all known active chemicals and surfactants. Never omit known hazardous ingredients just because they aren't printed on the packaging — if the ingredient is a known component of this product type, include it.
+COMPLETENESS RULE: List every single ingredient as its own separate entry. Never group multiple ingredients into one row. Sub-ingredients, allergens, emulsifiers, raising agents, and starches must all appear individually. For example, "Vegetable fats (palm, shea)" must become separate entries: "Palm Oil" and "Shea Butter". Ground peanuts and other allergens are critical and must always be included — never omit allergens. Include ALL known ingredients for the product category, even if not visible on the label. For dry erase markers, ALWAYS include xylene, toluene, isopropanol, butanol, and resin components. For cleaning products, include all known active chemicals and surfactants. Never omit known hazardous ingredients just because they aren't printed on the packaging — if the ingredient is a known component of this product type, include it.
 
 DO NOT penalize for: natural sugars, saturated fats, calories, whole food ingredients, or anything not chemically synthesized.
 
@@ -208,6 +208,7 @@ MANDATORY TIER OVERRIDES (always apply these regardless of other analysis):
 - Toluene: ALWAYS HIGH RISK — reproductive toxin, neurotoxin.
 - Butanol / n-butanol: ALWAYS MODERATE RISK — irritant, VOC.
 - Carbon black: ALWAYS LIMITED RISK — IARC Group 2B, possible carcinogen.
+- Refined palm oil / palm fat: ALWAYS MODERATE RISK — contains glycidyl fatty acid esters (GE), genotoxic contaminants flagged by EFSA 2016.
 - Formaldehyde and formaldehyde-releasing preservatives (DMDM hydantoin, quaternium-15) are IARC Group 1 carcinogens. ALWAYS rate HIGH RISK.
 
 For flagged ingredients, cite the specific authority (EFSA, ANSES, IARC, NIH) and the finding.
@@ -649,7 +650,7 @@ export async function identifyAndCheckCache(
     return { productName: "Mock Product", brand: "Mock Brand", category: "Other", cached: false };
   }
 
-  onProgress?.("Identifying product...");
+  onProgress?.("Analyzing ingredients...");
   const productInfo = await identifyProduct(base64Image);
 
   const cached = await findCachedProduct(productInfo.productName, productInfo.brand);
@@ -714,7 +715,7 @@ export async function analyzeAndSaveScan(
   if (!withinLimit) throw new Error("SCANNER_RATE_LIMITED");
 
   // Step 1: Identify product (skip if context already provided)
-  onProgress?.("Identifying product...");
+  onProgress?.("Analyzing ingredients...");
   const productInfo = options?.productContext || await identifyProduct(base64Image);
 
   // Step 2: Check cache
@@ -782,6 +783,7 @@ export async function analyzeAndSaveScan(
       { pattern: /formaldehyde|dmdm hydantoin|quaternium.?15/i, tier: "high", concern: "IARC Group 1 carcinogen", source: "IARC" },
       { pattern: /butanol|n-butanol/i, tier: "moderate", concern: "Irritant, VOC", source: "EFSA" },
       { pattern: /carbon black/i, tier: "limited", concern: "IARC Group 2B, possible carcinogen", source: "IARC" },
+      { pattern: /palm oil|palm fat|refined palm/i, tier: "moderate", concern: "Contains GE, genotoxic contaminants (EFSA 2016)", source: "EFSA" },
       { pattern: /disodium\s*(di)?phosphate|E450/i, tier: "limited", concern: "High phosphate intake linked to kidney stress", source: "EFSA" },
       { pattern: /artificial\s*flavo(?:u)?r/i, tier: "limited", concern: "Undisclosed ingredient mix", source: "EFSA" },
       { pattern: /mono.?\s*(?:and|&)\s*diglycerides|E471/i, tier: "limited", concern: "May contain trans fatty acids", source: "EFSA" },
@@ -816,7 +818,7 @@ export async function analyzeAndSaveScan(
   await incrementDailyCount();
 
   // Step 4: Build CategoryScores
-  onProgress?.("Calculating your score...");
+  onProgress?.("Analyzing ingredients...");
 
   // Recalculate toxins score from actual ingredient tiers (don't trust Gemini's number)
   const computedToxinsScore = (() => {

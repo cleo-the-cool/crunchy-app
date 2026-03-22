@@ -137,7 +137,7 @@ export default function SearchScreen() {
         {searching && (
           <View className="items-center px-5 mt-10">
             <ActivityIndicator size="large" color="#3D5A3E" />
-            <Text className="text-base font-semibold text-dark mt-4">Analyzing product...</Text>
+            <Text className="text-base font-semibold text-dark mt-4">Analyzing ingredients...</Text>
             <Text className="text-sm text-dark/40 text-center mt-1">
               This may take a few seconds
             </Text>

@@ -68,7 +68,7 @@ export default function ProductScanScreen() {
   const [flashOn, setFlashOn] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [countdown, setCountdown] = useState(0);
-  const [progressText, setProgressText] = useState("Identifying Product...");
+  const [progressText, setProgressText] = useState("Analyzing ingredients...");
   const [identifyResult, setIdentifyResult] = useState<IdentifyResult | null>(null);
   const [capturedImage, setCapturedImage] = useState<string>("");
   const cameraRef = useRef<CameraView>(null);
@@ -133,7 +133,7 @@ export default function ProductScanScreen() {
       setIdentifyResult(identified);
       setCapturedImage(base64Image);
       setState("ai_processing");
-      setProgressText("Analyzing with AI knowledge...");
+      setProgressText("Analyzing ingredients...");
 
       try {
         const result = await analyzeAndSaveScan(
