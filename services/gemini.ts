@@ -260,6 +260,9 @@ MANDATORY TIER OVERRIDES (always apply these regardless of other analysis):
 - Red 3 / Erythrosine / E127: ALWAYS HIGH RISK — FDA banned in cosmetics due to carcinogenicity, still permitted in food, IARC flagged.
 - Green 3 / Fast Green / E143: ALWAYS MODERATE RISK — synthetic dye, limited safety data, EU hyperactivity concerns.
 - Caramel Color / Caramel Coloring / E150 / E150a / E150b / E150c / E150d: ALWAYS MODERATE RISK — Class IV caramel color contains 4-methylimidazole (4-MEI), listed as a potential carcinogen under California Prop 65, IARC Group 2B.
+- Food Colors (Caramel III) / Caramel Color III / E150c: ALWAYS LIMITED RISK — ammonia-process caramel color, contains potential carcinogenic byproducts including 2-acetyl-4-methylimidazole, less studied than Class IV but EFSA flagged for further review.
+- Vegetable Oil (unspecified) / Vegetable Oils (unspecified): ALWAYS LIMITED RISK — unspecified seed oil blend, composition unknown, likely high omega-6 refined oil.
+- Flavors (unspecified) / Flavouring / Flavourings: ALWAYS LIMITED RISK — unspecified composition, may contain undisclosed processing chemicals. Same rule as Natural Flavors and Artificial Flavors.
 
 For flagged ingredients, cite the specific authority (EFSA, ANSES, IARC, NIH) and the finding.
 
@@ -411,13 +414,15 @@ const FILLER_WORDS = new Set([
   "non", "e", "o",
 ]);
 
-// Marketing/size adjectives that don't change the core product identity
+// Marketing/size adjectives and generic product descriptors that don't change the core product identity
 const MARKETING_WORDS = new Set([
   "original", "classic", "new", "mini", "small", "big", "large", "extra", "super",
   "family", "multipack", "snack", "snacks", "pack", "packs", "size", "limited", "edition", "special",
   "regular", "standard", "value", "economy", "premium", "deluxe", "lite", "light",
   "zero", "free", "plus", "pro", "max", "ultra",
   "baked", "box", "bag", "bags", "sharing", "portion", "portions",
+  // Generic food descriptors that vary between label variants
+  "chocolate", "biscuit", "biscuits", "plain", "double", "filled", "creamy",
 ]);
 
 /**
@@ -427,7 +432,8 @@ const MARKETING_WORDS = new Set([
 function normalizeForMatch(text: string): string {
   return text
     .toLowerCase()
-    .replace(/[''`]/g, "")           // remove apostrophes
+    .replace(/[''\u2019]s\b/g, "")   // strip possessives ("Arnott's" → "Arnott")
+    .replace(/[''`]/g, "")           // remove remaining apostrophes
     .replace(/[^a-z0-9\s]/g, " ")    // strip all other punctuation
     .split(/\s+/)
     .filter((w) => w.length > 0 && !FILLER_WORDS.has(w) && !MARKETING_WORDS.has(w))
@@ -436,11 +442,32 @@ function normalizeForMatch(text: string): string {
 }
 
 /**
+ * Brand synonym groups — if both normalized strings contain
+ * ALL words from the same synonym entry, treat them as the same product.
+ */
+const BRAND_SYNONYM_GROUPS: string[][] = [
+  ["tim", "tam"],     // Tim Tam / TimTam / Arnott's Tim Tam
+];
+
+/**
+ * Check if two word sets share a known brand synonym group.
+ * If both contain all words of ANY synonym group, it's a match.
+ */
+function sharesBrandSynonym(wordsA: string[], wordsB: string[]): boolean {
+  return BRAND_SYNONYM_GROUPS.some((group) =>
+    group.every((w) => wordsA.some((a) => a === w || a.includes(w))) &&
+    group.every((w) => wordsB.some((b) => b === w || b.includes(w)))
+  );
+}
+
+/**
  * Check if one word set contains all core words of another (subset match).
  * "baked corn snack" is fully contained in "original baked corn snack" → match.
  */
 function isSubsetMatch(wordsA: string[], wordsB: string[]): boolean {
   if (wordsA.length === 0 || wordsB.length === 0) return false;
+  // Brand synonym shortcut — if both contain a known brand, it's a match
+  if (sharesBrandSynonym(wordsA, wordsB)) return true;
   const smaller = wordsA.length <= wordsB.length ? wordsA : wordsB;
   const larger = wordsA.length <= wordsB.length ? wordsB : wordsA;
   return smaller.every((w) => larger.some((lw) => lw === w || lw.includes(w) || w.includes(lw)));
@@ -1034,7 +1061,12 @@ export async function analyzeAndSaveScan(
       { pattern: /blue\s*2|indigo\s*carmine|E132/i, tier: "moderate", concern: "Synthetic dye, EU hyperactivity warning", source: "EFSA" },
       { pattern: /red\s*(?:no\.?\s*)?3|erythrosine|E127/i, tier: "high", concern: "FDA banned in cosmetics, carcinogenicity, IARC flagged", source: "FDA / IARC" },
       { pattern: /green\s*3|fast\s*green|E143/i, tier: "moderate", concern: "Synthetic dye, limited safety data, EU hyperactivity concerns", source: "EFSA" },
-      { pattern: /caramel\s*colou?r(ing)?|E150[a-d]?/i, tier: "moderate", concern: "Contains 4-MEI, Prop 65 carcinogen, IARC Group 2B", source: "IARC / Prop 65" },
+      // E150c (Caramel III) specifically limited — must come before the general E150 pattern
+      { pattern: /caramel\s*(colou?r\s*)?III|E150c/i, tier: "limited", concern: "Ammonia-process caramel, potential carcinogenic byproducts (EFSA)", source: "EFSA" },
+      { pattern: /caramel\s*colou?r(ing)?|E150[abd]?/i, tier: "moderate", concern: "Contains 4-MEI, Prop 65 carcinogen, IARC Group 2B", source: "IARC / Prop 65" },
+      // ─── Additional unspecified ingredient rules ───
+      { pattern: /^vegetable oils?\s*\(unspecified\)$|^vegetable oils?$/i, tier: "limited", concern: "Unspecified seed oil blend, composition unknown, high omega-6", source: "EFSA" },
+      { pattern: /^flavou?rs?$|^flavou?rings?$|^flavou?rs?\s*\(unspecified\)$|^flavou?rings?\s*\(unspecified\)$/i, tier: "limited", concern: "Unspecified composition, undisclosed chemicals", source: "EFSA" },
     ];
 
     // Strip label artifacts (e.g. "Contains 2% or less of:")
