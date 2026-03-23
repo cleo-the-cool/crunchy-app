@@ -4,6 +4,7 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
+  Switch,
 } from "react-native";
 import RNSlider from "@react-native-community/slider";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -66,7 +67,7 @@ export default function OnboardingPreferencesScreen() {
           contentContainerStyle={{ paddingBottom: 120 }}
         >
           {PREFERENCE_OPTIONS.map((option, index) => {
-            const value = localPrefs[option.key];
+            const value = localPrefs[option.key] as number;
             const pct = Math.round(value * 100);
             return (
               <Animated.View
@@ -116,6 +117,76 @@ export default function OnboardingPreferencesScreen() {
               </Animated.View>
             );
           })}
+
+          {/* Dietary Filters */}
+          <Animated.View
+            entering={FadeIn.delay(PREFERENCE_OPTIONS.length * 60 + 60).duration(300)}
+            className="mt-2 mb-3"
+          >
+            <Text className="text-sm font-semibold text-dark/50 uppercase tracking-wide mb-3 ml-1">
+              Dietary Filters
+            </Text>
+          </Animated.View>
+
+          <Animated.View
+            entering={FadeIn.delay(PREFERENCE_OPTIONS.length * 60 + 120).duration(300)}
+            className="bg-white rounded-3xl px-5 py-4 mb-3"
+            style={{
+              shadowColor: "#3D5A3E",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.06,
+              shadowRadius: 6,
+              elevation: 2,
+            }}
+          >
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center flex-1">
+                <Text className="text-2xl mr-3">🌱</Text>
+                <View className="flex-1">
+                  <Text className="text-base font-semibold text-dark">Vegan</Text>
+                  <Text className="text-xs text-dark/50 mt-0.5">
+                    Flag products containing animal-derived ingredients
+                  </Text>
+                </View>
+              </View>
+              <Switch
+                value={localPrefs.is_vegan_filter ?? false}
+                onValueChange={(v) => setLocalPrefs((prev) => ({ ...prev, is_vegan_filter: v, ...(v ? { is_vegetarian_filter: true } : {}) }))}
+                trackColor={{ false: "#E5E7EB", true: "#3D5A3E" }}
+                thumbColor="white"
+              />
+            </View>
+          </Animated.View>
+
+          <Animated.View
+            entering={FadeIn.delay(PREFERENCE_OPTIONS.length * 60 + 180).duration(300)}
+            className="bg-white rounded-3xl px-5 py-4 mb-3"
+            style={{
+              shadowColor: "#3D5A3E",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.06,
+              shadowRadius: 6,
+              elevation: 2,
+            }}
+          >
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center flex-1">
+                <Text className="text-2xl mr-3">🥚</Text>
+                <View className="flex-1">
+                  <Text className="text-base font-semibold text-dark">Vegetarian</Text>
+                  <Text className="text-xs text-dark/50 mt-0.5">
+                    Flag products containing meat or fish
+                  </Text>
+                </View>
+              </View>
+              <Switch
+                value={localPrefs.is_vegetarian_filter ?? false}
+                onValueChange={(v) => setLocalPrefs((prev) => ({ ...prev, is_vegetarian_filter: v, ...(!v ? { is_vegan_filter: false } : {}) }))}
+                trackColor={{ false: "#E5E7EB", true: "#3D5A3E" }}
+                thumbColor="white"
+              />
+            </View>
+          </Animated.View>
         </ScrollView>
 
         <View

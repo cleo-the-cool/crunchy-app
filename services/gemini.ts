@@ -223,6 +223,8 @@ MANDATORY TIER OVERRIDES (always apply these regardless of other analysis):
 - E621 (monosodium glutamate / MSG): ALWAYS LIMITED RISK — EFSA notes potential adverse reactions, hyperactivity concerns in sensitive individuals.
 - E627 (disodium guanylate): ALWAYS LIMITED RISK — EFSA flags potential adverse reactions.
 - E631 (disodium inosinate): ALWAYS LIMITED RISK — EFSA flags potential adverse reactions, often combined with MSG to amplify effects.
+- Smoke flavoring / smoke aromatizing: ALWAYS LIMITED RISK — EFSA 2021 genotoxicity re-evaluation, some smoke flavorings suspended from EU market pending safety assessment.
+- Flavorings / aromas (unspecified): ALWAYS LIMITED RISK — undisclosed ingredient composition.
 - Formaldehyde and formaldehyde-releasing preservatives (DMDM hydantoin, quaternium-15) are IARC Group 1 carcinogens. ALWAYS rate HIGH RISK.
 
 For flagged ingredients, cite the specific authority (EFSA, ANSES, IARC, NIH) and the finding.
@@ -291,11 +293,13 @@ async function analyzeEthics(base64Image: string, productInfo: ProductInfo): Pro
     parts: [
       {
         text: `You are a supply chain ethics researcher. Always respond entirely in English, even if the product label is in another language. Research this brand and product for:
-1. Animal welfare: animal testing, factory-farmed ingredients, certifications (Leaping Bunny, B Corp, Certified Humane)
+1. Animal welfare: farming conditions, animal welfare certifications (RSPCA Assured, Certified Humane, Leaping Bunny, B Corp), known controversies about animal treatment in the supply chain, factory farming practices
 2. Environmental sustainability: packaging practices, carbon footprint, environmental certifications
 3. Fair trade: labor sourcing, fair trade certifications, known labor controversies
 
 Product: ${productInfo.productName} by ${productInfo.brand}
+
+CRITICAL ANIMAL WELFARE RULE: Animal welfare scoring must ONLY assess how animals are treated in the production process — farming conditions, certifications, known controversies. Do NOT penalize or reduce the score simply because a product contains animal-derived ingredients like dairy, eggs, honey, or meat. Containing dairy is not an animal welfare concern unless there is evidence of poor farming practices. A cheese product from a brand with good farming standards should score high on animal welfare.
 
 IMPORTANT: If no product label is visible, research this brand and its parent company thoroughly from your knowledge base. Look up: known environmental violations or certifications, labor controversies or fair trade status, animal testing policies, sustainability reports, and any NGO or regulatory findings about this brand. Identify the parent company and research their full ESG record, labor practices, and environmental commitments. Never return generic placeholder findings like "No major controversies known" — always do real brand research and provide specific, factual findings.
 
@@ -318,6 +322,7 @@ Return ONLY valid JSON:
   "sustainability_findings": ["8 words max per finding"],
   "fair_trade_findings": ["8 words max per finding"],
   "certifications": ["list of certification names found"],
+  "animal_derived_ingredients": ["list every animal-derived ingredient found in the product: dairy, eggs, honey, meat, fish, gelatin, lard, whey, casein, etc. Empty array if none."],
   "data_confidence": "product|brand|limited",
   "summary": "one complete sentence, 15 words max"
 }`,
@@ -811,6 +816,8 @@ export async function analyzeAndSaveScan(
       { pattern: /monosodium glutamate|\bMSG\b|E621/i, tier: "limited", concern: "May cause adverse reactions in sensitive individuals", source: "EFSA" },
       { pattern: /disodium guanylate|E627/i, tier: "limited", concern: "May cause adverse reactions (EFSA)", source: "EFSA" },
       { pattern: /disodium inosinate|E631/i, tier: "limited", concern: "May cause adverse reactions, amplifies MSG effects", source: "EFSA" },
+      { pattern: /smoke flavou?ring|smoke aromati[sz]ing/i, tier: "limited", concern: "EFSA 2021 genotoxicity re-evaluation, some suspended", source: "EFSA" },
+      { pattern: /^flavou?rings?$|^aromas?$/i, tier: "limited", concern: "Undisclosed ingredient composition", source: "EFSA" },
       { pattern: /disodium\s*(di)?phosphate|E450/i, tier: "limited", concern: "High phosphate intake linked to kidney stress", source: "EFSA" },
       { pattern: /artificial\s*flavo(?:u)?r/i, tier: "limited", concern: "Undisclosed ingredient mix", source: "EFSA" },
       { pattern: /mono.?\s*(?:and|&)\s*diglycerides|E471/i, tier: "limited", concern: "May contain trans fatty acids", source: "EFSA" },
@@ -889,6 +896,7 @@ export async function analyzeAndSaveScan(
       findings: ethicsResult?.animal_welfare_findings || [],
       certifications: ethicsResult?.certifications || [],
       data_confidence: ethicsResult?.data_confidence || "limited",
+      animal_derived_ingredients: ethicsResult?.animal_derived_ingredients || [],
     },
     sustainability: {
       score: ethicsResult?.sustainability_score

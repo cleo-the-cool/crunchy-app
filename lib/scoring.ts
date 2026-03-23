@@ -70,6 +70,7 @@ export interface CategoryScores {
     findings: string[];
     certifications: string[];
     data_confidence: string;
+    animal_derived_ingredients?: string[];
   };
   sustainability?: {
     score: number | null;
@@ -89,7 +90,13 @@ export interface UserPreferences {
   animal_welfare: number; // 0-1 weight
   sustainability: number; // 0-1 weight
   fair_trade: number;   // 0-1 weight
+  is_vegan_filter?: boolean;
+  is_vegetarian_filter?: boolean;
+  [key: string]: number | boolean | undefined; // Allow indexing
 }
+
+/** Keys that are numeric category weights (excludes boolean filters) */
+export type PreferenceWeightKey = "toxins" | "nutrition" | "animal_welfare" | "sustainability" | "fair_trade";
 
 export const DEFAULT_PREFERENCES: UserPreferences = {
   toxins: 0.9,
@@ -97,6 +104,8 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   animal_welfare: 0.5,
   sustainability: 0.3,
   fair_trade: 0.3,
+  is_vegan_filter: false,
+  is_vegetarian_filter: false,
 };
 
 // ─── Scoring ─────────────────────────────────────────────────────────
@@ -112,7 +121,7 @@ export function computeWeightedScore(
   categoryScores: CategoryScores,
   userPreferences: UserPreferences
 ): number {
-  const mapping: Array<{ prefKey: keyof UserPreferences; scoreKey: keyof CategoryScores; ethicsField?: string }> = [
+  const mapping: Array<{ prefKey: PreferenceWeightKey; scoreKey: keyof CategoryScores }> = [
     { prefKey: "toxins", scoreKey: "toxins_additives" },
     { prefKey: "nutrition", scoreKey: "nutrition" },
     { prefKey: "animal_welfare", scoreKey: "animal_welfare" },
@@ -124,7 +133,7 @@ export function computeWeightedScore(
   let totalWeight = 0;
 
   for (const { prefKey, scoreKey } of mapping) {
-    const weight = userPreferences[prefKey] ?? 0;
+    const weight = (userPreferences[prefKey] as number) ?? 0;
     if (weight === 0) continue; // user doesn't care about this category
 
     const categoryData = categoryScores[scoreKey];
@@ -164,7 +173,7 @@ export function getScoreBreakdown(
   weight: number;
   contribution: number; // how much this moved the final score
 }> {
-  const categories: Array<{ key: keyof CategoryScores; prefKey: keyof UserPreferences; label: string }> = [
+  const categories: Array<{ key: keyof CategoryScores; prefKey: PreferenceWeightKey; label: string }> = [
     { key: "toxins_additives", prefKey: "toxins", label: "Toxins & Chemicals" },
     { key: "nutrition", prefKey: "nutrition", label: "Nutrition" },
     { key: "animal_welfare", prefKey: "animal_welfare", label: "Animal Welfare" },
@@ -174,13 +183,13 @@ export function getScoreBreakdown(
 
   let totalWeight = 0;
   for (const { key, prefKey } of categories) {
-    const w = userPreferences[prefKey] ?? 0;
+    const w = (userPreferences[prefKey] as number) ?? 0;
     const hasData = categoryScores[key]?.score != null;
     if (w > 0 && hasData) totalWeight += w;
   }
 
   return categories.map(({ key, prefKey, label }) => {
-    const weight = userPreferences[prefKey] ?? 0;
+    const weight = (userPreferences[prefKey] as number) ?? 0;
     const rawScore = categoryScores[key]?.score ?? null;
 
     // Null scores are excluded entirely from the weighted calculation

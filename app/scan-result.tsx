@@ -652,8 +652,8 @@ export default function ScanResultScreen() {
 
   // Active preference categories sorted by weight
   const activeCategories = PREFERENCE_OPTIONS.filter(
-    (opt) => preferences[opt.key] > 0
-  ).sort((a, b) => preferences[b.key] - preferences[a.key]);
+    (opt) => (preferences[opt.key] as number) > 0
+  ).sort((a, b) => (preferences[b.key] as number) - (preferences[a.key] as number));
 
   // Score breakdown
   const scoreBreakdown = categoryScores
@@ -670,6 +670,21 @@ export default function ScanResultScreen() {
     ? getRatingFromScore(computedScore)
     : product.rating;
   const ratingInfo = RATING_CONFIG[computedRating];
+
+  // ─── Vegan / Vegetarian checks ─────────────────────────────────
+  const animalIngredients = categoryScores?.animal_welfare?.animal_derived_ingredients || [];
+
+  const MEAT_FISH_KEYWORDS = ["meat", "beef", "pork", "chicken", "turkey", "lamb", "fish", "salmon", "tuna", "shrimp", "crab", "lobster", "anchov", "sardine", "bacon", "ham", "sausage", "lard", "tallow", "gelatin"];
+
+  const veganFlaggedIngredients = preferences.is_vegan_filter
+    ? animalIngredients
+    : [];
+
+  const vegetarianFlaggedIngredients = preferences.is_vegetarian_filter && !preferences.is_vegan_filter
+    ? animalIngredients.filter((ing: string) =>
+        MEAT_FISH_KEYWORDS.some((kw) => ing.toLowerCase().includes(kw))
+      )
+    : [];
 
   // ─── Handlers ───────────────────────────────────────────────────
 
@@ -932,6 +947,32 @@ export default function ScanResultScreen() {
             </View>
           </Animated.View>
         </ViewShot>
+
+        {/* ── Vegan / Vegetarian Banners ── */}
+        {veganFlaggedIngredients.length > 0 && (
+          <View className="mx-5 mt-3 bg-peach/10 rounded-2xl p-4 flex-row items-start" style={{ borderWidth: 1, borderColor: "#F4A57440" }}>
+            <Text className="text-lg mr-2.5 mt-0.5">⚠️</Text>
+            <View className="flex-1">
+              <Text className="text-sm font-bold text-dark">Not Vegan</Text>
+              <Text className="text-sm text-dark/60 mt-0.5">
+                Contains {veganFlaggedIngredients.slice(0, 5).join(", ")}
+                {veganFlaggedIngredients.length > 5 ? ` and ${veganFlaggedIngredients.length - 5} more` : ""}
+              </Text>
+            </View>
+          </View>
+        )}
+        {vegetarianFlaggedIngredients.length > 0 && (
+          <View className="mx-5 mt-3 bg-peach/10 rounded-2xl p-4 flex-row items-start" style={{ borderWidth: 1, borderColor: "#F4A57440" }}>
+            <Text className="text-lg mr-2.5 mt-0.5">⚠️</Text>
+            <View className="flex-1">
+              <Text className="text-sm font-bold text-dark">Not Vegetarian</Text>
+              <Text className="text-sm text-dark/60 mt-0.5">
+                Contains {vegetarianFlaggedIngredients.slice(0, 5).join(", ")}
+                {vegetarianFlaggedIngredients.length > 5 ? ` and ${vegetarianFlaggedIngredients.length - 5} more` : ""}
+              </Text>
+            </View>
+          </View>
+        )}
 
         {/* ── 3. Preference Category Cards ── */}
         {categoryScores ? (

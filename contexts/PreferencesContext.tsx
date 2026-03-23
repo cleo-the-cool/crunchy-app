@@ -5,13 +5,14 @@ import {
   DEFAULT_PREFERENCES,
   migrateLegacyConcerns,
   type UserPreferences,
+  type PreferenceWeightKey,
 } from "@/lib/scoring";
 
 const NEW_PREFS_KEY = "@crunchy_user_preferences";
 const OLD_PREFS_KEY = "@crunchy_scan_preferences";
 
 export interface PreferenceOption {
-  key: keyof UserPreferences;
+  key: PreferenceWeightKey;
   label: string;
   description: string;
   icon: string;
