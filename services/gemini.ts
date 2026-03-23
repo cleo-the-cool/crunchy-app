@@ -1013,9 +1013,11 @@ export async function analyzeAndSaveScan(
       { pattern: /disodium inosinate|E631/i, tier: "limited", concern: "May cause adverse reactions, amplifies MSG effects", source: "EFSA" },
       { pattern: /smoke flavou?ring|smoke aromati[sz]ing/i, tier: "limited", concern: "EFSA 2021 genotoxicity re-evaluation, some suspended", source: "EFSA" },
       { pattern: /^flavou?rings?$|^aromas?$/i, tier: "limited", concern: "Undisclosed ingredient composition", source: "EFSA" },
-      { pattern: /disodium\s*(di)?phosphate|E450/i, tier: "limited", concern: "High phosphate intake linked to kidney stress", source: "EFSA" },
+      { pattern: /disodium\s*(di)?phosphate|diphosphates?|sodium diphosphate|E450/i, tier: "moderate", concern: "EFSA flagged kidney and cardiovascular risk", source: "EFSA" },
       { pattern: /artificial\s*flavo(?:u)?r/i, tier: "limited", concern: "Undisclosed ingredient mix", source: "EFSA" },
-      { pattern: /mono.?\s*(?:and|&)\s*diglycerides|E471/i, tier: "limited", concern: "May contain trans fatty acids", source: "EFSA" },
+      { pattern: /mono.?\s*(?:and|&)\s*diglycerides|monoglycerides|diglycerides|E471/i, tier: "moderate", concern: "May contain trans fats, cardiovascular risk", source: "EFSA" },
+      { pattern: /glycerol|glycerin|E422/i, tier: "limited", concern: "GI effects at high intake, minimal long-term data", source: "EFSA" },
+      { pattern: /sodium carbonates?\s*\(E500\)|E500|sodium bicarbonate\s*\(E500\)/i, tier: "limited", concern: "High sodium contribution, EFSA concern", source: "EFSA" },
     ];
 
     // Strip label artifacts (e.g. "Contains 2% or less of:")
