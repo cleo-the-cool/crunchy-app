@@ -396,7 +396,7 @@ export default function ProductScanScreen() {
                 Point at the product
               </Text>
               <Text className="text-white/50 text-xs mt-1 z-10">
-                Works with any product, bottle, clothing tag, or packaging
+                Works with food, drinks, snacks, skincare, cleaning products, and household items
               </Text>
             </View>
 

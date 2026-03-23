@@ -367,6 +367,7 @@ interface CachedProductResult {
 }
 
 // Filler words to strip for normalized matching (multilingual)
+// Filler words: articles, prepositions, connectors (multilingual)
 const FILLER_WORDS = new Set([
   "al", "di", "con", "del", "della", "delle", "degli", "dei", "il", "la", "le", "lo", "gli", "un", "una", "uno",
   "the", "a", "an", "of", "with", "and", "in", "for", "to", "by", "from", "on", "at",
@@ -375,9 +376,17 @@ const FILLER_WORDS = new Set([
   "non", "e", "o",
 ]);
 
+// Marketing/size adjectives that don't change the core product identity
+const MARKETING_WORDS = new Set([
+  "original", "classic", "new", "mini", "small", "big", "large", "extra", "super",
+  "family", "multipack", "snack", "pack", "size", "limited", "edition", "special",
+  "regular", "standard", "value", "economy", "premium", "deluxe", "lite", "light",
+  "zero", "free", "plus", "pro", "max", "ultra",
+]);
+
 /**
  * Normalize a product name for cache matching:
- * lowercase, strip punctuation, remove filler words, collapse whitespace.
+ * lowercase, strip punctuation, remove filler + marketing words, collapse whitespace.
  */
 function normalizeForMatch(text: string): string {
   return text
@@ -385,9 +394,20 @@ function normalizeForMatch(text: string): string {
     .replace(/[''`]/g, "")           // remove apostrophes
     .replace(/[^a-z0-9\s]/g, " ")    // strip all other punctuation
     .split(/\s+/)
-    .filter((w) => w.length > 0 && !FILLER_WORDS.has(w))
+    .filter((w) => w.length > 0 && !FILLER_WORDS.has(w) && !MARKETING_WORDS.has(w))
     .join(" ")
     .trim();
+}
+
+/**
+ * Check if one word set contains all core words of another (subset match).
+ * "baked corn snack" is fully contained in "original baked corn snack" → match.
+ */
+function isSubsetMatch(wordsA: string[], wordsB: string[]): boolean {
+  if (wordsA.length === 0 || wordsB.length === 0) return false;
+  const smaller = wordsA.length <= wordsB.length ? wordsA : wordsB;
+  const larger = wordsA.length <= wordsB.length ? wordsB : wordsA;
+  return smaller.every((w) => larger.some((lw) => lw === w || lw.includes(w) || w.includes(lw)));
 }
 
 async function findCachedProduct(
@@ -456,6 +476,12 @@ async function findCachedProduct(
           // Use normalized_name if available, otherwise normalize on the fly
           const dbNormalized = row.normalized_name || normalizeForMatch(`${row.brand} ${row.name}`);
           const dbWords = dbNormalized.split(/\s+/);
+
+          // Subset match: if one contains all words of the other, it's the same product
+          if (isSubsetMatch(searchWords, dbWords)) {
+            return { ...row, similarity: 0.95 };
+          }
+
           const commonWords = searchWords.filter((w: string) =>
             dbWords.some((dw: string) => dw.includes(w) || w.includes(dw))
           );
