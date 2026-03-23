@@ -559,14 +559,16 @@ async function cacheProduct(
       // Try to set normalized_name (column may not exist yet)
       updatePayload.normalized_name = normalized;
 
-      await supabase
+      const { error: updateErr } = await supabase
         .from("products")
         .update(updatePayload)
         .eq("id", existing.id);
+      if (updateErr) console.error("[cacheProduct] Update failed:", updateErr.message, updateErr.details, updateErr.hint);
       return existing.id;
     }
 
-    const insertPayload: Record<string, any> = {
+    // Try insert without normalized_name first (column may not exist)
+    const basePayload: Record<string, any> = {
       name: displayName,
       brand: analysis.brand,
       category: mapToDbCategory(analysis.category),
@@ -574,17 +576,34 @@ async function cacheProduct(
       overall_score: analysis.crunchyScore,
       gemini_analysis: analysis,
       category_scores: categoryScores || undefined,
-      normalized_name: normalized,
     };
 
-    const { data: newProduct } = await supabase
+    // First attempt: with normalized_name
+    const { data: newProduct, error: insertErr } = await supabase
       .from("products")
-      .insert(insertPayload)
+      .insert({ ...basePayload, normalized_name: normalized })
       .select("id")
       .single();
 
+    if (insertErr) {
+      console.error("[cacheProduct] Insert failed:", insertErr.message, insertErr.details, insertErr.hint);
+      // Retry without normalized_name in case column doesn't exist
+      if (insertErr.message?.includes("normalized_name") || insertErr.message?.includes("column")) {
+        console.log("[cacheProduct] Retrying without normalized_name...");
+        const { data: retryProduct, error: retryErr } = await supabase
+          .from("products")
+          .insert(basePayload)
+          .select("id")
+          .single();
+        if (retryErr) console.error("[cacheProduct] Retry also failed:", retryErr.message, retryErr.details, retryErr.hint);
+        return retryProduct?.id ?? null;
+      }
+      return null;
+    }
+
     return newProduct?.id ?? null;
-  } catch {
+  } catch (err) {
+    console.error("[cacheProduct] Unexpected error:", err);
     return null;
   }
 }

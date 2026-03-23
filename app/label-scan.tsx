@@ -191,7 +191,6 @@ export default function LabelScanScreen() {
 
   const screenTitle = scanMode === "label" ? "Scan Label" : "Scan Ingredients";
   const processingText = "Analyzing ingredients...";
-  const processingSubtext = "Our AI is analyzing the product to find its ingredients and rate it";
 
   if (!permission) {
     return (
@@ -221,19 +220,10 @@ export default function LabelScanScreen() {
             <View className="bg-sage/10 rounded-full w-20 h-20 items-center justify-center mb-5">
               <Ionicons name="document-text" size={36} color="#8B9E7C" />
             </View>
-            <Text className="text-xl font-bold text-dark mb-2">
+            <Text className="text-xl font-bold text-dark mb-4">
               {progressText || processingText}
             </Text>
-            <Text className="text-sm text-dark/50 text-center mb-4">
-              {processingSubtext}
-            </Text>
             <ScanningLineAnimation />
-            <View className="flex-row items-center mt-5 bg-sage/5 rounded-xl px-4 py-3">
-              <Ionicons name="sparkles" size={16} color="#8B9E7C" />
-              <Text className="text-xs text-dark/40 ml-2">
-                Powered by Gemini AI
-              </Text>
-            </View>
           </View>
         </View>
       </SafeAreaView>

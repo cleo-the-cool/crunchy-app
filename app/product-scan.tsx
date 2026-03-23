@@ -242,19 +242,10 @@ export default function ProductScanScreen() {
             <View className="bg-forest/8 rounded-full w-20 h-20 items-center justify-center mb-5">
               <Ionicons name="camera" size={36} color="#3D5A3E" />
             </View>
-            <Text className="text-xl font-bold text-dark mb-2">
+            <Text className="text-xl font-bold text-dark mb-4">
               {progressText}
             </Text>
-            <Text className="text-sm text-dark/50 text-center mb-4">
-              Our AI is analyzing the product to find its ingredients and rate it
-            </Text>
             <ScanningLineAnimation />
-            <View className="flex-row items-center mt-5 bg-forest/5 rounded-xl px-4 py-3">
-              <Ionicons name="sparkles" size={16} color="#3D5A3E" />
-              <Text className="text-xs text-dark/40 ml-2">
-                Powered by Gemini AI
-              </Text>
-            </View>
           </View>
         </View>
       </SafeAreaView>
@@ -281,11 +272,8 @@ export default function ProductScanScreen() {
             <View className="bg-forest/8 rounded-full w-20 h-20 items-center justify-center mb-5">
               <Ionicons name="sparkles" size={36} color="#3D5A3E" />
             </View>
-            <Text className="text-xl font-bold text-dark mb-2">
+            <Text className="text-xl font-bold text-dark mb-4">
               {progressText}
-            </Text>
-            <Text className="text-sm text-dark/50 text-center mb-4">
-              Researching known ingredients from our AI knowledge base
             </Text>
             <ScanningLineAnimation />
           </View>
