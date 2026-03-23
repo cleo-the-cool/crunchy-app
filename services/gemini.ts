@@ -263,6 +263,8 @@ MANDATORY TIER OVERRIDES (always apply these regardless of other analysis):
 - Food Colors (Caramel III) / Caramel Color III / E150c: ALWAYS LIMITED RISK — ammonia-process caramel color, contains potential carcinogenic byproducts including 2-acetyl-4-methylimidazole, less studied than Class IV but EFSA flagged for further review.
 - Vegetable Oil (unspecified) / Vegetable Oils (unspecified): ALWAYS LIMITED RISK — unspecified seed oil blend, composition unknown, likely high omega-6 refined oil.
 - Flavors (unspecified) / Flavouring / Flavourings: ALWAYS LIMITED RISK — unspecified composition, may contain undisclosed processing chemicals. Same rule as Natural Flavors and Artificial Flavors.
+- TBHQ / Tertiary Butylhydroquinone (E319): ALWAYS HIGH RISK — petroleum-derived preservative, EFSA flagged genotoxicity concerns, banned in Japan and several other countries, FDA strictly limits usage level, linked to immune system effects in animal studies.
+- Maltodextrin: ALWAYS LIMITED RISK — highly processed starch derivative, glycemic index higher than sugar (GI 85-105), no nutritional value, may disrupt gut microbiome, typically derived from GMO corn.
 
 For flagged ingredients, cite the specific authority (EFSA, ANSES, IARC, NIH) and the finding.
 
@@ -351,10 +353,12 @@ If product-specific data is unavailable, use brand-level or parent-company-level
 SCORING RULES: Always return a numeric score (0-100) for each category when you have ANY findings or research. Only return null if you have absolutely zero information. Having findings but returning null is never acceptable.
 
 CRITICAL: Never return 50 as a score when real findings exist. 50 is reserved ONLY for genuinely no data available. Use this scoring guide:
-- 80-100: Strong certifications (RSPCA Assured, Certified Humane, Fair Trade, B Corp) with no controversies
-- 70-79: Certifications exist OR strong positive track record with minor gaps
-- 60-69: Positive commitments found (e.g. cage-free pledge, sustainability program) but no formal certifications
-- 45-59: Mixed findings — positive commitments exist alongside controversies or labor issues. Score lower if controversies are severe.
+- 80+: Multiple active third-party certifications or strong verified track record with no controversies
+- 70-80: At least one active third-party certification present (e.g. Rainforest Alliance, TerraCycle, RSPO, B Corp, Fair Trade, RSPCA Assured, Certified Humane). When a real certification is identified, always score at least 70 for that category. Do not cap certified products at 65.
+- 60-65: Positive commitments stated (e.g. cage-free pledge, sustainability program) but no formal certifications
+- 55-60: Commitments with a passed deadline (unverified if met)
+- 50: No data available (true baseline)
+- 45-55: Commitments present but significant controversy exists. Score lower if controversies are severe.
 - 30-44: Significant controversies found with few or no positive commitments
 - 0-29: Serious violations, lawsuits, or banned practices
 Always justify the score based on the specific findings.
@@ -1067,6 +1071,8 @@ export async function analyzeAndSaveScan(
       // ─── Additional unspecified ingredient rules ───
       { pattern: /^vegetable oils?\s*\(unspecified\)$|^vegetable oils?$/i, tier: "limited", concern: "Unspecified seed oil blend, composition unknown, high omega-6", source: "EFSA" },
       { pattern: /^flavou?rs?$|^flavou?rings?$|^flavou?rs?\s*\(unspecified\)$|^flavou?rings?\s*\(unspecified\)$/i, tier: "limited", concern: "Unspecified composition, undisclosed chemicals", source: "EFSA" },
+      { pattern: /TBHQ|tertiary\s*butylhydroquinone|E319/i, tier: "high", concern: "Petroleum-derived, EFSA genotoxicity concerns, banned in Japan", source: "EFSA" },
+      { pattern: /maltodextrin/i, tier: "limited", concern: "GI higher than sugar, GMO-derived, disrupts gut microbiome", source: "EFSA" },
     ];
 
     // Strip label artifacts (e.g. "Contains 2% or less of:")
