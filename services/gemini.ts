@@ -14,8 +14,14 @@ export interface GeminiIngredient {
   name: string;
   risk: "safe" | "concern" | "toxic";
   explanation: string;
+  healthConcern?: string | null;
   tier?: "high" | "moderate" | "limited" | "safe";
   source?: string | null;
+}
+
+export interface AllergenWarning {
+  allergen: string;
+  type: "may_contain" | "facility";
 }
 
 export interface GeminiAnalysis {
@@ -30,6 +36,7 @@ export interface GeminiAnalysis {
   summary: string;
   categoryScores?: CategoryScores;
   aiKnowledgeBase?: boolean; // true when ingredients came from AI, not label
+  allergenWarnings?: AllergenWarning[];
 }
 
 export interface IdentifyResult {
@@ -192,6 +199,10 @@ IMPORTANT: If no ingredients are visible on the packaging in the image, DO NOT r
 
 COMPLETENESS RULE: List every single ingredient as its own separate entry. Never group multiple ingredients into one row. Sub-ingredients, allergens, emulsifiers, raising agents, and starches must all appear individually. For example, "Vegetable fats (palm, shea)" must become separate entries: "Palm Oil" and "Shea Butter". Ground peanuts and other allergens are critical and must always be included — never omit allergens. Include ALL known ingredients for the product category, even if not visible on the label. For dry erase markers, ALWAYS include xylene, toluene, isopropanol, butanol, and resin components. For cleaning products, include all known active chemicals and surfactants. Never omit known hazardous ingredients just because they aren't printed on the packaging — if the ingredient is a known component of this product type, include it.
 
+ALLERGEN WARNINGS: If a label says "may contain [allergen]" or "produced in a facility with [allergen]", do NOT list it as a regular ingredient. Instead add it to a separate allergen_warnings array.
+
+LANGUAGE RULE: Always respond entirely in English, even if the product label is in another language. Translate all ingredient names and findings to English.
+
 DO NOT penalize for: natural sugars, saturated fats, calories, whole food ingredients, or anything not chemically synthesized.
 
 Rate each ingredient using this 4-tier system based on scientific consensus:
@@ -209,6 +220,9 @@ MANDATORY TIER OVERRIDES (always apply these regardless of other analysis):
 - Butanol / n-butanol: ALWAYS MODERATE RISK — irritant, VOC.
 - Carbon black: ALWAYS LIMITED RISK — IARC Group 2B, possible carcinogen.
 - Refined palm oil / palm fat: ALWAYS MODERATE RISK — contains glycidyl fatty acid esters (GE), genotoxic contaminants flagged by EFSA 2016.
+- E621 (monosodium glutamate / MSG): ALWAYS LIMITED RISK — EFSA notes potential adverse reactions, hyperactivity concerns in sensitive individuals.
+- E627 (disodium guanylate): ALWAYS LIMITED RISK — EFSA flags potential adverse reactions.
+- E631 (disodium inosinate): ALWAYS LIMITED RISK — EFSA flags potential adverse reactions, often combined with MSG to amplify effects.
 - Formaldehyde and formaldehyde-releasing preservatives (DMDM hydantoin, quaternium-15) are IARC Group 1 carcinogens. ALWAYS rate HIGH RISK.
 
 For flagged ingredients, cite the specific authority (EFSA, ANSES, IARC, NIH) and the finding.
@@ -223,7 +237,10 @@ Return ONLY valid JSON, no markdown:
 {
   "toxins_score": "number 0-100 where 100 means no harmful additives found",
   "ingredients": [
-    { "name": "string", "tier": "high|moderate|limited|safe", "concern": "8 words max or null", "source": "string or null" }
+    { "name": "string", "tier": "high|moderate|limited|safe", "concern": "8 words max or null", "source": "string or null", "explanation": "one sentence: what this ingredient is in plain English", "health_concern": "one sentence: health risk and who it affects, or null if safe" }
+  ],
+  "allergen_warnings": [
+    { "allergen": "string", "type": "may_contain|facility" }
   ],
   "flagged_count": { "high": "count", "moderate": "count", "limited": "count", "safe": "count" },
   "summary": "one complete sentence, 15 words max"
@@ -238,7 +255,7 @@ async function analyzeNutrition(base64Image: string, productInfo: ProductInfo): 
   return callGemini({
     parts: [
       {
-        text: `You are a registered dietitian analyzing this product's nutritional quality only.
+        text: `You are a registered dietitian analyzing this product's nutritional quality only. Always respond entirely in English, even if the product label is in another language.
 
 Product: ${productInfo.productName} by ${productInfo.brand}
 
@@ -273,7 +290,7 @@ async function analyzeEthics(base64Image: string, productInfo: ProductInfo): Pro
   return callGemini({
     parts: [
       {
-        text: `You are a supply chain ethics researcher. Research this brand and product for:
+        text: `You are a supply chain ethics researcher. Always respond entirely in English, even if the product label is in another language. Research this brand and product for:
 1. Animal welfare: animal testing, factory-farmed ingredients, certifications (Leaping Bunny, B Corp, Certified Humane)
 2. Environmental sustainability: packaging practices, carbon footprint, environmental certifications
 3. Fair trade: labor sourcing, fair trade certifications, known labor controversies
@@ -495,11 +512,17 @@ function buildAnalysisFromCategories(
       return {
         name: i.name || "Unknown",
         risk: tierToRisk[i.tier] || "concern",
-        explanation: i.concern || "No concerns identified.",
+        explanation: i.explanation || i.concern || "No additional details.",
+        healthConcern: i.health_concern || null,
         tier: i.tier || "safe",
         source: i.source || null,
       };
     }
+  );
+
+  // Pass through allergen warnings from toxins result
+  const allergenWarnings: AllergenWarning[] = (toxinsResult?.allergen_warnings || []).map(
+    (w: any) => ({ allergen: w.allergen || "Unknown", type: w.type || "may_contain" })
   );
 
   // Compile concerns: only actual negative findings
@@ -549,6 +572,7 @@ function buildAnalysisFromCategories(
     cleanAlternatives: [],
     summary,
     categoryScores,
+    allergenWarnings: allergenWarnings.length > 0 ? allergenWarnings : undefined,
   };
 }
 
@@ -784,6 +808,9 @@ export async function analyzeAndSaveScan(
       { pattern: /butanol|n-butanol/i, tier: "moderate", concern: "Irritant, VOC", source: "EFSA" },
       { pattern: /carbon black/i, tier: "limited", concern: "IARC Group 2B, possible carcinogen", source: "IARC" },
       { pattern: /palm oil|palm fat|refined palm/i, tier: "moderate", concern: "Contains GE, genotoxic contaminants (EFSA 2016)", source: "EFSA" },
+      { pattern: /monosodium glutamate|\bMSG\b|E621/i, tier: "limited", concern: "May cause adverse reactions in sensitive individuals", source: "EFSA" },
+      { pattern: /disodium guanylate|E627/i, tier: "limited", concern: "May cause adverse reactions (EFSA)", source: "EFSA" },
+      { pattern: /disodium inosinate|E631/i, tier: "limited", concern: "May cause adverse reactions, amplifies MSG effects", source: "EFSA" },
       { pattern: /disodium\s*(di)?phosphate|E450/i, tier: "limited", concern: "High phosphate intake linked to kidney stress", source: "EFSA" },
       { pattern: /artificial\s*flavo(?:u)?r/i, tier: "limited", concern: "Undisclosed ingredient mix", source: "EFSA" },
       { pattern: /mono.?\s*(?:and|&)\s*diglycerides|E471/i, tier: "limited", concern: "May contain trans fatty acids", source: "EFSA" },
@@ -952,7 +979,8 @@ function buildAnalysisFromCachedData(
       return {
         name: i.name || "Unknown",
         risk: tierToRisk[i.tier] || "concern",
-        explanation: i.concern || "No concerns identified.",
+        explanation: i.explanation || i.concern || "No additional details.",
+        healthConcern: i.health_concern || null,
         tier: i.tier || "safe",
         source: i.source || null,
       };

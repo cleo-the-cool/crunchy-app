@@ -12,6 +12,8 @@ export interface ToxinIngredient {
   tier: "high" | "moderate" | "limited" | "safe";
   concern: string | null;
   source: string | null;
+  explanation?: string | null;
+  health_concern?: string | null;
 }
 
 export interface ToxinAnalysis {
@@ -143,8 +145,8 @@ export function computeWeightedScore(
  * Derive a rating label from a numeric score.
  */
 export function getRatingFromScore(score: number): "clean" | "caution" | "avoid" {
-  if (score >= 70) return "clean";
-  if (score >= 40) return "caution";
+  if (score >= 80) return "clean";
+  if (score >= 60) return "caution";
   return "avoid";
 }
 

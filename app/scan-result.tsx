@@ -43,6 +43,7 @@ import {
   type UserPreferences,
   type ToxinIngredient,
 } from "@/lib/scoring";
+import type { AllergenWarning } from "@/services/gemini";
 
 // ─── Constants ───────────────────────────────────────────────────────
 
@@ -108,8 +109,8 @@ const CARD_SHADOW = {
 
 function getScorePillColor(score: number | null | undefined): string {
   if (score == null) return "#999";
-  if (score >= 70) return "#4CAF50";
-  if (score >= 40) return "#FFC107";
+  if (score >= 80) return "#4CAF50";
+  if (score >= 60) return "#FFC107";
   return "#F44336";
 }
 
@@ -255,14 +256,36 @@ function SectionHeader({ text }: { text: string }) {
 
 // ─── Category Card Components ────────────────────────────────────────
 
+function AllergenWarningsSection({ warnings }: { warnings: AllergenWarning[] }) {
+  if (!warnings || warnings.length === 0) return null;
+  return (
+    <View className="mx-4 mt-2 mb-1 bg-peach/10 rounded-xl p-3" style={{ borderWidth: 1, borderColor: "#F4A57430" }}>
+      <View className="flex-row items-center mb-2">
+        <Text className="text-base mr-1.5">⚠️</Text>
+        <Text className="text-sm font-bold text-dark">Allergen Warnings</Text>
+      </View>
+      {warnings.map((w, i) => (
+        <View key={i} className="flex-row items-center mt-1">
+          <Ionicons name="alert-circle" size={14} color="#F4A574" style={{ marginRight: 6 }} />
+          <Text className="text-sm text-dark/70">
+            {w.type === "facility" ? `Produced in a facility with ${w.allergen}` : `May contain ${w.allergen}`}
+          </Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 function ToxinsCard({
   data,
   expandedIngredient,
   onToggle,
+  allergenWarnings,
 }: {
   data: NonNullable<CategoryScores["toxins_additives"]>;
   expandedIngredient: string | null;
   onToggle: (name: string) => void;
+  allergenWarnings?: AllergenWarning[];
 }) {
   const { risk_breakdown, ingredients, summary } = data;
 
@@ -279,6 +302,10 @@ function ToxinsCard({
     <View className="p-4">
       {summary ? <Bullet text={summary} /> : null}
       <Bullet text={`${safeCount} safe, ${limitedCount + moderateCount} concern, ${highCount} flagged`} />
+
+      {allergenWarnings && allergenWarnings.length > 0 && (
+        <AllergenWarningsSection warnings={allergenWarnings} />
+      )}
 
       {sortedIngredients.length > 0 && (
         <>
@@ -319,9 +346,30 @@ function ToxinsCard({
                 </View>
                 {isExpanded && (
                   <View className="px-3 pb-3" style={{ borderTopWidth: 1, borderTopColor: "#f0f0f0" }}>
-                    <Text className="text-sm text-dark/60 leading-5 mt-2">
-                      {ingredient.concern || "No additional details"}
-                    </Text>
+                    {(ingredient as any).explanation ? (
+                      <View className="mt-2">
+                        <Text className="text-xs font-semibold text-dark/50 uppercase mb-0.5">What it is</Text>
+                        <Text className="text-sm text-dark/60 leading-5">
+                          {(ingredient as any).explanation}
+                        </Text>
+                      </View>
+                    ) : ingredient.concern ? (
+                      <Text className="text-sm text-dark/60 leading-5 mt-2">
+                        {ingredient.concern}
+                      </Text>
+                    ) : (
+                      <Text className="text-sm text-dark/60 leading-5 mt-2">
+                        No additional details
+                      </Text>
+                    )}
+                    {(ingredient as any).health_concern && (
+                      <View className="mt-2">
+                        <Text className="text-xs font-semibold text-dark/50 uppercase mb-0.5">Health concern</Text>
+                        <Text className="text-sm text-dark/60 leading-5">
+                          {(ingredient as any).health_concern}
+                        </Text>
+                      </View>
+                    )}
                     {ingredient.source && (
                       <Text className="text-xs text-dark/35 mt-1.5 italic">
                         Source: {ingredient.source}
@@ -473,9 +521,26 @@ function LegacyAnalysisCard({
               </View>
               {isExpanded && (
                 <View className="px-3 pb-3" style={{ borderTopWidth: 1, borderTopColor: "#f0f0f0" }}>
-                  <Text className="text-sm text-dark/60 leading-5 mt-2">
-                    {ingredient.explanation}
-                  </Text>
+                  {ingredient.explanation ? (
+                    <View className="mt-2">
+                      <Text className="text-xs font-semibold text-dark/50 uppercase mb-0.5">What it is</Text>
+                      <Text className="text-sm text-dark/60 leading-5">
+                        {ingredient.explanation}
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text className="text-sm text-dark/60 leading-5 mt-2">
+                      No additional details
+                    </Text>
+                  )}
+                  {(ingredient as any).healthConcern && (
+                    <View className="mt-2">
+                      <Text className="text-xs font-semibold text-dark/50 uppercase mb-0.5">Health concern</Text>
+                      <Text className="text-sm text-dark/60 leading-5">
+                        {(ingredient as any).healthConcern}
+                      </Text>
+                    </View>
+                  )}
                   {ingredient.source && (
                     <Text className="text-xs text-dark/35 mt-1.5 italic">
                       Source: {ingredient.source}
@@ -515,6 +580,7 @@ interface DisplayProduct {
   summary?: string;
   categoryScores?: CategoryScores;
   aiKnowledgeBase?: boolean;
+  allergenWarnings?: AllergenWarning[];
 }
 
 // ─── Main Screen ─────────────────────────────────────────────────────
@@ -569,6 +635,7 @@ export default function ScanResultScreen() {
         summary: analysis.summary || "",
         categoryScores: analysis.categoryScores || undefined,
         aiKnowledgeBase: analysis.aiKnowledgeBase || false,
+        allergenWarnings: analysis.allergenWarnings || undefined,
       };
     } catch {
       const fallback = getDefaultProduct("unknown");
@@ -673,6 +740,7 @@ export default function ScanResultScreen() {
             data={data as NonNullable<CategoryScores["toxins_additives"]>}
             expandedIngredient={expandedIngredient}
             onToggle={toggleIngredient}
+            allergenWarnings={product.allergenWarnings}
           />
         );
       case "nutrition":

@@ -90,8 +90,8 @@ function getRatingColor(rating?: string): string {
 }
 
 function getRatingFromScore(score: number): "clean" | "caution" | "avoid" {
-  if (score >= 70) return "clean";
-  if (score >= 40) return "caution";
+  if (score >= 80) return "clean";
+  if (score >= 60) return "caution";
   return "avoid";
 }
 
