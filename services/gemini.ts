@@ -170,8 +170,9 @@ async function identifyProduct(base64Image: string): Promise<ProductInfo> {
     parts: [
       {
         text: `You are a product identification specialist. Identify the product in this image.
+CRITICAL: You MUST respond entirely in English regardless of the language on the scanned label. Translate the product name and brand name to English. Use the format "Brand — Product Name" (e.g. "Fonzie's — Baked Corn Snack" not "Fonzie's Gli Originali Cotti al Forno"). Keep brand names as-is but translate descriptive product names.
 Return ONLY valid JSON:
-{"productName": "string", "brand": "string", "category": "Food|Drinks|Skincare|Makeup|Cleaning|Personal Care|Clothing|Home|Baby|Cookware|Drinkware|Other"}`,
+{"productName": "string (in English)", "brand": "string", "category": "Food|Drinks|Skincare|Makeup|Cleaning|Personal Care|Clothing|Home|Baby|Cookware|Drinkware|Other"}`,
       },
       { inline_data: { mime_type: "image/jpeg", data: base64Image } },
     ],
@@ -201,7 +202,7 @@ COMPLETENESS RULE: List every single ingredient as its own separate entry. Never
 
 ALLERGEN WARNINGS: If a label says "may contain [allergen]" or "produced in a facility with [allergen]", do NOT list it as a regular ingredient. Instead add it to a separate allergen_warnings array.
 
-LANGUAGE RULE: Always respond entirely in English, even if the product label is in another language. Translate all ingredient names and findings to English.
+LANGUAGE RULE: You MUST respond entirely in English regardless of the language on the scanned label. Translate ALL of the following to English: every ingredient name, all findings, all explanations, all health concern descriptions, all summaries. Never leave any foreign language text in any field of the response. For example, "LATTE in polvere" must become "Milk Powder", "FORMAGGIO fuso" must become "Melted Cheese".
 
 DO NOT penalize for: natural sugars, saturated fats, calories, whole food ingredients, or anything not chemically synthesized.
 
@@ -257,7 +258,7 @@ async function analyzeNutrition(base64Image: string, productInfo: ProductInfo): 
   return callGemini({
     parts: [
       {
-        text: `You are a registered dietitian analyzing this product's nutritional quality only. Always respond entirely in English, even if the product label is in another language.
+        text: `You are a registered dietitian analyzing this product's nutritional quality only. You MUST respond entirely in English regardless of the language on the scanned label. Translate all terms, findings, and summaries to English.
 
 Product: ${productInfo.productName} by ${productInfo.brand}
 
@@ -292,7 +293,7 @@ async function analyzeEthics(base64Image: string, productInfo: ProductInfo): Pro
   return callGemini({
     parts: [
       {
-        text: `You are a supply chain ethics researcher. Always respond entirely in English, even if the product label is in another language. Research this brand and product for:
+        text: `You are a supply chain ethics researcher. You MUST respond entirely in English regardless of the language on the scanned label. Translate all ingredient names, findings, and summaries to English. Research this brand and product for:
 1. Animal welfare: farming conditions, animal welfare certifications (RSPCA Assured, Certified Humane, Leaping Bunny, B Corp), known controversies about animal treatment in the supply chain, factory farming practices
 2. Environmental sustainability: packaging practices, carbon footprint, environmental certifications
 3. Fair trade: labor sourcing, fair trade certifications, known labor controversies
@@ -322,7 +323,7 @@ Return ONLY valid JSON:
   "sustainability_findings": ["8 words max per finding"],
   "fair_trade_findings": ["8 words max per finding"],
   "certifications": ["list of certification names found"],
-  "animal_derived_ingredients": ["list every animal-derived ingredient found in the product: dairy, eggs, honey, meat, fish, gelatin, lard, whey, casein, etc. Empty array if none."],
+  "animal_derived_ingredients": ["list every animal-derived ingredient found in the product IN ENGLISH: dairy, eggs, honey, meat, fish, gelatin, lard, whey, casein, milk powder, cheese, etc. Translate all names to English. Empty array if none."],
   "data_confidence": "product|brand|limited",
   "summary": "one complete sentence, 15 words max"
 }`,
@@ -352,22 +353,67 @@ interface CachedProductResult {
   productId: string | null;
 }
 
+// Filler words to strip for normalized matching (multilingual)
+const FILLER_WORDS = new Set([
+  "al", "di", "con", "del", "della", "delle", "degli", "dei", "il", "la", "le", "lo", "gli", "un", "una", "uno",
+  "the", "a", "an", "of", "with", "and", "in", "for", "to", "by", "from", "on", "at",
+  "de", "du", "des", "le", "la", "les", "et", "au", "aux",
+  "der", "die", "das", "und", "von", "mit", "für",
+  "non", "e", "o",
+]);
+
+/**
+ * Normalize a product name for cache matching:
+ * lowercase, strip punctuation, remove filler words, collapse whitespace.
+ */
+function normalizeForMatch(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[''`]/g, "")           // remove apostrophes
+    .replace(/[^a-z0-9\s]/g, " ")    // strip all other punctuation
+    .split(/\s+/)
+    .filter((w) => w.length > 0 && !FILLER_WORDS.has(w))
+    .join(" ")
+    .trim();
+}
+
 async function findCachedProduct(
   name: string,
   brand: string
 ): Promise<CachedProductResult | null> {
   if (!isSupabaseConfigured()) return null;
 
-  // Strategy 1: Try exact match first (fastest)
+  const searchNormalized = normalizeForMatch(`${brand} ${name}`);
+
+  // Strategy 1: Try normalized_name match first (fastest, most reliable)
   try {
-    const { data: exactMatch, error: exactError } = await supabase
+    const { data: normalizedMatch } = await supabase
+      .from("products")
+      .select("id, gemini_analysis, category_scores, scan_count")
+      .eq("normalized_name", searchNormalized)
+      .limit(1)
+      .maybeSingle();
+
+    if (normalizedMatch) {
+      return {
+        analysis: normalizedMatch.gemini_analysis as GeminiAnalysis | null,
+        categoryScores: normalizedMatch.category_scores as CategoryScores | null,
+        productId: normalizedMatch.id,
+      };
+    }
+  } catch (e) {
+    // Column may not exist yet — fall through to legacy strategies
+  }
+
+  // Strategy 2: Try exact name+brand match
+  try {
+    const { data: exactMatch } = await supabase
       .from("products")
       .select("id, gemini_analysis, category_scores, scan_count")
       .eq("name", name)
       .eq("brand", brand)
       .limit(1)
-      .maybeSingle(); // maybeSingle returns null instead of throwing on 0 rows
-
+      .maybeSingle();
 
     if (exactMatch) {
       return {
@@ -379,32 +425,30 @@ async function findCachedProduct(
   } catch (e) {
   }
 
-  // Strategy 2: Case-insensitive brand match + name word similarity (fuzzy)
+  // Strategy 3: Fuzzy brand match + normalized word similarity
   try {
-    const normalizedName = name.toLowerCase().trim();
     const normalizedBrand = brand.toLowerCase().trim();
 
-    const { data: fuzzyMatches, error: fuzzyError } = await supabase
+    const { data: fuzzyMatches } = await supabase
       .from("products")
-      .select("id, name, brand, gemini_analysis, category_scores, scan_count")
+      .select("id, name, brand, gemini_analysis, category_scores, scan_count, normalized_name")
       .ilike("brand", `%${normalizedBrand}%`)
       .limit(20);
 
-    if (fuzzyMatches) {
-    }
-
     if (fuzzyMatches && fuzzyMatches.length > 0) {
+      const searchWords = searchNormalized.split(/\s+/);
+
       const bestMatch = fuzzyMatches
         .map((row) => {
-          const dbName = (row.name || "").toLowerCase().trim();
-          const nameWords = normalizedName.split(/\s+/).filter((w: string) => w.length > 2);
-          const dbWords = dbName.split(/\s+/).filter((w: string) => w.length > 2);
-          const commonWords = nameWords.filter((w: string) =>
+          // Use normalized_name if available, otherwise normalize on the fly
+          const dbNormalized = row.normalized_name || normalizeForMatch(`${row.brand} ${row.name}`);
+          const dbWords = dbNormalized.split(/\s+/);
+          const commonWords = searchWords.filter((w: string) =>
             dbWords.some((dw: string) => dw.includes(w) || w.includes(dw))
           );
           const similarity =
-            nameWords.length > 0
-              ? commonWords.length / Math.max(nameWords.length, dbWords.length)
+            searchWords.length > 0
+              ? commonWords.length / Math.max(searchWords.length, dbWords.length)
               : 0;
           return { ...row, similarity };
         })
@@ -431,40 +475,72 @@ async function cacheProduct(
 ): Promise<string | null> {
   if (!isSupabaseConfigured()) return null;
 
+  // Standardized name format: "Brand — Product Name"
+  const displayName = analysis.productName.includes(analysis.brand)
+    ? analysis.productName
+    : `${analysis.brand} — ${analysis.productName}`;
+  const normalized = normalizeForMatch(`${analysis.brand} ${analysis.productName}`);
+
   try {
-    const { data: existing, error: existErr } = await supabase
-      .from("products")
-      .select("id, scan_count")
-      .eq("name", analysis.productName)
-      .eq("brand", analysis.brand)
-      .limit(1)
-      .maybeSingle();
+    // Check for existing product by normalized name first, then exact match
+    let existing: { id: string; scan_count: number | null } | null = null;
+
+    try {
+      const { data } = await supabase
+        .from("products")
+        .select("id, scan_count")
+        .eq("normalized_name", normalized)
+        .limit(1)
+        .maybeSingle();
+      existing = data;
+    } catch {
+      // normalized_name column may not exist yet
+    }
+
+    if (!existing) {
+      const { data } = await supabase
+        .from("products")
+        .select("id, scan_count")
+        .eq("name", analysis.productName)
+        .eq("brand", analysis.brand)
+        .limit(1)
+        .maybeSingle();
+      existing = data;
+    }
 
     if (existing) {
-      const { error: updateErr } = await supabase
+      const updatePayload: Record<string, any> = {
+        gemini_analysis: analysis,
+        overall_score: analysis.crunchyScore,
+        scan_count: (existing.scan_count ?? 0) + 1,
+        category_scores: categoryScores || undefined,
+        updated_at: new Date().toISOString(),
+        name: displayName,
+      };
+      // Try to set normalized_name (column may not exist yet)
+      updatePayload.normalized_name = normalized;
+
+      await supabase
         .from("products")
-        .update({
-          gemini_analysis: analysis,
-          overall_score: analysis.crunchyScore,
-          scan_count: (existing.scan_count ?? 0) + 1,
-          category_scores: categoryScores || undefined,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updatePayload)
         .eq("id", existing.id);
       return existing.id;
     }
 
-    const { data: newProduct, error: insertErr } = await supabase
+    const insertPayload: Record<string, any> = {
+      name: displayName,
+      brand: analysis.brand,
+      category: mapToDbCategory(analysis.category),
+      ingredients: analysis.ingredients.map((i) => i.name),
+      overall_score: analysis.crunchyScore,
+      gemini_analysis: analysis,
+      category_scores: categoryScores || undefined,
+      normalized_name: normalized,
+    };
+
+    const { data: newProduct } = await supabase
       .from("products")
-      .insert({
-        name: analysis.productName,
-        brand: analysis.brand,
-        category: mapToDbCategory(analysis.category),
-        ingredients: analysis.ingredients.map((i) => i.name),
-        overall_score: analysis.crunchyScore,
-        gemini_analysis: analysis,
-        category_scores: categoryScores || undefined,
-      })
+      .insert(insertPayload)
       .select("id")
       .single();
 

@@ -950,25 +950,29 @@ export default function ScanResultScreen() {
 
         {/* ── Vegan / Vegetarian Banners ── */}
         {veganFlaggedIngredients.length > 0 && (
-          <View className="mx-5 mt-3 bg-peach/10 rounded-2xl p-4 flex-row items-start" style={{ borderWidth: 1, borderColor: "#F4A57440" }}>
-            <Text className="text-lg mr-2.5 mt-0.5">⚠️</Text>
-            <View className="flex-1">
-              <Text className="text-sm font-bold text-dark">Not Vegan</Text>
-              <Text className="text-sm text-dark/60 mt-0.5">
+          <View className="mx-5 mt-3 bg-white rounded-2xl overflow-hidden" style={CARD_SHADOW}>
+            <View className="p-4">
+              <View className="flex-row items-center mb-2">
+                <Text className="text-base mr-2">🌱</Text>
+                <Text className="text-base font-bold text-dark">Not Vegan</Text>
+              </View>
+              <Text className="text-sm text-dark/60 leading-5">
                 Contains {veganFlaggedIngredients.slice(0, 5).join(", ")}
-                {veganFlaggedIngredients.length > 5 ? ` and ${veganFlaggedIngredients.length - 5} more` : ""}
+                {veganFlaggedIngredients.length > 5 ? `, and ${veganFlaggedIngredients.length - 5} more` : ""}
               </Text>
             </View>
           </View>
         )}
         {vegetarianFlaggedIngredients.length > 0 && (
-          <View className="mx-5 mt-3 bg-peach/10 rounded-2xl p-4 flex-row items-start" style={{ borderWidth: 1, borderColor: "#F4A57440" }}>
-            <Text className="text-lg mr-2.5 mt-0.5">⚠️</Text>
-            <View className="flex-1">
-              <Text className="text-sm font-bold text-dark">Not Vegetarian</Text>
-              <Text className="text-sm text-dark/60 mt-0.5">
+          <View className="mx-5 mt-3 bg-white rounded-2xl overflow-hidden" style={CARD_SHADOW}>
+            <View className="p-4">
+              <View className="flex-row items-center mb-2">
+                <Text className="text-base mr-2">🥚</Text>
+                <Text className="text-base font-bold text-dark">Not Vegetarian</Text>
+              </View>
+              <Text className="text-sm text-dark/60 leading-5">
                 Contains {vegetarianFlaggedIngredients.slice(0, 5).join(", ")}
-                {vegetarianFlaggedIngredients.length > 5 ? ` and ${vegetarianFlaggedIngredients.length - 5} more` : ""}
+                {vegetarianFlaggedIngredients.length > 5 ? `, and ${vegetarianFlaggedIngredients.length - 5} more` : ""}
               </Text>
             </View>
           </View>
