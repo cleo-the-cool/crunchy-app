@@ -223,6 +223,12 @@ MANDATORY TIER OVERRIDES (always apply these regardless of other analysis):
 - Butanol / n-butanol: ALWAYS MODERATE RISK — irritant, VOC.
 - Carbon black: ALWAYS LIMITED RISK — IARC Group 2B, possible carcinogen.
 - Refined palm oil / palm fat: ALWAYS MODERATE RISK — contains glycidyl fatty acid esters (GE), genotoxic contaminants flagged by EFSA 2016.
+- Canola oil / rapeseed oil: ALWAYS LIMITED RISK — highly refined, high omega-6, typically GMO-derived.
+- Soybean oil: ALWAYS LIMITED RISK — highly refined, high omega-6, typically GMO-derived.
+- Sunflower oil (non-high-oleic): ALWAYS LIMITED RISK — highly refined, high omega-6 when not high-oleic variety.
+- Vegetable oil (unspecified): ALWAYS LIMITED RISK — refined seed oil, source unknown.
+- Corn oil: ALWAYS LIMITED RISK — highly refined, high omega-6, typically GMO-derived.
+- Cottonseed oil: ALWAYS MODERATE RISK — high pesticide residue risk, often refined.
 - E621 (monosodium glutamate / MSG): ALWAYS LIMITED RISK — EFSA notes potential adverse reactions, hyperactivity concerns in sensitive individuals.
 - E627 (disodium guanylate): ALWAYS LIMITED RISK — EFSA flags potential adverse reactions.
 - E631 (disodium inosinate): ALWAYS LIMITED RISK — EFSA flags potential adverse reactions, often combined with MSG to amplify effects.
@@ -303,6 +309,8 @@ async function analyzeEthics(base64Image: string, productInfo: ProductInfo): Pro
 Product: ${productInfo.productName} by ${productInfo.brand}
 
 CRITICAL ANIMAL WELFARE RULE: Animal welfare scoring must ONLY assess how animals are treated in the production process — farming conditions, certifications, known controversies. Do NOT penalize or reduce the score simply because a product contains animal-derived ingredients like dairy, eggs, honey, or meat. Containing dairy is not an animal welfare concern unless there is evidence of poor farming practices. A cheese product from a brand with good farming standards should score high on animal welfare.
+
+COMMITMENT DEADLINES: Today's date is ${new Date().toISOString().split("T")[0]}. If a brand made a commitment with a deadline that has already passed (e.g. "cage-free by 2025" and it's now 2026), note whether the commitment was met or the deadline passed without confirmation. Do not present past deadlines as future goals.
 
 PARENT COMPANY ACCURACY: Before researching brand ownership, always verify the correct parent company. Do NOT guess or assume parent company relationships. If you are not certain which company owns a brand, say "parent company not confirmed" rather than stating a wrong company. Getting the parent company wrong is worse than saying you don't know. For example, Fonzie's is a Mondelez brand, NOT Ferrero.
 
@@ -963,6 +971,12 @@ export async function analyzeAndSaveScan(
       { pattern: /butanol|n-butanol/i, tier: "moderate", concern: "Irritant, VOC", source: "EFSA" },
       { pattern: /carbon black/i, tier: "limited", concern: "IARC Group 2B, possible carcinogen", source: "IARC" },
       { pattern: /palm oil|palm fat|refined palm/i, tier: "moderate", concern: "Contains GE, genotoxic contaminants (EFSA 2016)", source: "EFSA" },
+      { pattern: /canola oil|rapeseed oil/i, tier: "limited", concern: "Highly refined, high omega-6, typically GMO-derived", source: "EFSA" },
+      { pattern: /soybean oil|soy oil/i, tier: "limited", concern: "Highly refined, high omega-6, typically GMO-derived", source: "EFSA" },
+      { pattern: /sunflower oil/i, tier: "limited", concern: "Highly refined, high omega-6 (non-high-oleic)", source: "EFSA" },
+      { pattern: /^vegetable oil$/i, tier: "limited", concern: "Refined seed oil, source unknown", source: "EFSA" },
+      { pattern: /corn oil|maize oil/i, tier: "limited", concern: "Highly refined, high omega-6, typically GMO-derived", source: "EFSA" },
+      { pattern: /cottonseed oil/i, tier: "moderate", concern: "High pesticide residue risk, often refined", source: "EFSA" },
       { pattern: /monosodium glutamate|\bMSG\b|E621/i, tier: "limited", concern: "May cause adverse reactions in sensitive individuals", source: "EFSA" },
       { pattern: /disodium guanylate|E627/i, tier: "limited", concern: "May cause adverse reactions (EFSA)", source: "EFSA" },
       { pattern: /disodium inosinate|E631/i, tier: "limited", concern: "May cause adverse reactions, amplifies MSG effects", source: "EFSA" },
