@@ -10,7 +10,9 @@
       "channel": "development"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "store",
+      "channel": "preview",
+      "autoIncrement": true
     },
     "production": {
       "autoIncrement": true
@@ -18,6 +20,14 @@
   },
   "submit": {
     "production": {
+      "ios": {
+        "ascApiKeyPath": "./.secrets/AuthKey_9TY56QNW73.p8",
+        "ascApiKeyIssuerId": "4814e165-f6c0-45c3-b619-093ff1099274",
+        "ascApiKeyId": "9TY56QNW73",
+        "ascAppId": "6760669431"
+      }
+    },
+    "preview": {
       "ios": {
         "ascApiKeyPath": "./.secrets/AuthKey_9TY56QNW73.p8",
         "ascApiKeyIssuerId": "4814e165-f6c0-45c3-b619-093ff1099274",
