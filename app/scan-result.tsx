@@ -411,9 +411,13 @@ function NutritionCard({ data }: { data: NonNullable<CategoryScores["nutrition"]
 
 function AnimalWelfareCard({ data }: { data: NonNullable<CategoryScores["animal_welfare"]> }) {
   const { findings, certifications, data_confidence } = data;
+  // Filter out bullets that just list animal ingredients — that info is in the vegan/vegetarian banner
+  const filteredFindings = (findings || []).filter(
+    (bullet: string) => !bullet.toLowerCase().startsWith("contains ")
+  );
   return (
     <View className="p-4">
-      {(findings || []).slice(0, 3).map((f, i) => (
+      {filteredFindings.slice(0, 3).map((f, i) => (
         <Bullet key={i} text={f} />
       ))}
       {certifications && certifications.length > 0 && (
