@@ -265,6 +265,7 @@ MANDATORY TIER OVERRIDES (always apply these regardless of other analysis):
 - Flavors (unspecified) / Flavouring / Flavourings: ALWAYS LIMITED RISK — unspecified composition, may contain undisclosed processing chemicals. Same rule as Natural Flavors and Artificial Flavors.
 - TBHQ / Tertiary Butylhydroquinone (E319): ALWAYS HIGH RISK — petroleum-derived preservative, EFSA flagged genotoxicity concerns, banned in Japan and several other countries, FDA strictly limits usage level, linked to immune system effects in animal studies.
 - Maltodextrin: ALWAYS LIMITED RISK — highly processed starch derivative, glycemic index higher than sugar (GI 85-105), no nutritional value, may disrupt gut microbiome, typically derived from GMO corn.
+- Silicon Dioxide (E551) / Silica: ALWAYS LIMITED RISK — anti-caking agent, EFSA 2018 raised concerns about nano-form particles and potential intestinal inflammation, safety of nanomaterial form not fully established.
 
 For flagged ingredients, cite the specific authority (EFSA, ANSES, IARC, NIH) and the finding.
 
@@ -1073,6 +1074,7 @@ export async function analyzeAndSaveScan(
       { pattern: /^flavou?rs?$|^flavou?rings?$|^flavou?rs?\s*\(unspecified\)$|^flavou?rings?\s*\(unspecified\)$/i, tier: "limited", concern: "Unspecified composition, undisclosed chemicals", source: "EFSA" },
       { pattern: /TBHQ|tertiary\s*butylhydroquinone|E319/i, tier: "high", concern: "Petroleum-derived, EFSA genotoxicity concerns, banned in Japan", source: "EFSA" },
       { pattern: /maltodextrin/i, tier: "limited", concern: "GI higher than sugar, GMO-derived, disrupts gut microbiome", source: "EFSA" },
+      { pattern: /silicon\s*dioxide|silica|E551/i, tier: "limited", concern: "EFSA 2018 nano-form particle concerns, intestinal inflammation", source: "EFSA" },
     ];
 
     // Strip label artifacts (e.g. "Contains 2% or less of:")
