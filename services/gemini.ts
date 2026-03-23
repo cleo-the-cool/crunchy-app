@@ -210,11 +210,16 @@ LANGUAGE RULE: You MUST respond entirely in English regardless of the language o
 
 DO NOT penalize for: natural sugars, saturated fats, calories, whole food ingredients, or anything not chemically synthesized.
 
+INDIVIDUAL ANALYSIS REQUIRED: For every ingredient that does not have a hardcoded override rule below, you MUST:
+1. Identify what the ingredient is and what function it serves
+2. Research its known health concerns, regulatory status (FDA, EFSA, WHO), and any controversies
+3. Assign a tier based on actual findings — do NOT default to Safe simply because there is no hardcoded rule
+
 Rate each ingredient using this 4-tier system based on scientific consensus:
-- HIGH RISK: Banned in EU, classified as carcinogen by IARC, or confirmed endocrine disruptor
-- MODERATE RISK: Flagged by EFSA or ANSES with safety concerns, limited but notable studies
-- LIMITED RISK: Some concern in high doses, regulatory debate ongoing
-- SAFE: Approved by EFSA, ANSES, and IARC with no significant concern
+- SAFE: Well-studied, no meaningful health concerns at normal dietary levels. Safe must be EARNED through evidence, not assumed by default.
+- LIMITED RISK: Some regulatory concern, limited safety data, controversial in wellness communities, or known to cause reactions in sensitive populations. If you are uncertain about an ingredient, assign Limited and note why.
+- MODERATE RISK: Clear evidence of health concern, EFSA or FDA has flagged it, or significant controversy with real evidence
+- HIGH RISK: Strong evidence of harm, banned or restricted in multiple countries, classified as carcinogenic/genotoxic by IARC, or confirmed endocrine disruptor
 
 MANDATORY TIER OVERRIDES (always apply these regardless of other analysis):
 - Phthalates and phthalate plasticizers (DBP, DEHP, BBP, DINP, etc.) are confirmed endocrine disruptors. ALWAYS rate HIGH RISK.
@@ -228,7 +233,7 @@ MANDATORY TIER OVERRIDES (always apply these regardless of other analysis):
 - Canola oil / rapeseed oil: ALWAYS LIMITED RISK — highly refined, high omega-6, typically GMO-derived.
 - Soybean oil: ALWAYS LIMITED RISK — highly refined, high omega-6, typically GMO-derived.
 - Sunflower oil (non-high-oleic): ALWAYS LIMITED RISK — highly refined, high omega-6 when not high-oleic variety.
-- Vegetable oil / Vegetable oils / Vegetable oil blend (unspecified): ALWAYS LIMITED RISK — refined seed oil blend, source and composition unknown, high omega-6.
+- Vegetable oil / Vegetable oils / Vegetable oil blend (unspecified): ALWAYS LIMITED RISK — refined seed oil blend, source and composition unknown, high omega-6. EXCEPTION: This rule applies ONLY to unspecified vegetable oils or seed/grain oils (soybean, canola, corn, sunflower, safflower, cottonseed, rice bran). Tropical fats listed in "Vegetable Oil (X)" format — including Shea Oil, Sal Seed Oil, Mango Kernel Oil, Illipe, Kokum Butter — should be analyzed individually on their own merits and are NOT automatically Limited.
 - Monocalcium Phosphate (E341i): ALWAYS LIMITED RISK — inorganic phosphate additive, EFSA flagged concerns around high phosphate intake and kidney function.
 - Corn oil: ALWAYS LIMITED RISK — highly refined, high omega-6, typically GMO-derived.
 - Cottonseed oil: ALWAYS MODERATE RISK — high pesticide residue risk, often refined.
@@ -241,8 +246,15 @@ MANDATORY TIER OVERRIDES (always apply these regardless of other analysis):
 - Smoke flavoring / smoke aromatizing: ALWAYS LIMITED RISK — EFSA 2021 genotoxicity re-evaluation, some smoke flavorings suspended from EU market pending safety assessment.
 - Flavorings / aromas (unspecified): ALWAYS LIMITED RISK — undisclosed ingredient composition.
 - Formaldehyde and formaldehyde-releasing preservatives (DMDM hydantoin, quaternium-15) are IARC Group 1 carcinogens. ALWAYS rate HIGH RISK.
+- Artificial and Natural Flavors / Artificial and Natural Flavor: ALWAYS LIMITED RISK — unspecified composition, may contain undisclosed chemicals.
+- Sodium Metabisulfite (E223): ALWAYS LIMITED RISK — sulfite preservative, known allergen trigger especially for asthmatics, EFSA flagged.
+- Polyglycerol Polyricinoleate / PGPR (E476): ALWAYS LIMITED RISK — synthetic emulsifier, cheap cocoa butter substitute, limited long-term safety data.
+- Soy Lecithin: ALWAYS LIMITED RISK — typically GMO-derived, processing solvent residue concerns.
+- Ammonium Bicarbonate (E503): ALWAYS LIMITED RISK — leavening agent, releases ammonia during baking, EFSA under review.
 
 For flagged ingredients, cite the specific authority (EFSA, ANSES, IARC, NIH) and the finding.
+
+CONTAMINANT CONSISTENCY RULE: If you mention a genotoxic or carcinogenic contaminant in the summary text, it MUST appear as a named ingredient row rated Moderate or High Risk. Never reference a contaminant in the summary without a corresponding flagged ingredient row. If the contaminant arises from processing (e.g. acrylamide from high-temperature cooking, 3-MCPD from refined palm oil, glycidol from palm oil refining), list it as a separate row named exactly what it is with the appropriate tier.
 
 CRITICAL FORMATTING RULES:
 - Each "concern" value must be a complete standalone fact in 8 words or fewer. Never write full sentences or paragraphs.
@@ -982,12 +994,18 @@ export async function analyzeAndSaveScan(
       { pattern: /soybean oil|soy oil/i, tier: "limited", concern: "Highly refined, high omega-6, typically GMO-derived", source: "EFSA" },
       { pattern: /sunflower oil/i, tier: "limited", concern: "Highly refined, high omega-6 (non-high-oleic)", source: "EFSA" },
       { pattern: /^vegetable oils?(\s+blend)?$/i, tier: "limited", concern: "Refined seed oil blend, source and composition unknown", source: "EFSA" },
+      // Note: "Vegetable Oil (Shea Oil)" etc. won't match this ^ because of the $ anchor
       { pattern: /monocalcium phosphate|E341i/i, tier: "limited", concern: "Inorganic phosphate additive, EFSA kidney function concerns", source: "EFSA" },
       { pattern: /corn oil|maize oil/i, tier: "limited", concern: "Highly refined, high omega-6, typically GMO-derived", source: "EFSA" },
       { pattern: /cottonseed oil/i, tier: "moderate", concern: "High pesticide residue risk, often refined", source: "EFSA" },
       { pattern: /autolyzed yeast extract/i, tier: "limited", concern: "Hidden source of free glutamates (similar to MSG)", source: "EFSA" },
       { pattern: /annatto|E160b/i, tier: "limited", concern: "EFSA flagged for hyperactivity, known allergen trigger", source: "EFSA" },
       { pattern: /^spices?$|^natural spices?$|^spices?\s*\(unspecified\)$/i, tier: "limited", concern: "Unverified composition, source not specified", source: "EFSA" },
+      { pattern: /artificial and natural flavou?rs?/i, tier: "limited", concern: "Unspecified composition, undisclosed chemicals", source: "EFSA" },
+      { pattern: /sodium metabisulfi?te|E223/i, tier: "limited", concern: "Sulfite preservative, asthma allergen trigger", source: "EFSA" },
+      { pattern: /polyglycerol polyricinoleate|PGPR|E476/i, tier: "limited", concern: "Synthetic emulsifier, limited safety data", source: "EFSA" },
+      { pattern: /soy lecithin|soya lecithin/i, tier: "limited", concern: "Typically GMO-derived, solvent residue concerns", source: "EFSA" },
+      { pattern: /ammonium bicarbonate|E503/i, tier: "limited", concern: "Releases ammonia, EFSA under review", source: "EFSA" },
       { pattern: /monosodium glutamate|\bMSG\b|E621/i, tier: "limited", concern: "May cause adverse reactions in sensitive individuals", source: "EFSA" },
       { pattern: /disodium guanylate|E627/i, tier: "limited", concern: "May cause adverse reactions (EFSA)", source: "EFSA" },
       { pattern: /disodium inosinate|E631/i, tier: "limited", concern: "May cause adverse reactions, amplifies MSG effects", source: "EFSA" },
