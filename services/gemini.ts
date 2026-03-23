@@ -252,6 +252,14 @@ MANDATORY TIER OVERRIDES (always apply these regardless of other analysis):
 - Polyglycerol Polyricinoleate / PGPR (E476): ALWAYS LIMITED RISK — synthetic emulsifier, cheap cocoa butter substitute, limited long-term safety data.
 - Soy Lecithin: ALWAYS LIMITED RISK — typically GMO-derived, processing solvent residue concerns.
 - Ammonium Bicarbonate (E503): ALWAYS LIMITED RISK — leavening agent, releases ammonia during baking, EFSA under review.
+- Red 40 / Red No. 40 / Allura Red / E129: ALWAYS MODERATE RISK — synthetic azo dye, Southampton Six, EU requires hyperactivity warning label, linked to behavioral issues in children, under FDA review.
+- Yellow 5 / Tartrazine / E102: ALWAYS MODERATE RISK — synthetic azo dye, EU hyperactivity warning required, linked to allergic reactions and behavioral effects in sensitive individuals.
+- Yellow 6 / Sunset Yellow / E110: ALWAYS MODERATE RISK — synthetic azo dye, EU hyperactivity warning required, possible carcinogenic contaminants from manufacturing process.
+- Blue 1 / Brilliant Blue / E133: ALWAYS MODERATE RISK — synthetic dye, EU hyperactivity warning required, limited long-term safety data, crosses blood-brain barrier in animal studies.
+- Blue 2 / Indigo Carmine / E132: ALWAYS MODERATE RISK — synthetic dye, EU hyperactivity warning required.
+- Red 3 / Erythrosine / E127: ALWAYS HIGH RISK — FDA banned in cosmetics due to carcinogenicity, still permitted in food, IARC flagged.
+- Green 3 / Fast Green / E143: ALWAYS MODERATE RISK — synthetic dye, limited safety data, EU hyperactivity concerns.
+- Caramel Color / Caramel Coloring / E150 / E150a / E150b / E150c / E150d: ALWAYS MODERATE RISK — Class IV caramel color contains 4-methylimidazole (4-MEI), listed as a potential carcinogen under California Prop 65, IARC Group 2B.
 
 For flagged ingredients, cite the specific authority (EFSA, ANSES, IARC, NIH) and the finding.
 
@@ -1018,6 +1026,15 @@ export async function analyzeAndSaveScan(
       { pattern: /mono.?\s*(?:and|&)\s*diglycerides|monoglycerides|diglycerides|E471/i, tier: "moderate", concern: "May contain trans fats, cardiovascular risk", source: "EFSA" },
       { pattern: /glycerol|glycerin|E422/i, tier: "limited", concern: "GI effects at high intake, minimal long-term data", source: "EFSA" },
       { pattern: /sodium carbonates?\s*\(E500\)|E500|sodium bicarbonate\s*\(E500\)/i, tier: "limited", concern: "High sodium contribution, EFSA concern", source: "EFSA" },
+      // ─── Artificial Food Dyes ───
+      { pattern: /red\s*(?:no\.?\s*)?40|allura\s*red|E129/i, tier: "moderate", concern: "Synthetic azo dye, EU hyperactivity warning, under FDA review", source: "EFSA / FDA" },
+      { pattern: /yellow\s*5|tartrazine|E102/i, tier: "moderate", concern: "Synthetic azo dye, EU hyperactivity warning, allergic reactions", source: "EFSA" },
+      { pattern: /yellow\s*6|sunset\s*yellow|E110/i, tier: "moderate", concern: "Synthetic azo dye, EU hyperactivity warning, carcinogenic contaminants", source: "EFSA" },
+      { pattern: /blue\s*1|brilliant\s*blue|E133/i, tier: "moderate", concern: "Synthetic dye, EU hyperactivity warning, crosses blood-brain barrier", source: "EFSA" },
+      { pattern: /blue\s*2|indigo\s*carmine|E132/i, tier: "moderate", concern: "Synthetic dye, EU hyperactivity warning", source: "EFSA" },
+      { pattern: /red\s*(?:no\.?\s*)?3|erythrosine|E127/i, tier: "high", concern: "FDA banned in cosmetics, carcinogenicity, IARC flagged", source: "FDA / IARC" },
+      { pattern: /green\s*3|fast\s*green|E143/i, tier: "moderate", concern: "Synthetic dye, limited safety data, EU hyperactivity concerns", source: "EFSA" },
+      { pattern: /caramel\s*colou?r(ing)?|E150[a-d]?/i, tier: "moderate", concern: "Contains 4-MEI, Prop 65 carcinogen, IARC Group 2B", source: "IARC / Prop 65" },
     ];
 
     // Strip label artifacts (e.g. "Contains 2% or less of:")
