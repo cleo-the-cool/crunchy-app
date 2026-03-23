@@ -310,7 +310,16 @@ IMPORTANT: If no product label is visible, research this brand and its parent co
 
 If product-specific data is unavailable, use brand-level or parent-company-level data and note this in data_confidence.
 
-SCORING RULES: Always return a numeric score (0-100) for each category when you have ANY findings or research. Use 50 as a baseline when data is limited. Only return null if you have absolutely zero information. Having findings but returning null is never acceptable.
+SCORING RULES: Always return a numeric score (0-100) for each category when you have ANY findings or research. Only return null if you have absolutely zero information. Having findings but returning null is never acceptable.
+
+CRITICAL: Never return 50 as a score when real findings exist. 50 is reserved ONLY for genuinely no data available. Use this scoring guide:
+- 80-100: Strong certifications (RSPCA Assured, Certified Humane, Fair Trade, B Corp) with no controversies
+- 70-79: Certifications exist OR strong positive track record with minor gaps
+- 60-69: Positive commitments found (e.g. cage-free pledge, sustainability program) but no formal certifications
+- 45-59: Mixed findings — positive commitments exist alongside controversies or labor issues. Score lower if controversies are severe.
+- 30-44: Significant controversies found with few or no positive commitments
+- 0-29: Serious violations, lawsuits, or banned practices
+Always justify the score based on the specific findings.
 
 CRITICAL FORMATTING RULES:
 - Each item in the findings arrays must be a complete standalone fact in 8 words or fewer. Never write full sentences or paragraphs.

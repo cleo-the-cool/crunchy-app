@@ -109,9 +109,10 @@ const CARD_SHADOW = {
 
 function getScorePillColor(score: number | null | undefined): string {
   if (score == null) return "#999";
-  if (score >= 80) return "#4CAF50";
-  if (score >= 60) return "#FFC107";
-  return "#F44336";
+  if (score >= 80) return "#4CAF50";  // green
+  if (score >= 60) return "#FFC107";  // yellow/amber
+  if (score >= 40) return "#FF9800";  // orange
+  return "#F44336";                   // red
 }
 
 function getIngredientTier(ingredient: { tier?: string; risk?: string }): keyof typeof TIER_CONFIG {
