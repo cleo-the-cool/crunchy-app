@@ -31,7 +31,7 @@ import {
   type Rating,
   type Alternative,
 } from "@/data/products";
-import { Badge } from "@/components";
+
 import { getRatingFromScore } from "@/lib/savedProducts";
 import { getCategoryImage } from "@/lib/categoryImages";
 import { useAuth } from "@/contexts/AuthContext";
@@ -900,15 +900,12 @@ export default function ScanResultScreen() {
                   </Text>
                 </View>
                 <View className="flex-1">
-                  <View className="flex-row items-center gap-2">
-                    <Badge rating={product.rating} size="sm" />
-                    <Text
-                      className="text-lg font-bold"
-                      style={{ color: ratingInfo.color }}
-                    >
-                      {ratingInfo.label}
-                    </Text>
-                  </View>
+                  <Text
+                    className="text-lg font-bold"
+                    style={{ color: ratingInfo.color }}
+                  >
+                    {ratingInfo.label}
+                  </Text>
                   <Text
                     className="text-sm text-dark/60 mt-1"
                   >
