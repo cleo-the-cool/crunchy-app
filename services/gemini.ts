@@ -228,7 +228,8 @@ MANDATORY TIER OVERRIDES (always apply these regardless of other analysis):
 - Canola oil / rapeseed oil: ALWAYS LIMITED RISK — highly refined, high omega-6, typically GMO-derived.
 - Soybean oil: ALWAYS LIMITED RISK — highly refined, high omega-6, typically GMO-derived.
 - Sunflower oil (non-high-oleic): ALWAYS LIMITED RISK — highly refined, high omega-6 when not high-oleic variety.
-- Vegetable oil (unspecified): ALWAYS LIMITED RISK — refined seed oil, source unknown.
+- Vegetable oil / Vegetable oils / Vegetable oil blend (unspecified): ALWAYS LIMITED RISK — refined seed oil blend, source and composition unknown, high omega-6.
+- Monocalcium Phosphate (E341i): ALWAYS LIMITED RISK — inorganic phosphate additive, EFSA flagged concerns around high phosphate intake and kidney function.
 - Corn oil: ALWAYS LIMITED RISK — highly refined, high omega-6, typically GMO-derived.
 - Cottonseed oil: ALWAYS MODERATE RISK — high pesticide residue risk, often refined.
 - Autolyzed Yeast Extract: ALWAYS LIMITED RISK — hidden source of free glutamates, similar to MSG.
@@ -980,7 +981,8 @@ export async function analyzeAndSaveScan(
       { pattern: /canola oil|rapeseed oil/i, tier: "limited", concern: "Highly refined, high omega-6, typically GMO-derived", source: "EFSA" },
       { pattern: /soybean oil|soy oil/i, tier: "limited", concern: "Highly refined, high omega-6, typically GMO-derived", source: "EFSA" },
       { pattern: /sunflower oil/i, tier: "limited", concern: "Highly refined, high omega-6 (non-high-oleic)", source: "EFSA" },
-      { pattern: /^vegetable oil$/i, tier: "limited", concern: "Refined seed oil, source unknown", source: "EFSA" },
+      { pattern: /^vegetable oils?(\s+blend)?$/i, tier: "limited", concern: "Refined seed oil blend, source and composition unknown", source: "EFSA" },
+      { pattern: /monocalcium phosphate|E341i/i, tier: "limited", concern: "Inorganic phosphate additive, EFSA kidney function concerns", source: "EFSA" },
       { pattern: /corn oil|maize oil/i, tier: "limited", concern: "Highly refined, high omega-6, typically GMO-derived", source: "EFSA" },
       { pattern: /cottonseed oil/i, tier: "moderate", concern: "High pesticide residue risk, often refined", source: "EFSA" },
       { pattern: /autolyzed yeast extract/i, tier: "limited", concern: "Hidden source of free glutamates (similar to MSG)", source: "EFSA" },
