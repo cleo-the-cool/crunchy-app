@@ -311,7 +311,7 @@ function ToxinsCard({
       {sortedIngredients.length > 0 && (
         <>
           <SectionHeader text="Ingredients" />
-          {sortedIngredients.map((ingredient) => {
+          {sortedIngredients.map((ingredient, index) => {
             // Debug: log raw tier values to diagnose badge mapping
             if (__DEV__) console.log(`[TIER DEBUG] ${ingredient.name}: tier="${ingredient.tier}", raw=`, JSON.stringify(ingredient));
             const rawTier = (ingredient.tier || "safe").toLowerCase().trim();
@@ -321,7 +321,7 @@ function ToxinsCard({
 
             return (
               <TouchableOpacity
-                key={ingredient.name}
+                key={`${ingredient.name}-${index}`}
                 onPress={() => onToggle(ingredient.name)}
                 activeOpacity={0.7}
                 className="bg-cream/50 rounded-xl mb-1.5 overflow-hidden"
@@ -490,13 +490,13 @@ function LegacyAnalysisCard({
           <Bullet key={i} text={c} icon="alert-circle" iconColor="#FFC107" />
         ))}
         {sorted.length > 0 && <SectionHeader text="Ingredients" />}
-        {sorted.map((ingredient) => {
+        {sorted.map((ingredient, index) => {
           const tier = getIngredientTier(ingredient);
           const config = TIER_CONFIG[tier];
           const isExpanded = expandedIngredient === ingredient.name;
           return (
             <TouchableOpacity
-              key={ingredient.name}
+              key={`${ingredient.name}-${index}`}
               onPress={() => onToggle(ingredient.name)}
               activeOpacity={0.7}
               className="bg-cream/50 rounded-xl mb-1.5 overflow-hidden"
