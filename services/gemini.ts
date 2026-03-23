@@ -200,6 +200,8 @@ IMPORTANT: If no ingredients are visible on the packaging in the image, DO NOT r
 
 COMPLETENESS RULE: List every single ingredient as its own separate entry. Never group multiple ingredients into one row. Sub-ingredients, allergens, emulsifiers, raising agents, and starches must all appear individually. For example, "Vegetable fats (palm, shea)" must become separate entries: "Palm Oil" and "Shea Butter". Ground peanuts and other allergens are critical and must always be included — never omit allergens. Include ALL known ingredients for the product category, even if not visible on the label. For dry erase markers, ALWAYS include xylene, toluene, isopropanol, butanol, and resin components. For cleaning products, include all known active chemicals and surfactants. Never omit known hazardous ingredients just because they aren't printed on the packaging — if the ingredient is a known component of this product type, include it.
 
+LABEL ARTIFACTS RULE: Never include packaging label phrases as ingredient rows. Skip phrases like "Contains 2% or less of:", "Contains less than 2% of:", "2% or less of:", or any similar percentage declaration. These are label formatting, not ingredients.
+
 SPECIFICITY RULE: Never list an ingredient as just its category name (e.g. "Raising Agent", "Emulsifier", "Preservative", "Stabiliser", "Thickener", "Acidity Regulator") without identifying the specific substance. If the specific substance is visible on the label, use it (e.g. "Sodium Bicarbonate" not "Raising Agent", "Soy Lecithin" not "Emulsifier"). If the label only shows the category name without specifying the substance, append "(unspecified)" — e.g. "Raising Agent (unspecified)".
 
 ALLERGEN WARNINGS: If a label says "may contain [allergen]" or "produced in a facility with [allergen]", do NOT list it as a regular ingredient. Instead add it to a separate allergen_warnings array.
@@ -229,6 +231,9 @@ MANDATORY TIER OVERRIDES (always apply these regardless of other analysis):
 - Vegetable oil (unspecified): ALWAYS LIMITED RISK — refined seed oil, source unknown.
 - Corn oil: ALWAYS LIMITED RISK — highly refined, high omega-6, typically GMO-derived.
 - Cottonseed oil: ALWAYS MODERATE RISK — high pesticide residue risk, often refined.
+- Autolyzed Yeast Extract: ALWAYS LIMITED RISK — hidden source of free glutamates, similar to MSG.
+- Annatto (E160b): ALWAYS LIMITED RISK — EFSA flagged for hyperactivity concerns, known allergen trigger.
+- Spices / Natural Spices (when specific spice not named): ALWAYS LIMITED RISK — unverified composition.
 - E621 (monosodium glutamate / MSG): ALWAYS LIMITED RISK — EFSA notes potential adverse reactions, hyperactivity concerns in sensitive individuals.
 - E627 (disodium guanylate): ALWAYS LIMITED RISK — EFSA flags potential adverse reactions.
 - E631 (disodium inosinate): ALWAYS LIMITED RISK — EFSA flags potential adverse reactions, often combined with MSG to amplify effects.
@@ -978,6 +983,9 @@ export async function analyzeAndSaveScan(
       { pattern: /^vegetable oil$/i, tier: "limited", concern: "Refined seed oil, source unknown", source: "EFSA" },
       { pattern: /corn oil|maize oil/i, tier: "limited", concern: "Highly refined, high omega-6, typically GMO-derived", source: "EFSA" },
       { pattern: /cottonseed oil/i, tier: "moderate", concern: "High pesticide residue risk, often refined", source: "EFSA" },
+      { pattern: /autolyzed yeast extract/i, tier: "limited", concern: "Hidden source of free glutamates (similar to MSG)", source: "EFSA" },
+      { pattern: /annatto|E160b/i, tier: "limited", concern: "EFSA flagged for hyperactivity, known allergen trigger", source: "EFSA" },
+      { pattern: /^spices?$|^natural spices?$|^spices?\s*\(unspecified\)$/i, tier: "limited", concern: "Unverified composition, source not specified", source: "EFSA" },
       { pattern: /monosodium glutamate|\bMSG\b|E621/i, tier: "limited", concern: "May cause adverse reactions in sensitive individuals", source: "EFSA" },
       { pattern: /disodium guanylate|E627/i, tier: "limited", concern: "May cause adverse reactions (EFSA)", source: "EFSA" },
       { pattern: /disodium inosinate|E631/i, tier: "limited", concern: "May cause adverse reactions, amplifies MSG effects", source: "EFSA" },
@@ -987,6 +995,15 @@ export async function analyzeAndSaveScan(
       { pattern: /artificial\s*flavo(?:u)?r/i, tier: "limited", concern: "Undisclosed ingredient mix", source: "EFSA" },
       { pattern: /mono.?\s*(?:and|&)\s*diglycerides|E471/i, tier: "limited", concern: "May contain trans fatty acids", source: "EFSA" },
     ];
+
+    // Strip label artifacts (e.g. "Contains 2% or less of:")
+    toxinsResult.ingredients = toxinsResult.ingredients.filter((ing: any) => {
+      const n = (ing.name || "").trim();
+      if (/\d+%\s*(or\s*)?(less|fewer)/i.test(n)) return false;
+      if (/^contains\s+\d/i.test(n)) return false;
+      if (n.length === 0) return false;
+      return true;
+    });
 
     for (const ing of toxinsResult.ingredients) {
       // Normalize tier value
