@@ -246,8 +246,9 @@ MANDATORY TIER OVERRIDES (always apply these regardless of other analysis):
 - Smoke flavoring / smoke aromatizing: ALWAYS LIMITED RISK — EFSA 2021 genotoxicity re-evaluation, some smoke flavorings suspended from EU market pending safety assessment.
 - Flavorings / aromas (unspecified): ALWAYS LIMITED RISK — undisclosed ingredient composition.
 - Formaldehyde and formaldehyde-releasing preservatives (DMDM hydantoin, quaternium-15) are IARC Group 1 carcinogens. ALWAYS rate HIGH RISK.
-- Artificial and Natural Flavors / Artificial and Natural Flavor: ALWAYS LIMITED RISK — unspecified composition, may contain undisclosed chemicals.
-- Sodium Metabisulfite (E223): ALWAYS LIMITED RISK — sulfite preservative, known allergen trigger especially for asthmatics, EFSA flagged.
+- Glycidyl Fatty Acid Esters / Glycidyl Esters / GE (processing contaminant): ALWAYS HIGH RISK — EFSA 2016 classified as genotoxic and potentially carcinogenic. Forms during high-temperature refining of palm oil. No safe exposure level established.
+- Natural Flavors / Natural Flavor / Artificial Flavors / Artificial and Natural Flavors / Natural and Artificial Flavors: ALWAYS LIMITED RISK — unspecified composition, may contain undisclosed processing chemicals or allergens.
+- Sodium Metabisulfite (E223): ALWAYS MODERATE RISK — sulfite preservative, EFSA flagged, known allergen trigger especially for asthmatics and sulfite-sensitive individuals, banned in some food categories in the EU.
 - Polyglycerol Polyricinoleate / PGPR (E476): ALWAYS LIMITED RISK — synthetic emulsifier, cheap cocoa butter substitute, limited long-term safety data.
 - Soy Lecithin: ALWAYS LIMITED RISK — typically GMO-derived, processing solvent residue concerns.
 - Ammonium Bicarbonate (E503): ALWAYS LIMITED RISK — leavening agent, releases ammonia during baking, EFSA under review.
@@ -1001,8 +1002,9 @@ export async function analyzeAndSaveScan(
       { pattern: /autolyzed yeast extract/i, tier: "limited", concern: "Hidden source of free glutamates (similar to MSG)", source: "EFSA" },
       { pattern: /annatto|E160b/i, tier: "limited", concern: "EFSA flagged for hyperactivity, known allergen trigger", source: "EFSA" },
       { pattern: /^spices?$|^natural spices?$|^spices?\s*\(unspecified\)$/i, tier: "limited", concern: "Unverified composition, source not specified", source: "EFSA" },
-      { pattern: /artificial and natural flavou?rs?/i, tier: "limited", concern: "Unspecified composition, undisclosed chemicals", source: "EFSA" },
-      { pattern: /sodium metabisulfi?te|E223/i, tier: "limited", concern: "Sulfite preservative, asthma allergen trigger", source: "EFSA" },
+      { pattern: /glycidyl\s*(fatty\s*acid\s*)?esters?|^GE$/i, tier: "high", concern: "Genotoxic, potentially carcinogenic (EFSA 2016)", source: "EFSA" },
+      { pattern: /(artificial\s*(and|&)\s*)?natural\s*flavou?rs?|artificial\s*flavou?rs?|natural\s*(and|&)\s*artificial\s*flavou?rs?/i, tier: "limited", concern: "Unspecified composition, undisclosed chemicals", source: "EFSA" },
+      { pattern: /sodium metabisulfi?te|E223/i, tier: "moderate", concern: "Sulfite preservative, EFSA flagged, asthma trigger", source: "EFSA" },
       { pattern: /polyglycerol polyricinoleate|PGPR|E476/i, tier: "limited", concern: "Synthetic emulsifier, limited safety data", source: "EFSA" },
       { pattern: /soy lecithin|soya lecithin/i, tier: "limited", concern: "Typically GMO-derived, solvent residue concerns", source: "EFSA" },
       { pattern: /ammonium bicarbonate|E503/i, tier: "limited", concern: "Releases ammonia, EFSA under review", source: "EFSA" },
