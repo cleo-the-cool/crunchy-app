@@ -635,7 +635,7 @@ export default function ScanResultScreen() {
         concerns: analysis.concerns || [],
         summary: analysis.summary || "",
         categoryScores: analysis.categoryScores || undefined,
-        aiKnowledgeBase: analysis.aiKnowledgeBase || false,
+        aiKnowledgeBase: source === "item" ? (analysis.aiKnowledgeBase || false) : false,
         allergenWarnings: analysis.allergenWarnings || undefined,
       };
     } catch {

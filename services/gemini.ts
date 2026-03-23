@@ -419,23 +419,28 @@ async function findCachedProduct(
   const searchNormalized = normalizeForMatch(`${brand} ${name}`);
 
   // Strategy 1: Try normalized_name match first (fastest, most reliable)
-  try {
-    const { data: normalizedMatch } = await supabase
-      .from("products")
-      .select("id, gemini_analysis, category_scores, scan_count")
-      .eq("normalized_name", searchNormalized)
-      .limit(1)
-      .maybeSingle();
+  if (_hasNormalizedNameCol !== false) {
+    try {
+      const { data: normalizedMatch, error: normErr } = await supabase
+        .from("products")
+        .select("id, gemini_analysis, category_scores, scan_count")
+        .eq("normalized_name", searchNormalized)
+        .limit(1)
+        .maybeSingle();
 
-    if (normalizedMatch) {
-      return {
-        analysis: normalizedMatch.gemini_analysis as GeminiAnalysis | null,
-        categoryScores: normalizedMatch.category_scores as CategoryScores | null,
-        productId: normalizedMatch.id,
-      };
+      if (normErr?.message?.includes("normalized_name")) {
+        _hasNormalizedNameCol = false;
+      } else if (normalizedMatch) {
+        _hasNormalizedNameCol = true;
+        return {
+          analysis: normalizedMatch.gemini_analysis as GeminiAnalysis | null,
+          categoryScores: normalizedMatch.category_scores as CategoryScores | null,
+          productId: normalizedMatch.id,
+        };
+      }
+    } catch (e) {
+      // Column may not exist yet — fall through
     }
-  } catch (e) {
-    // Column may not exist yet — fall through to legacy strategies
   }
 
   // Strategy 2: Try exact name+brand match
@@ -464,7 +469,7 @@ async function findCachedProduct(
 
     const { data: fuzzyMatches } = await supabase
       .from("products")
-      .select("id, name, brand, gemini_analysis, category_scores, scan_count, normalized_name")
+      .select("id, name, brand, gemini_analysis, category_scores, scan_count")
       .ilike("brand", `%${normalizedBrand}%`)
       .limit(20);
 
@@ -474,7 +479,7 @@ async function findCachedProduct(
       const bestMatch = fuzzyMatches
         .map((row) => {
           // Use normalized_name if available, otherwise normalize on the fly
-          const dbNormalized = row.normalized_name || normalizeForMatch(`${row.brand} ${row.name}`);
+          const dbNormalized = normalizeForMatch(`${row.brand} ${row.name}`);
           const dbWords = dbNormalized.split(/\s+/);
 
           // Subset match: if one contains all words of the other, it's the same product
@@ -508,6 +513,9 @@ async function findCachedProduct(
   return null;
 }
 
+// Track whether normalized_name column exists (avoid repeated failures)
+let _hasNormalizedNameCol: boolean | null = null;
+
 async function cacheProduct(
   analysis: GeminiAnalysis,
   categoryScores?: CategoryScores
@@ -519,35 +527,23 @@ async function cacheProduct(
     ? analysis.productName
     : `${analysis.brand} — ${analysis.productName}`;
   const normalized = normalizeForMatch(`${analysis.brand} ${analysis.productName}`);
+  const useNormalized = _hasNormalizedNameCol !== false;
 
   try {
-    // Check for existing product by normalized name first, then exact match
+    // Check for existing product — try exact name+brand match
     let existing: { id: string; scan_count: number | null } | null = null;
 
-    try {
-      const { data } = await supabase
-        .from("products")
-        .select("id, scan_count")
-        .eq("normalized_name", normalized)
-        .limit(1)
-        .maybeSingle();
-      existing = data;
-    } catch {
-      // normalized_name column may not exist yet
-    }
-
-    if (!existing) {
-      const { data } = await supabase
-        .from("products")
-        .select("id, scan_count")
-        .eq("name", analysis.productName)
-        .eq("brand", analysis.brand)
-        .limit(1)
-        .maybeSingle();
-      existing = data;
-    }
+    const { data: exactData } = await supabase
+      .from("products")
+      .select("id, scan_count")
+      .eq("brand", analysis.brand)
+      .ilike("name", `%${analysis.productName}%`)
+      .limit(1)
+      .maybeSingle();
+    existing = exactData;
 
     if (existing) {
+      // Update existing product — without normalized_name to avoid column errors
       const updatePayload: Record<string, any> = {
         gemini_analysis: analysis,
         overall_score: analysis.crunchyScore,
@@ -556,18 +552,29 @@ async function cacheProduct(
         updated_at: new Date().toISOString(),
         name: displayName,
       };
-      // Try to set normalized_name (column may not exist yet)
-      updatePayload.normalized_name = normalized;
+      if (useNormalized) updatePayload.normalized_name = normalized;
 
       const { error: updateErr } = await supabase
         .from("products")
         .update(updatePayload)
         .eq("id", existing.id);
-      if (updateErr) console.error("[cacheProduct] Update failed:", updateErr.message, updateErr.details, updateErr.hint);
+
+      if (updateErr) {
+        if (updateErr.message?.includes("normalized_name")) {
+          _hasNormalizedNameCol = false;
+          // Retry without it
+          delete updatePayload.normalized_name;
+          await supabase.from("products").update(updatePayload).eq("id", existing.id);
+        } else {
+          console.error("[cacheProduct] Update failed:", updateErr.message, updateErr.details);
+        }
+      } else if (useNormalized) {
+        _hasNormalizedNameCol = true;
+      }
       return existing.id;
     }
 
-    // Try insert without normalized_name first (column may not exist)
+    // Insert new product — try without normalized_name first (safe)
     const basePayload: Record<string, any> = {
       name: displayName,
       brand: analysis.brand,
@@ -578,30 +585,39 @@ async function cacheProduct(
       category_scores: categoryScores || undefined,
     };
 
-    // First attempt: with normalized_name
-    const { data: newProduct, error: insertErr } = await supabase
-      .from("products")
-      .insert({ ...basePayload, normalized_name: normalized })
-      .select("id")
-      .single();
+    if (useNormalized) {
+      const { data: newProduct, error: insertErr } = await supabase
+        .from("products")
+        .insert({ ...basePayload, normalized_name: normalized })
+        .select("id")
+        .single();
 
-    if (insertErr) {
-      console.error("[cacheProduct] Insert failed:", insertErr.message, insertErr.details, insertErr.hint);
-      // Retry without normalized_name in case column doesn't exist
-      if (insertErr.message?.includes("normalized_name") || insertErr.message?.includes("column")) {
-        console.log("[cacheProduct] Retrying without normalized_name...");
-        const { data: retryProduct, error: retryErr } = await supabase
-          .from("products")
-          .insert(basePayload)
-          .select("id")
-          .single();
-        if (retryErr) console.error("[cacheProduct] Retry also failed:", retryErr.message, retryErr.details, retryErr.hint);
-        return retryProduct?.id ?? null;
+      if (insertErr) {
+        if (insertErr.message?.includes("normalized_name") || insertErr.message?.includes("column")) {
+          _hasNormalizedNameCol = false;
+          console.log("[cacheProduct] normalized_name column missing, inserting without it");
+          const { data: retryProduct, error: retryErr } = await supabase
+            .from("products")
+            .insert(basePayload)
+            .select("id")
+            .single();
+          if (retryErr) console.error("[cacheProduct] Insert failed:", retryErr.message, retryErr.details);
+          return retryProduct?.id ?? null;
+        }
+        console.error("[cacheProduct] Insert failed:", insertErr.message, insertErr.details);
+        return null;
       }
-      return null;
+      _hasNormalizedNameCol = true;
+      return newProduct?.id ?? null;
+    } else {
+      const { data: newProduct, error: insertErr } = await supabase
+        .from("products")
+        .insert(basePayload)
+        .select("id")
+        .single();
+      if (insertErr) console.error("[cacheProduct] Insert failed:", insertErr.message, insertErr.details);
+      return newProduct?.id ?? null;
     }
-
-    return newProduct?.id ?? null;
   } catch (err) {
     console.error("[cacheProduct] Unexpected error:", err);
     return null;

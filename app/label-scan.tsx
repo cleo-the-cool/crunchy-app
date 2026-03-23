@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,15 @@ import {
   ScrollView,
   Linking,
 } from "react-native";
+
+const LOADING_FACTS = [
+  '"Clean" and "natural" on a label are marketing terms — the FDA has no legal definition for either.',
+  'The FDA reviews most food additives after they reach shelves, not before.',
+  'A product can list "fragrance" on its label to legally conceal hundreds of unlisted chemicals.',
+  'Red dye No. 40 requires a warning label in the EU but has no such requirement in the US.',
+  'Olive oil labeled "extra virgin" is frequently adulterated — there is no mandatory third-party verification in the US.',
+  '"Free range" poultry only requires some access to the outdoors — duration and space are not defined by law.',
+];
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -104,6 +113,7 @@ export default function LabelScanScreen() {
   const [countdown, setCountdown] = useState(0);
   const [progressText, setProgressText] = useState("");
   const cameraRef = useRef<CameraView>(null);
+  const loadingFact = useMemo(() => LOADING_FACTS[Math.floor(Math.random() * LOADING_FACTS.length)], [state]);
 
   const handleCapture = async () => {
     if (!canScan) {
@@ -220,8 +230,11 @@ export default function LabelScanScreen() {
             <View className="bg-sage/10 rounded-full w-20 h-20 items-center justify-center mb-5">
               <Ionicons name="document-text" size={36} color="#8B9E7C" />
             </View>
-            <Text className="text-xl font-bold text-dark mb-4">
+            <Text className="text-xl font-bold text-dark mb-2">
               {progressText || processingText}
+            </Text>
+            <Text className="text-xs text-dark/40 text-center mb-4 px-2 leading-4">
+              {loadingFact}
             </Text>
             <ScanningLineAnimation />
           </View>
