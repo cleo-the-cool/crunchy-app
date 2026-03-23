@@ -387,9 +387,10 @@ const FILLER_WORDS = new Set([
 // Marketing/size adjectives that don't change the core product identity
 const MARKETING_WORDS = new Set([
   "original", "classic", "new", "mini", "small", "big", "large", "extra", "super",
-  "family", "multipack", "snack", "pack", "size", "limited", "edition", "special",
+  "family", "multipack", "snack", "snacks", "pack", "packs", "size", "limited", "edition", "special",
   "regular", "standard", "value", "economy", "premium", "deluxe", "lite", "light",
   "zero", "free", "plus", "pro", "max", "ultra",
+  "baked", "box", "bag", "bags", "sharing", "portion", "portions",
 ]);
 
 /**
